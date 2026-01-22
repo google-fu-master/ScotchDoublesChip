@@ -3,7 +3,7 @@
 
 generator client {
   provider = "prisma-client-js"
-  output   = "../../node_modules/.prisma/client"
+  output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
@@ -24,6 +24,12 @@ model Player {
   birthdayDay       Int? // 1-31
   lastBirthdayChip  DateTime? // When they last received a birthday chip
   
+  // Player skill ratings
+  fargoRating       Int? // Overall Fargo rating
+  apaEightBallRank  String? // APA 8-ball rank
+  apaNineBallRank   String? // APA 9-ball rank
+  inHouseRating     String? // Venue-specific rating
+  
   // Player preferences and settings
   settings  Json?
   createdAt DateTime @default(now())
@@ -32,6 +38,7 @@ model Player {
   // Relationships
   tournamentProfiles PlayerProfile[]
   directorRoles     TournamentDirector[]
+  sidePotEntries    SidePotEntry[] // Individual side pot entries
 
   @@map("players")
 }
@@ -93,47 +100,77 @@ enum TableStatus {
 }
 
 // Tournament management with proper roles
+// Tournament management with complete configuration
 model Tournament {
   id          String          @id @default(cuid())
   name        String
-  description String?
+  description String?         @db.VarChar(5000) // 5000 character limit
   venueId     String
   
-  // Tournament configuration
+  // Tournament type configuration
   tournamentType TournamentType  @default(CHIP)
-  format         TournamentFormat @default(SCOTCH_DOUBLES)
+  playerType     PlayerType      @default(SCOTCH_DOUBLES)
+  gameType       GameType        @default(NINE_BALL)
   status         TournamentStatus @default(SETUP)
   
-  // Chip tournament settings
-  settings       Json            // Tournament-specific configuration
-  rules          Json?           // Tournament rules
-  
-  // Scheduling
+  // Tournament timing
   startDate      DateTime?
   endDate        DateTime?
-  registrationOpenDate  DateTime?
-  registrationCloseDate DateTime?
   
-  // Registration limits
-  maxTeams       Int?
-  minTeams       Int?
-  entryFee       Decimal?
+  // Entry and chip configuration
+  estimatedEntrants  Int?
+  playersPerTable    Int @default(4) // Total players at table
   
-  // Chip configuration
-  startingChips  Int @default(3) // Chips per team at registration
+  // Default chips configuration with Fargo-based ranges
+  defaultChipsPerPlayer Int @default(3)
+  chipRanges           Json? // Array of {minFargo, maxFargo, chips} objects
   
-  // Game configuration
+  // Race configuration
   raceToWins     Int @default(1) // Games needed to win a match
   
-  // Tournament progression settings
+  // Tournament flow settings
+  bracketOrdering   BracketOrdering @default(RANDOM_DRAW)
+  autopilotMode     Boolean @default(false) // Auto-assign avoiding repeats
+  randomOrderingEachRound Boolean @default(false) // Shuffle queue each round
+  
+  // Rules and rating system
+  rules         Rules @default(BCA)
+  ratingSystem  RatingSystem @default(FARGO_RATE)
+  showSkillLevels Boolean @default(true) // Show ratings in bracket
+  
+  // Money configuration (all optional)
+  entryFee      Decimal? @db.Decimal(10,2) // Per entrant
+  adminFee      Decimal? @db.Decimal(10,2) // Per entrant (goes to director)
+  addedMoney    Decimal? @db.Decimal(10,2) // Flat amount added to pot
+  
+  // Payout structure configuration
+  payoutType         PayoutType? // PLACES or PERCENTAGE
+  payoutPlacesSetting PayoutPlacesSetting? // Winner take all, top 2, etc.
+  payoutPercentage   Int? // 10%, 15%, 20%, etc. (when using percentage type)
+  customPayoutStructure Json? // Manual payout structure
+  
+  // Money visibility settings
+  moneyVisible       Boolean @default(true) // Can be toggled by director
+  moneyVisibleBefore Boolean @default(true) // Show money before tournament
+  moneyVisibleDuring Boolean @default(true) // Show money during tournament  
+  moneyVisibleAfter  Boolean @default(true) // Show money after tournament
+  
+  // Access control
+  access        AccessType @default(PUBLIC)
+  
+  // Tournament progression
+  isStarted      Boolean @default(false)
+  isCompleted    Boolean @default(false)
+  currentRound   Int @default(0)
+  
+  // Template functionality
+  isTemplate     Boolean @default(false) // Can be saved as template
+  templateName   String? // Name when saved as template
+  
+  // Auto settings
   autoAcceptScores Boolean @default(false) // Auto-accept vs manual approval
   allowNotifications Boolean @default(true) // SMS/push when teams assigned
   
-  // Queue management
-  isStarted      Boolean @default(false) // Tournament has started
-  currentRound   Int @default(0) // Current round number
-  
-  // Metadata
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -145,10 +182,11 @@ model Tournament {
   games          Game[]
   chipTransactions ChipTransaction[]
   payouts        Payout[]
+  payoutSplits   PayoutSplit[] // Manual payout splits at end
   sidePots       SidePot[]
-  teamPairings   TeamPairing[] // Track team pairing history
-  queue          TournamentQueue? // Current queue state
-  teamAssignments TeamAssignment[] // Team table assignments
+  teamPairings   TeamPairing[]
+  queue          TournamentQueue?
+  teamAssignments TeamAssignment[]
 
   @@map("tournaments")
 }
@@ -215,6 +253,7 @@ model Team {
   // Initial chip calculation from combined Fargos
   combinedFargo Int? // Sum of both players' Fargo ratings
   initialChips  Int? // Chips calculated from Fargo ratings
+  manualChipOverride Boolean @default(false) // Director manually set chips
   
   // Queue and bracket management
   queuePosition Int? // Position in waiting queue (null if not queued)
@@ -235,6 +274,8 @@ model Team {
   chipTransactions ChipTransaction[] // Team chip tracking
   currentTable Table? @relation(fields: [currentTableId], references: [id]) // Current table assignment
   assignments  TeamAssignment[] // Assignment history
+  payouts      Payout[] // Payouts earned
+  sidePotEntries SidePotEntry[] // Side pot entries
   
   // Pairing history
   pairingsAsTeam1 TeamPairing[] @relation("Team1Pairings")
@@ -360,32 +401,62 @@ model ChipTransaction {
   @@map("chip_transactions")
 }
 
-// Payout structure for tournaments
+// Payout structure for tournaments with split functionality
 model Payout {
   id           String @id @default(cuid())
   tournamentId String
   
   // Payout details
   position     Int // 1st, 2nd, 3rd, etc.
-  amount       Decimal
-  percentage   Decimal? // Percentage of total pot
+  amount       Decimal @db.Decimal(10,2)
+  percentage   Decimal? @db.Decimal(5,2) // Percentage of total pot
   description  String? // "1st Place", "Runner-up", etc.
+  
+  // Payout recipient
+  teamId       String? // Team that earned this position
   
   // Payout status
   isPaid       Boolean @default(false)
   paidAt       DateTime?
-  paidTo       String? // Team or player ID
+  
+  // Original vs split amounts
+  originalAmount Decimal? @db.Decimal(10,2) // Amount before any splits
+  isSplit        Boolean @default(false) // Part of a manual split
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   // Relationships
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team         Team? @relation(fields: [teamId], references: [id])
 
   @@map("payouts")
 }
 
-// Side pots for additional betting/prizes
+// Manual payout splits for end-of-tournament scenarios
+model PayoutSplit {
+  id           String @id @default(cuid())
+  tournamentId String
+  
+  // Split details
+  splitName    String // "Final 3 Teams Split", "1st/2nd Place Split", etc.
+  description  String? // Reason for split
+  totalAmount  Decimal @db.Decimal(10,2) // Total amount being split
+  
+  // Split recipients (JSON array of {teamId, amount, percentage})
+  splitData    Json // [{"teamId": "...", "amount": 100.00, "percentage": 50.0}]
+  
+  // Split metadata
+  createdBy    String? // Director who created the split
+  createdAt    DateTime @default(now())
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@map("payout_splits")
+}
+
+// Side pots for additional betting/prizes (up to 10 per tournament)
 model SidePot {
   id           String @id @default(cuid())
   tournamentId String
@@ -393,15 +464,21 @@ model SidePot {
   // Side pot details
   name         String // "Break and Run", "High Run", etc.
   description  String?
-  amount       Decimal
-  entryFee     Decimal?
+  entryFee     Decimal @db.Decimal(10,2) // Entry fee for this side pot
+  totalPot     Decimal @default(0) @db.Decimal(10,2) // Total collected
+  
+  // Entry type
+  entryType    SidePotEntryType @default(TEAM) // TEAM or INDIVIDUAL
   
   // Qualification criteria
   criteria     Json // Flexible criteria definition
   
-  // Status
+  // Status and winner
   isActive     Boolean @default(true)
+  isComplete   Boolean @default(false)
   winnerId     String? // Winner team or player ID
+  winnerType   SidePotWinnerType? // TEAM or PLAYER
+  paidOut      Boolean @default(false)
   paidAt       DateTime?
   
   createdAt    DateTime @default(now())
@@ -409,8 +486,34 @@ model SidePot {
 
   // Relationships
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  entries      SidePotEntry[] // Track entries
 
   @@map("side_pots")
+}
+
+// Track side pot entries
+model SidePotEntry {
+  id           String @id @default(cuid())
+  sidePotId    String
+  
+  // Entry details
+  entrantType  SidePotEntryType // TEAM or INDIVIDUAL
+  teamId       String?
+  playerId     String? // For individual entries
+  
+  // Entry status
+  entryFee     Decimal @db.Decimal(10,2)
+  isPaid       Boolean @default(false)
+  enteredAt    DateTime @default(now())
+
+  // Relationships
+  sidePot      SidePot @relation(fields: [sidePotId], references: [id], onDelete: Cascade)
+  team         Team? @relation(fields: [teamId], references: [id])
+  player       Player? @relation(fields: [playerId], references: [id])
+
+  @@unique([sidePotId, teamId])
+  @@unique([sidePotId, playerId])
+  @@map("side_pot_entries")
 }
 
 // Team pairing history to avoid repeat matchups
@@ -549,18 +652,72 @@ enum DirectorRole {
 }
 
 enum TournamentType {
-  CHIP        // Chip accumulation tournament
-  ELIMINATION // Single/Double elimination  
-  ROUND_ROBIN // Round robin format
-  SWISS       // Swiss system
-  CUSTOM      // Custom format
+  CHIP
+  // Future: BRACKET, ROUND_ROBIN when needed
 }
 
-enum TournamentFormat {
-  SINGLES
-  DOUBLES
-  SCOTCH_DOUBLES
-  TEAMS
+enum PlayerType {
+  SINGLES           // 1v1
+  DOUBLES          // 2v2
+  SCOTCH_DOUBLES   // 2v2 alternating shot
+}
+
+enum GameType {
+  EIGHT_BALL
+  NINE_BALL
+  TEN_BALL
+}
+
+enum BracketOrdering {
+  RANDOM_DRAW      // Fisher-Yates shuffle
+  SEEDED_DRAW      // Highest vs lowest seed
+  SET_ORDER        // Manual seed assignment
+}
+
+enum Rules {
+  BCA
+  APA
+  WPA
+  USAPL
+  VNEA
+  LOCAL
+}
+
+enum RatingSystem {
+  NONE
+  FARGO_RATE
+  APA
+  IN_HOUSE
+}
+
+enum PayoutType {
+  PLACES
+  PERCENTAGE
+}
+
+enum PayoutPlacesSetting {
+  WINNER_TAKE_ALL    // 1-4 entries
+  TOP_2             // 5-8 entries  
+  TOP_3             // 9-16 entries
+  TOP_4             // 17-24 entries
+  TOP_6             // 25-31 entries
+  TOP_8             // 32-64 entries
+  CUSTOM
+}
+
+enum AccessType {
+  PUBLIC
+  PRIVATE
+}
+
+enum SidePotEntryType {
+  TEAM
+  INDIVIDUAL
+}
+
+enum SidePotWinnerType {
+  TEAM
+  PLAYER
 }
 
 enum TournamentStatus {
@@ -573,18 +730,18 @@ enum TournamentStatus {
   CANCELLED
 }
 
+enum TeamStatus {
+  ACTIVE
+  INACTIVE
+  ELIMINATED
+}
+
 enum PlayerRegistrationStatus {
   PENDING
   CONFIRMED
+  CHECKED_IN
   WAITLISTED
   DECLINED
-  CANCELLED
-}
-
-enum TeamStatus {
-  ACTIVE
-  ELIMINATED
-  WITHDRAWN
 }
 
 enum GameStatus {
@@ -595,19 +752,18 @@ enum GameStatus {
 }
 
 enum ChipTransactionType {
-  INITIAL_CHIPS    // Chips given at team registration
-  GAME_WIN        // Chips won from game victory
-  GAME_LOSS       // Chips lost from game defeat  
-  BIRTHDAY_CHIP   // Special birthday chip award
-  ADJUSTMENT      // Manual adjustment
-  PRIZE          // Prize distribution
+  INITIAL_CHIPS
+  BIRTHDAY_CHIP
+  GAME_WIN
+  GAME_LOSS
+  MANUAL_ADJUSTMENT
+  BUY_IN
 }
 
 enum AssignmentType {
-  INITIAL      // Initial tournament assignment
-  WINNER_STAYS // Winner stays at table
-  FROM_QUEUE   // New team from queue
-  MANUAL       // Manual assignment by director
+  INITIAL
+  WINNER_STAYS
+  FROM_QUEUE
 }
 
 enum AuditAction {
@@ -616,16 +772,14 @@ enum AuditAction {
   DELETE
   LOGIN
   LOGOUT
-  EXPORT
-  IMPORT
 }
 
 enum NotificationType {
-  TOURNAMENT_REMINDER
-  MATCH_STARTING
-  RESULT_UPDATE
-  REGISTRATION_CONFIRMATION
-  SYSTEM_ALERT
+  GAME_ASSIGNMENT
+  TOURNAMENT_START
+  TOURNAMENT_END
+  PAYOUT_NOTIFICATION
+  GENERAL
 }
 
 enum NotificationChannel {
@@ -639,8 +793,8 @@ enum NotificationStatus {
   PENDING
   SENT
   DELIVERED
-  READ
   FAILED
+  READ
 }
 
 enum ConfigType {
@@ -649,3 +803,4 @@ enum ConfigType {
   BOOLEAN
   JSON
 }
+
