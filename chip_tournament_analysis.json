@@ -1,0 +1,26 @@
+{
+  "tournament_type_page": {
+    "url": "https://digitalpool.com/tournament-builder/new/type",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "form_fields": [],
+    "page_content": {
+      "tournament_types": [],
+      "chip_mentions": [
+        {
+          "text": "Double elimination, single elimination, round-robin, chip and multi-stage formats",
+          "parent_tag": "li",
+          "parent_class": [
+            "ant-list-item",
+            "ant-list-item-no-flex"
+          ]
+        }
+      ],
+      "dropdowns": []
+    }
+  },
+  "chip_tournament_settings": {
+    "url": "https://digitalpool.com/tournament-builder/new/type",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "form_fields": []
+  }
+}

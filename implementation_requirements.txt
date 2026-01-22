@@ -1,0 +1,161 @@
+================================================================================
+SCOTCH DOUBLES CHIP TOURNAMENT - IMPLEMENTATION REQUIREMENTS
+Based on DigitalPool.com Analysis
+================================================================================
+
+🗄️ DATABASE SCHEMA REQUIREMENTS
+----------------------------------------
+
+1. TOURNAMENTS TABLE:
+   - tournament_id (PRIMARY KEY)
+   - name (VARCHAR)
+   - type (ENUM: 'chip', 'elimination', 'round_robin')
+   - format (ENUM: 'scotch_doubles', 'singles', '9_ball', etc.)
+   - start_date (DATE)
+   - end_date (DATE)
+   - venue_id (FOREIGN KEY)
+   - status (ENUM: 'setup', 'active', 'completed')
+   - max_players (INT)
+   - entry_fee (DECIMAL)
+   - prize_structure (JSON)
+   - chip_start_amount (INT) -- For chip tournaments
+   - created_at, updated_at
+
+2. PLAYERS TABLE:
+   - player_id (PRIMARY KEY)
+   - name (VARCHAR)
+   - email (VARCHAR)
+   - phone (VARCHAR)
+   - skill_level (INT) -- 1-9 scale
+   - apa_id (VARCHAR) -- If applicable
+   - created_at, updated_at
+
+3. TEAMS TABLE (For Scotch Doubles):
+   - team_id (PRIMARY KEY)
+   - tournament_id (FOREIGN KEY)
+   - player1_id (FOREIGN KEY)
+   - player2_id (FOREIGN KEY)
+   - team_name (VARCHAR)
+   - combined_skill_level (INT)
+   - current_chips (INT) -- For chip tournaments
+   - active (BOOLEAN)
+
+4. MATCHES TABLE:
+   - match_id (PRIMARY KEY)
+   - tournament_id (FOREIGN KEY)
+   - team1_id (FOREIGN KEY)
+   - team2_id (FOREIGN KEY)
+   - table_id (FOREIGN KEY)
+   - round_number (INT)
+   - match_number (INT)
+   - winner_team_id (FOREIGN KEY)
+   - team1_score (INT)
+   - team2_score (INT)
+   - chips_wagered (INT) -- For chip tournaments
+   - match_status (ENUM: 'scheduled', 'in_progress', 'completed')
+   - start_time, end_time
+
+5. TABLES/VENUES TABLE:
+   - table_id (PRIMARY KEY)
+   - venue_id (FOREIGN KEY)
+   - table_number (VARCHAR)
+   - table_type (VARCHAR) -- 9ft, 8ft, etc.
+   - available (BOOLEAN)
+   - features (JSON) -- wheelchair accessible, etc.
+
+6. VENUES TABLE:
+   - venue_id (PRIMARY KEY)
+   - name (VARCHAR)
+   - address (TEXT)
+   - contact_info (JSON)
+   - total_tables (INT)
+   - amenities (JSON)
+
+🚀 KEY FEATURES TO IMPLEMENT
+----------------------------------------
+
+1. TOURNAMENT SETUP:
+   ✅ Tournament type selection (Chip Tournament)
+   ✅ Format selection (Scotch Doubles)
+   ✅ Player registration and management
+   ✅ Team formation (automatic or manual)
+   ✅ Table/venue assignment
+   ✅ Chip starting amount configuration
+
+2. PLAYER MANAGEMENT:
+   ✅ Player registration form
+   ✅ Skill level tracking
+   ✅ Player search and filtering
+   ✅ Team pairing logic (skill balancing)
+
+3. CHIP TOURNAMENT LOGIC:
+   ✅ Starting chip allocation
+   ✅ Chip wagering system
+   ✅ Automatic chip transfer
+   ✅ Elimination when chips = 0
+   ✅ Real-time chip tracking
+
+4. MATCH MANAGEMENT:
+   ✅ Automatic match pairing
+   ✅ Table assignment
+   ✅ Score entry and validation
+   ✅ Real-time bracket updates
+   ✅ Match history tracking
+
+5. USER INTERFACE:
+   ✅ Tournament dashboard
+   ✅ Live bracket display
+   ✅ Player/team standings
+   ✅ Mobile-responsive design
+   ✅ Real-time updates (WebSocket/SSE)
+
+⚡ RECOMMENDED TECHNOLOGY STACK
+----------------------------------------
+
+FRONTEND:
+   - React with TypeScript
+   - Tailwind CSS for styling
+   - React Query for data management
+   - Socket.io client for real-time updates
+
+BACKEND:
+   - Node.js with Express
+   - TypeScript for type safety
+   - Prisma ORM for database management
+   - Socket.io for real-time features
+   - JWT for authentication
+
+DATABASE:
+   - PostgreSQL for production
+   - SQLite for development
+
+DEPLOYMENT:
+   - Vercel or Railway for hosting
+   - Docker for containerization
+   - GitHub Actions for CI/CD
+
+📋 IMMEDIATE NEXT STEPS
+----------------------------------------
+
+1. Set up Next.js project with TypeScript
+2. Design and implement database schema with Prisma
+3. Create basic CRUD operations for tournaments, players, teams
+4. Implement tournament creation wizard
+5. Build chip tournament logic and tracking
+6. Create real-time match management system
+7. Design mobile-responsive tournament dashboard
+
+🎯 UNIQUE VALUE PROPOSITION
+----------------------------------------
+
+Our system will improve on DigitalPool by:
+✅ Fully automated chip tournament rotation
+✅ Real-time chip balance tracking
+✅ Intelligent team pairing algorithms
+✅ Mobile-first design for easy scoring
+✅ Offline capability for venues with poor internet
+✅ Advanced analytics and tournament insights
+
+================================================================================
+Ready to build the best Scotch Doubles Chip tournament system!
+================================================================================

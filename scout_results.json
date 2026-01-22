@@ -1,0 +1,240 @@
+{
+  "settings": {
+    "url": "https://digitalpool.com/tournament-builder/scotch-chipper/edit/settings",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "form_fields": [
+      {
+        "name": "email",
+        "type": "text",
+        "value": "",
+        "options": null,
+        "required": false,
+        "placeholder": "Email"
+      },
+      {
+        "name": "password",
+        "type": "password",
+        "value": null,
+        "options": null,
+        "required": false,
+        "placeholder": "Password"
+      }
+    ],
+    "buttons": [
+      "Upgrade",
+      "",
+      "LOGIN",
+      "SIGN UP",
+      "",
+      "",
+      "Submit"
+    ],
+    "navigation_elements": [],
+    "data_structures": {
+      "forms": [
+        {
+          "action": "",
+          "method": "GET",
+          "field_count": 2
+        }
+      ]
+    }
+  },
+  "players": {
+    "url": "https://digitalpool.com/tournament-builder/scotch-chipper/edit/players",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "form_fields": [
+      {
+        "name": "email",
+        "type": "text",
+        "value": "",
+        "options": null,
+        "required": false,
+        "placeholder": "Email"
+      },
+      {
+        "name": "password",
+        "type": "password",
+        "value": null,
+        "options": null,
+        "required": false,
+        "placeholder": "Password"
+      }
+    ],
+    "buttons": [
+      "Upgrade",
+      "",
+      "LOGIN",
+      "SIGN UP",
+      "",
+      "",
+      "Submit"
+    ],
+    "navigation_elements": [],
+    "data_structures": {
+      "forms": [
+        {
+          "action": "",
+          "method": "GET",
+          "field_count": 2
+        }
+      ]
+    }
+  },
+  "tables": {
+    "url": "https://digitalpool.com/tournament-builder/scotch-chipper/edit/tables",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "form_fields": [
+      {
+        "name": "email",
+        "type": "text",
+        "value": "",
+        "options": null,
+        "required": false,
+        "placeholder": "Email"
+      },
+      {
+        "name": "password",
+        "type": "password",
+        "value": null,
+        "options": null,
+        "required": false,
+        "placeholder": "Password"
+      }
+    ],
+    "buttons": [
+      "Upgrade",
+      "",
+      "LOGIN",
+      "SIGN UP",
+      "",
+      "",
+      "Submit"
+    ],
+    "navigation_elements": [],
+    "data_structures": {
+      "forms": [
+        {
+          "action": "",
+          "method": "GET",
+          "field_count": 2
+        }
+      ]
+    }
+  },
+  "preview": {
+    "url": "https://digitalpool.com/tournament-builder/scotch-chipper/edit/preview",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "form_fields": [
+      {
+        "name": "email",
+        "type": "text",
+        "value": "",
+        "options": null,
+        "required": false,
+        "placeholder": "Email"
+      },
+      {
+        "name": "password",
+        "type": "password",
+        "value": null,
+        "options": null,
+        "required": false,
+        "placeholder": "Password"
+      }
+    ],
+    "buttons": [
+      "Upgrade",
+      "",
+      "LOGIN",
+      "SIGN UP",
+      "",
+      "",
+      "Submit"
+    ],
+    "navigation_elements": [],
+    "data_structures": {
+      "forms": [
+        {
+          "action": "",
+          "method": "GET",
+          "field_count": 2
+        }
+      ]
+    }
+  },
+  "review": {
+    "url": "https://digitalpool.com/tournament-builder/scotch-chipper/edit/review",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "form_fields": [
+      {
+        "name": "email",
+        "type": "text",
+        "value": "",
+        "options": null,
+        "required": false,
+        "placeholder": "Email"
+      },
+      {
+        "name": "password",
+        "type": "password",
+        "value": null,
+        "options": null,
+        "required": false,
+        "placeholder": "Password"
+      }
+    ],
+    "buttons": [
+      "Upgrade",
+      "",
+      "LOGIN",
+      "SIGN UP",
+      "",
+      "",
+      "Submit"
+    ],
+    "navigation_elements": [],
+    "data_structures": {
+      "forms": [
+        {
+          "action": "",
+          "method": "GET",
+          "field_count": 2
+        }
+      ]
+    }
+  },
+  "venue": {
+    "url": "https://digitalpool.com/venues/chip-place-bellows",
+    "title": "Chip Place",
+    "form_fields": [],
+    "buttons": [
+      "Upgrade",
+      "",
+      "LOGIN",
+      "SIGN UP",
+      "",
+      "Add Venue",
+      "",
+      "0 tournaments",
+      "0 leagues"
+    ],
+    "navigation_elements": [],
+    "data_structures": {
+      "tables": [
+        {
+          "headers": [
+            "ID",
+            "Label",
+            "Size",
+            "Make",
+            "Streaming Table",
+            "Wheelchair Access",
+            "Over 21",
+            "Action"
+          ]
+        }
+      ]
+    }
+  }
+}

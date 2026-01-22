@@ -1,0 +1,1706 @@
+{
+  "dashboard": {
+    "url": "https://digitalpool.com/dashboard",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "description": "Dashboard",
+    "screenshot": "final_analysis_dashboard.png",
+    "elements": {
+      "all_inputs": [
+        {
+          "type": "checkbox",
+          "name": null,
+          "id": null,
+          "value": null,
+          "class": [
+            "ant-checkbox-input"
+          ],
+          "placeholder": null,
+          "required": false
+        }
+      ],
+      "all_selects": [],
+      "all_buttons": [
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link",
+            "ant-dropdown-trigger"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Complete your profile",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-lg"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-lg",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "View All",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Advanced stats",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-tabs-nav-more"
+          ],
+          "id": "rc-tabs-1-more",
+          "onclick": null
+        },
+        {
+          "text": "Upgrade plan",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "View add-ons",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "New Tournament",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-tabs-nav-more"
+          ],
+          "id": "rc-tabs-2-more",
+          "onclick": null
+        },
+        {
+          "text": "New League",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-modal-close"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Close",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "View Pricing",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary"
+          ],
+          "id": null,
+          "onclick": null
+        }
+      ],
+      "all_links": [
+        {
+          "text": "",
+          "href": "/",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "/profile",
+          "class": null
+        },
+        {
+          "text": "Complete your profile",
+          "href": "/settings/profile",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://servedbyadbutler.com/redirect.spark?MID=183009&plid=2427912&setID=533945&channelID=16387&CID=890100&banID=521946759&PID=0&textadID=0&tc=1&rnd=8284265359&scheduleID=2346651&adSize=970x90&metadata=%5B%5D&mt=1769067926743256&spr=1&request_uuid=f4724a7a-b67e-4e14-97c4-a2555fefa294&hc=b34ca6ae294257de85a3d7fc314180b83ea55a9e&location=",
+          "class": null
+        },
+        {
+          "text": "Advertise here",
+          "href": "/advertising",
+          "class": null
+        },
+        {
+          "text": "View All",
+          "href": "/notifications",
+          "class": null
+        },
+        {
+          "text": "Advanced stats",
+          "href": "/stats",
+          "class": null
+        },
+        {
+          "text": "Upgrade plan",
+          "href": "/pricing",
+          "class": null
+        },
+        {
+          "text": "View add-ons",
+          "href": "/pricing#add-ons",
+          "class": null
+        },
+        {
+          "text": "New Tournament",
+          "href": "/tournament-builder/new",
+          "class": null
+        },
+        {
+          "text": "New League",
+          "href": "https://leagues.digitalpool.com/setup/new-league",
+          "class": null
+        },
+        {
+          "text": "support@digitalpool.com",
+          "href": "mailto:support@digitalpool.com",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://www.facebook.com/digitalpoolcom",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/digitalpoolcom",
+          "class": null
+        }
+      ]
+    },
+    "keyword_mentions": {
+      "tournament": 4,
+      "player": 4,
+      "team": 1,
+      "match": 4
+    }
+  },
+  "tournament_builder_main": {
+    "url": "https://digitalpool.com/tournament-builder",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "description": "Tournament Builder Main",
+    "screenshot": "final_analysis_tournament-builder.png",
+    "elements": {
+      "all_inputs": [],
+      "all_selects": [],
+      "all_buttons": [
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link",
+            "ant-dropdown-trigger"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Create Tournament",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-lg"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Knowledgebase",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default",
+            "ant-btn-lg"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Video Walkthrough",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost",
+            "ant-btn-lg",
+            "ant-btn-dangerous"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-pagination-item-link"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-pagination-item-link"
+          ],
+          "id": null,
+          "onclick": null
+        }
+      ],
+      "all_links": [
+        {
+          "text": "",
+          "href": "/tournament-builder",
+          "class": null
+        },
+        {
+          "text": "Quickstart Guide",
+          "href": "https://docs.digitalpool.com/tournament-builder-quick-start-guide",
+          "class": null
+        },
+        {
+          "text": "Create Tournament",
+          "href": "/tournament-builder/new",
+          "class": null
+        },
+        {
+          "text": "Video Walkthrough",
+          "href": "https://www.youtube.com/watch?v=C4A8B7uSk5M",
+          "class": null
+        }
+      ]
+    },
+    "keyword_mentions": {
+      "chip": 3,
+      "scotch": 1,
+      "tournament": 8,
+      "player": 2
+    }
+  },
+  "new_tournament_start": {
+    "url": "https://digitalpool.com/tournament-builder/new/type",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "description": "New Tournament Start",
+    "screenshot": "final_analysis_new.png",
+    "elements": {
+      "all_inputs": [],
+      "all_selects": [],
+      "all_buttons": [
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link",
+            "ant-dropdown-trigger"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-circle",
+            "ant-btn-ghost",
+            "ant-btn-lg",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Upgrade plan",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-lg",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Create Free Tournament",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-lg",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        }
+      ],
+      "all_links": [
+        {
+          "text": "",
+          "href": "/tournament-builder",
+          "class": null
+        },
+        {
+          "text": "Upgrade plan",
+          "href": "/pricing",
+          "class": null
+        },
+        {
+          "text": "View all features",
+          "href": "/pricing#compare-plans",
+          "class": null
+        },
+        {
+          "text": "purchase SMS add-on",
+          "href": "/pricing#add-ons",
+          "class": null
+        },
+        {
+          "text": "View all features",
+          "href": "/pricing#compare-plans",
+          "class": null
+        },
+        {
+          "text": "support@digitalpool.com",
+          "href": "mailto:support@digitalpool.com",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://www.facebook.com/digitalpoolcom",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/digitalpoolcom",
+          "class": null
+        }
+      ]
+    },
+    "keyword_mentions": {
+      "chip": 1,
+      "tournament": 12,
+      "player": 6,
+      "match": 2,
+      "score": 1,
+      "table": 1
+    }
+  },
+  "tournament_type_selection": {
+    "url": "https://digitalpool.com/tournament-builder/new/type",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "description": "Tournament Type Selection",
+    "screenshot": "final_analysis_type.png",
+    "elements": {
+      "all_inputs": [],
+      "all_selects": [],
+      "all_buttons": [
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link",
+            "ant-dropdown-trigger"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-circle",
+            "ant-btn-ghost",
+            "ant-btn-lg",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Upgrade plan",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-lg",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Create Free Tournament",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-lg",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        }
+      ],
+      "all_links": [
+        {
+          "text": "",
+          "href": "/tournament-builder",
+          "class": null
+        },
+        {
+          "text": "Upgrade plan",
+          "href": "/pricing",
+          "class": null
+        },
+        {
+          "text": "View all features",
+          "href": "/pricing#compare-plans",
+          "class": null
+        },
+        {
+          "text": "purchase SMS add-on",
+          "href": "/pricing#add-ons",
+          "class": null
+        },
+        {
+          "text": "View all features",
+          "href": "/pricing#compare-plans",
+          "class": null
+        },
+        {
+          "text": "support@digitalpool.com",
+          "href": "mailto:support@digitalpool.com",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://www.facebook.com/digitalpoolcom",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/digitalpoolcom",
+          "class": null
+        }
+      ]
+    },
+    "keyword_mentions": {
+      "chip": 1,
+      "tournament": 12,
+      "player": 6,
+      "match": 2,
+      "score": 1,
+      "table": 1
+    }
+  },
+  "generic_tournament_settings": {
+    "url": "https://digitalpool.com/tournament-builder/new/settings",
+    "title": "DigitalPool - Bridging the gap between player and technology",
+    "description": "Generic Tournament Settings",
+    "screenshot": "final_analysis_settings.png",
+    "elements": {
+      "all_inputs": [
+        {
+          "type": "text",
+          "name": "name",
+          "id": "name",
+          "value": "",
+          "class": [
+            "ant-input",
+            "ant-input-lg"
+          ],
+          "placeholder": "Name",
+          "required": false
+        },
+        {
+          "type": "search",
+          "name": null,
+          "id": "template_id",
+          "value": "",
+          "class": [
+            "ant-select-selection-search-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "is_paid",
+          "id": null,
+          "value": "false",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "is_paid",
+          "id": null,
+          "value": "true",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": null,
+          "name": null,
+          "id": "start_date_time",
+          "value": "",
+          "class": null,
+          "placeholder": "Select date",
+          "required": false
+        },
+        {
+          "type": null,
+          "name": null,
+          "id": "end_date_time",
+          "value": "",
+          "class": null,
+          "placeholder": "Select date",
+          "required": false
+        },
+        {
+          "type": "search",
+          "name": null,
+          "id": "event_id",
+          "value": "",
+          "class": [
+            "ant-select-selection-search-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "search",
+          "name": null,
+          "id": "tour_id",
+          "value": "",
+          "class": [
+            "ant-select-selection-search-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "search",
+          "name": null,
+          "id": "venue_name",
+          "value": "",
+          "class": [
+            "ant-input"
+          ],
+          "placeholder": "Search for a venue",
+          "required": false
+        },
+        {
+          "type": "search",
+          "name": null,
+          "id": "player_type",
+          "value": "",
+          "class": [
+            "ant-select-selection-search-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "search",
+          "name": null,
+          "id": "game_type",
+          "value": "",
+          "class": [
+            "ant-select-selection-search-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "tournament_stage_format",
+          "id": null,
+          "value": "single",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "tournament_stage_format",
+          "id": null,
+          "value": "multi",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "search",
+          "name": null,
+          "id": "tournament_type",
+          "value": "",
+          "class": [
+            "ant-select-selection-search-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "consolidation_finals",
+          "id": null,
+          "value": "true",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "consolidation_finals",
+          "id": null,
+          "value": "false",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "tournament_format",
+          "id": null,
+          "value": "standard",
+          "class": [
+            "ant-radio-button-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "tournament_format",
+          "id": null,
+          "value": "fargo_rated",
+          "class": [
+            "ant-radio-button-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "tournament_format",
+          "id": null,
+          "value": "usapl_fargo_rated",
+          "class": [
+            "ant-radio-button-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "text",
+          "name": "winners_race_to",
+          "id": "winners_race_to",
+          "value": "5",
+          "class": [
+            "ant-input",
+            "ant-input-lg"
+          ],
+          "placeholder": "Winner side match length",
+          "required": false
+        },
+        {
+          "type": "text",
+          "name": "losers_race_to",
+          "id": "losers_race_to",
+          "value": "5",
+          "class": [
+            "ant-input",
+            "ant-input-lg"
+          ],
+          "placeholder": "Losers side match length",
+          "required": false
+        },
+        {
+          "type": "text",
+          "name": "finals_race_to",
+          "id": "finals_race_to",
+          "value": "",
+          "class": [
+            "ant-input",
+            "ant-input-lg"
+          ],
+          "placeholder": "Final match length",
+          "required": false
+        },
+        {
+          "type": "search",
+          "name": null,
+          "id": "max_players",
+          "value": "",
+          "class": [
+            "ant-select-selection-search-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "draw_type",
+          "id": null,
+          "value": "random",
+          "class": [
+            "ant-radio-button-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "draw_type",
+          "id": null,
+          "value": "seeded",
+          "class": [
+            "ant-radio-button-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "draw_type",
+          "id": null,
+          "value": "ordered",
+          "class": [
+            "ant-radio-button-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "autopilot_mode",
+          "id": null,
+          "value": "true",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "autopilot_mode",
+          "id": null,
+          "value": "false",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "use_text_messaging",
+          "id": null,
+          "value": "true",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "use_text_messaging",
+          "id": null,
+          "value": "false",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "is_fargo_reported",
+          "id": null,
+          "value": "true",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "is_fargo_reported",
+          "id": null,
+          "value": "false",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "rsvp_allowed",
+          "id": null,
+          "value": "true",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "rsvp_allowed",
+          "id": null,
+          "value": "false",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "is_public",
+          "id": null,
+          "value": "true",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "radio",
+          "name": "is_public",
+          "id": null,
+          "value": "false",
+          "class": [
+            "ant-radio-input"
+          ],
+          "placeholder": null,
+          "required": false
+        },
+        {
+          "type": "checkbox",
+          "name": "save_as_template",
+          "id": "save_as_template",
+          "value": null,
+          "class": [
+            "ant-checkbox-input"
+          ],
+          "placeholder": null,
+          "required": false
+        }
+      ],
+      "all_selects": [],
+      "all_buttons": [
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link",
+            "ant-dropdown-trigger"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-circle",
+            "ant-btn-ghost",
+            "ant-btn-lg",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-alert-close-icon"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Upgrade",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-sm",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Add Venue",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-lg",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Upgrade",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-sm",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Upgrade",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-sm",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Save and go to step 3",
+          "type": "submit",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-lg"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Clear",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-dashed",
+            "ant-btn-lg"
+          ],
+          "id": null,
+          "onclick": null
+        }
+      ],
+      "all_links": [
+        {
+          "text": "",
+          "href": "/tournament-builder",
+          "class": null
+        },
+        {
+          "text": "Upgrade",
+          "href": "/pricing",
+          "class": null
+        },
+        {
+          "text": "Upgrade",
+          "href": "/pricing",
+          "class": null
+        },
+        {
+          "text": "Upgrade",
+          "href": "/pricing",
+          "class": null
+        },
+        {
+          "text": "support@digitalpool.com",
+          "href": "mailto:support@digitalpool.com",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://www.facebook.com/digitalpoolcom",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/digitalpoolcom",
+          "class": null
+        }
+      ]
+    },
+    "keyword_mentions": {
+      "tournament": 19,
+      "player": 8,
+      "table": 1,
+      "venue": 3
+    }
+  },
+  "venue_example": {
+    "url": "https://digitalpool.com/venues/chip-place-bellows",
+    "title": "Chip Place",
+    "description": "Venue Example",
+    "screenshot": "final_analysis_chip-place-bellows.png",
+    "elements": {
+      "all_inputs": [],
+      "all_selects": [],
+      "all_buttons": [
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link",
+            "ant-dropdown-trigger"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-circle",
+            "ant-btn-ghost",
+            "ant-btn-lg",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Add Venue",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost",
+            "ant-btn-lg",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-tabs-nav-more"
+          ],
+          "id": "rc-tabs-0-more",
+          "onclick": null
+        },
+        {
+          "text": "Edit",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Delete",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "0 tournaments",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "0 leagues",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-link"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Start All Streams",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-primary",
+            "ant-btn-sm"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Stop All Streams",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-default",
+            "ant-btn-sm"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "Add Tables",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        },
+        {
+          "text": "",
+          "type": "button",
+          "class": [
+            "ant-btn",
+            "ant-btn-danger",
+            "ant-btn-background-ghost"
+          ],
+          "id": null,
+          "onclick": null
+        }
+      ],
+      "all_links": [
+        {
+          "text": "",
+          "href": "/",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://servedbyadbutler.com/redirect.spark?MID=183009&plid=2427914&setID=533945&channelID=16387&CID=890101&banID=521946766&PID=0&textadID=0&tc=1&rnd=4076635548&scheduleID=2346653&adSize=970x90&metadata=%5B%5D&mt=1769067972103015&spr=1&request_uuid=9eca402e-f379-46cf-8130-414b44a63644&hc=032a8ffc72d3ff292dfcb42df263e4d960163a48&location=",
+          "class": null
+        },
+        {
+          "text": "Advertise here",
+          "href": "/advertising",
+          "class": null
+        },
+        {
+          "text": "View map",
+          "href": "http://maps.google.com/?q=Chip Place 4500 SW 75th Ave, Bellows, Florida 12345",
+          "class": null
+        },
+        {
+          "text": "Babette Killingsworth",
+          "href": "/babette-killingsworth",
+          "class": null
+        },
+        {
+          "text": "support@digitalpool.com",
+          "href": "mailto:support@digitalpool.com",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://www.facebook.com/digitalpoolcom",
+          "class": null
+        },
+        {
+          "text": "",
+          "href": "https://www.instagram.com/digitalpoolcom",
+          "class": null
+        }
+      ]
+    },
+    "keyword_mentions": {
+      "chip": 3,
+      "tournament": 2,
+      "table": 14,
+      "venue": 6
+    }
+  }
+}

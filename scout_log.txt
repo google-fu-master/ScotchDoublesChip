@@ -1,0 +1,75 @@
+2026-01-22 07:34:55,593 - ERROR - Failed to initialize Chrome/Chromium driver: Message: session not created: Chrome instance exited. Examine ChromeDriver verbose log to determine the cause.
+Stacktrace:
+#0 0x5ab31abd7afa <unknown>
+#1 0x5ab31a5f160f <unknown>
+#2 0x5ab31a62f16d <unknown>
+#3 0x5ab31a629e89 <unknown>
+#4 0x5ab31a67c01e <unknown>
+#5 0x5ab31a67b70c <unknown>
+#6 0x5ab31a638842 <unknown>
+#7 0x5ab31a639631 <unknown>
+#8 0x5ab31ab9d689 <unknown>
+#9 0x5ab31aba0581 <unknown>
+#10 0x5ab31ab89ca9 <unknown>
+#11 0x5ab31aba113e <unknown>
+#12 0x5ab31ab703a0 <unknown>
+#13 0x5ab31abc4fc8 <unknown>
+#14 0x5ab31abc519b <unknown>
+#15 0x5ab31abd6e68 <unknown>
+#16 0x71ed8cb84aa4 <unknown>
+#17 0x71ed8cc11c6c <unknown>
+
+2026-01-22 07:35:21,627 - INFO - Chrome driver initialized successfully
+2026-01-22 07:35:21,642 - INFO - Starting DigitalPool.com scout mission
+2026-01-22 07:35:21,642 - INFO - Starting login process
+2026-01-22 07:35:54,137 - ERROR - Login failed: Message: 
+
+2026-01-22 07:35:54,137 - ERROR - Failed to login, aborting scout mission
+2026-01-22 07:35:54,137 - ERROR - Scout mission failed
+2026-01-22 07:36:40,350 - INFO - Chrome driver initialized successfully
+2026-01-22 07:36:40,361 - INFO - Starting DigitalPool.com scout mission
+2026-01-22 07:36:40,361 - INFO - Starting login process
+2026-01-22 07:36:49,319 - INFO - Current URL: https://digitalpool.com/login
+2026-01-22 07:36:49,323 - INFO - Page title: DigitalPool - Bridging the gap between player and technology
+2026-01-22 07:36:49,332 - INFO - Found 1 email field(s)
+2026-01-22 07:36:53,887 - INFO - Email entered successfully
+2026-01-22 07:36:53,898 - INFO - Found 1 password field(s)
+2026-01-22 07:36:57,534 - INFO - Password entered successfully
+2026-01-22 07:36:57,545 - INFO - Found 1 login button(s)
+2026-01-22 07:37:03,391 - INFO - Login button clicked successfully
+2026-01-22 07:37:07,840 - INFO - URL after login attempt: https://digitalpool.com/login
+2026-01-22 07:37:07,850 - ERROR - Login failed - URL didn't change and no error message found
+2026-01-22 07:37:07,850 - ERROR - Failed to login, aborting scout mission
+2026-01-22 07:37:07,850 - ERROR - Scout mission failed
+2026-01-22 07:38:15,274 - INFO - Chrome driver initialized successfully
+2026-01-22 07:38:15,281 - INFO - Starting DigitalPool.com scout mission
+2026-01-22 07:38:15,282 - INFO - Starting login process
+2026-01-22 07:38:25,108 - INFO - Current URL: https://digitalpool.com/login
+2026-01-22 07:38:25,112 - INFO - Page title: DigitalPool - Bridging the gap between player and technology
+2026-01-22 07:38:25,175 - INFO - Screenshot saved as login_page.png
+2026-01-22 07:38:31,742 - INFO - Found 1 email field(s)
+2026-01-22 07:38:31,770 - INFO - Email field tag: input, id: email, name: email
+2026-01-22 07:38:40,865 - INFO - Email entered successfully
+2026-01-22 07:38:40,875 - INFO - Found 1 password field(s)
+2026-01-22 07:38:40,893 - INFO - Password field tag: input, id: password, name: password
+2026-01-22 07:38:48,621 - INFO - Password entered successfully
+2026-01-22 07:38:48,684 - INFO - Screenshot saved as before_login.png
+2026-01-22 07:38:48,695 - INFO - Found 1 login button(s)
+2026-01-22 07:38:48,711 - INFO - Login button text: 'Submit', tag: button
+2026-01-22 07:38:55,505 - INFO - Login button clicked successfully
+2026-01-22 07:39:05,948 - INFO - URL after login attempt: https://digitalpool.com/login
+2026-01-22 07:39:06,018 - INFO - Screenshot saved as after_login.png
+2026-01-22 07:39:06,101 - INFO - Login appears successful - found dashboard indicators
+2026-01-22 07:39:10,286 - INFO - Analyzing page: https://digitalpool.com/tournament-builder/scotch-chipper/edit/settings
+2026-01-22 07:39:18,654 - INFO - Page analysis complete for https://digitalpool.com/tournament-builder/scotch-chipper/edit/settings
+2026-01-22 07:39:21,884 - INFO - Analyzing page: https://digitalpool.com/tournament-builder/scotch-chipper/edit/players
+2026-01-22 07:39:28,302 - INFO - Page analysis complete for https://digitalpool.com/tournament-builder/scotch-chipper/edit/players
+2026-01-22 07:39:34,257 - INFO - Analyzing page: https://digitalpool.com/tournament-builder/scotch-chipper/edit/tables
+2026-01-22 07:39:41,349 - INFO - Page analysis complete for https://digitalpool.com/tournament-builder/scotch-chipper/edit/tables
+2026-01-22 07:39:47,767 - INFO - Analyzing page: https://digitalpool.com/tournament-builder/scotch-chipper/edit/preview
+2026-01-22 07:39:57,137 - INFO - Page analysis complete for https://digitalpool.com/tournament-builder/scotch-chipper/edit/preview
+2026-01-22 07:40:03,734 - INFO - Analyzing page: https://digitalpool.com/tournament-builder/scotch-chipper/edit/review
+2026-01-22 07:40:11,886 - INFO - Page analysis complete for https://digitalpool.com/tournament-builder/scotch-chipper/edit/review
+2026-01-22 07:40:16,302 - INFO - Analyzing page: https://digitalpool.com/venues/chip-place-bellows
+2026-01-22 07:40:24,986 - INFO - Page analysis complete for https://digitalpool.com/venues/chip-place-bellows
+2026-01-22 07:40:24,988 - INFO - Results saved to scout_results.json and scout_report.txt

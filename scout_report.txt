@@ -1,0 +1,165 @@
+================================================================================
+DIGITALPOOL.COM TOURNAMENT BUILDER SCOUT REPORT
+================================================================================
+
+
+========================================
+PAGE: SETTINGS
+URL: https://digitalpool.com/tournament-builder/scotch-chipper/edit/settings
+TITLE: DigitalPool - Bridging the gap between player and technology
+========================================
+
+FORM FIELDS (2):
+------------------------------
+  • email [text]
+    Placeholder: Email
+  • password [password]
+    Placeholder: Password
+
+BUTTONS (7):
+--------------------
+  • Upgrade
+  • 
+  • LOGIN
+  • SIGN UP
+  • 
+  • 
+  • Submit
+
+DATA STRUCTURES:
+-------------------------
+  • forms: [{'action': '', 'method': 'GET', 'field_count': 2}]
+
+========================================
+PAGE: PLAYERS
+URL: https://digitalpool.com/tournament-builder/scotch-chipper/edit/players
+TITLE: DigitalPool - Bridging the gap between player and technology
+========================================
+
+FORM FIELDS (2):
+------------------------------
+  • email [text]
+    Placeholder: Email
+  • password [password]
+    Placeholder: Password
+
+BUTTONS (7):
+--------------------
+  • Upgrade
+  • 
+  • LOGIN
+  • SIGN UP
+  • 
+  • 
+  • Submit
+
+DATA STRUCTURES:
+-------------------------
+  • forms: [{'action': '', 'method': 'GET', 'field_count': 2}]
+
+========================================
+PAGE: TABLES
+URL: https://digitalpool.com/tournament-builder/scotch-chipper/edit/tables
+TITLE: DigitalPool - Bridging the gap between player and technology
+========================================
+
+FORM FIELDS (2):
+------------------------------
+  • email [text]
+    Placeholder: Email
+  • password [password]
+    Placeholder: Password
+
+BUTTONS (7):
+--------------------
+  • Upgrade
+  • 
+  • LOGIN
+  • SIGN UP
+  • 
+  • 
+  • Submit
+
+DATA STRUCTURES:
+-------------------------
+  • forms: [{'action': '', 'method': 'GET', 'field_count': 2}]
+
+========================================
+PAGE: PREVIEW
+URL: https://digitalpool.com/tournament-builder/scotch-chipper/edit/preview
+TITLE: DigitalPool - Bridging the gap between player and technology
+========================================
+
+FORM FIELDS (2):
+------------------------------
+  • email [text]
+    Placeholder: Email
+  • password [password]
+    Placeholder: Password
+
+BUTTONS (7):
+--------------------
+  • Upgrade
+  • 
+  • LOGIN
+  • SIGN UP
+  • 
+  • 
+  • Submit
+
+DATA STRUCTURES:
+-------------------------
+  • forms: [{'action': '', 'method': 'GET', 'field_count': 2}]
+
+========================================
+PAGE: REVIEW
+URL: https://digitalpool.com/tournament-builder/scotch-chipper/edit/review
+TITLE: DigitalPool - Bridging the gap between player and technology
+========================================
+
+FORM FIELDS (2):
+------------------------------
+  • email [text]
+    Placeholder: Email
+  • password [password]
+    Placeholder: Password
+
+BUTTONS (7):
+--------------------
+  • Upgrade
+  • 
+  • LOGIN
+  • SIGN UP
+  • 
+  • 
+  • Submit
+
+DATA STRUCTURES:
+-------------------------
+  • forms: [{'action': '', 'method': 'GET', 'field_count': 2}]
+
+========================================
+PAGE: VENUE
+URL: https://digitalpool.com/venues/chip-place-bellows
+TITLE: Chip Place
+========================================
+
+BUTTONS (9):
+--------------------
+  • Upgrade
+  • 
+  • LOGIN
+  • SIGN UP
+  • 
+  • Add Venue
+  • 
+  • 0 tournaments
+  • 0 leagues
+
+DATA STRUCTURES:
+-------------------------
+  • tables: [{'headers': ['ID', 'Label', 'Size', 'Make', 'Streaming Table', 'Wheelchair Access', 'Over 21', 'Act...
+
+================================================================================
+END OF SCOUT REPORT
+================================================================================

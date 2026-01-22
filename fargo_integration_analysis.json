@@ -1,0 +1,70 @@
+{
+  "timestamp": 1769068438.1479063,
+  "analysis_type": "fargo_integration",
+  "fargo_integration": {
+    "url": "https://digitalpool.com/tournament-builder/new/edit/players",
+    "fargo_elements": {
+      "texts": [],
+      "buttons": []
+    },
+    "network_requests": [
+      {
+        "timestamp": 1769068460240,
+        "url": "https://api-js.mixpanel.com/engage/?verbose=1&ip=1&_=1769068460149",
+        "status": 200,
+        "method": "GET",
+        "headers": {
+          "access-control-allow-credentials": "true",
+          "access-control-allow-headers": "X-Requested-With, Content-Type",
+          "access-control-allow-methods": "GET, POST, OPTIONS",
+          "access-control-allow-origin": "https://digitalpool.com",
+          "access-control-expose-headers": "X-MP-CE-Backoff",
+          "access-control-max-age": "1728000",
+          "alt-svc": "clear",
+          "cache-control": "no-cache, no-store",
+          "content-length": "25",
+          "content-type": "application/json",
+          "date": "Thu, 22 Jan 2026 07:54:20 GMT",
+          "server": "envoy",
+          "strict-transport-security": "max-age=604800; includeSubDomains",
+          "via": "1.1 google",
+          "x-envoy-upstream-service-time": "26"
+        },
+        "mimeType": "application/json"
+      }
+    ],
+    "page_structure": {}
+  },
+  "fargo_api_research": {
+    "potential_endpoints": [
+      {
+        "url": "https://www.fargoratings.com/api/",
+        "error": "HTTPSConnectionPool(host='www.fargoratings.com', port=443): Max retries exceeded with url: /api/ (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7e23eda58200>: Failed to resolve 'www.fargoratings.com' ([Errno -2] Name or service not known)\"))"
+      },
+      {
+        "url": "https://api.fargoratings.com/",
+        "error": "HTTPSConnectionPool(host='api.fargoratings.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7e23eda58260>: Failed to resolve 'api.fargoratings.com' ([Errno -2] Name or service not known)\"))"
+      },
+      {
+        "url": "https://fargoratings.com/api/",
+        "error": "HTTPSConnectionPool(host='fargoratings.com', port=443): Max retries exceeded with url: /api/ (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7e23eda58b90>: Failed to resolve 'fargoratings.com' ([Errno -2] Name or service not known)\"))"
+      },
+      {
+        "url": "https://www.fargoratings.com/player/search",
+        "error": "HTTPSConnectionPool(host='www.fargoratings.com', port=443): Max retries exceeded with url: /player/search (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7e23eda593a0>: Failed to resolve 'www.fargoratings.com' ([Errno -2] Name or service not known)\"))"
+      },
+      {
+        "url": "https://www.fargoratings.com/players",
+        "error": "HTTPSConnectionPool(host='www.fargoratings.com', port=443): Max retries exceeded with url: /players (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7e23eda59bb0>: Failed to resolve 'www.fargoratings.com' ([Errno -2] Name or service not known)\"))"
+      },
+      {
+        "url": "https://fargoratings.com/search",
+        "error": "HTTPSConnectionPool(host='fargoratings.com', port=443): Max retries exceeded with url: /search (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7e23eda5a480>: Failed to resolve 'fargoratings.com' ([Errno -2] Name or service not known)\"))"
+      }
+    ],
+    "website_analysis": {
+      "error": "HTTPSConnectionPool(host='www.fargoratings.com', port=443): Max retries exceeded with url: / (Caused by NameResolutionError(\"<urllib3.connection.HTTPSConnection object at 0x7e23eda5ac60>: Failed to resolve 'www.fargoratings.com' ([Errno -2] Name or service not known)\"))"
+    },
+    "api_documentation": []
+  }
+}

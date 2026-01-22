@@ -1,0 +1,125 @@
+{
+  "general_exploration": {
+    "https://digitalpool.com/tournament-builder": {
+      "title": "DigitalPool - Bridging the gap between player and technology",
+      "actual_url": "https://digitalpool.com/tournament-builder",
+      "tournament_elements_count": 7,
+      "create_elements_count": 5,
+      "forms_count": 0,
+      "selects_count": 0,
+      "tournament_texts": [
+        "TOURNAMENT BUILDER",
+        "Everything you need to run world-class pool tournaments",
+        "CREATE A NEW TOURNAMENT",
+        "First time running a tournament with Digital Pool? Check out our Quickstart Guide!",
+        "Create Tournament"
+      ],
+      "create_texts": [
+        "",
+        "",
+        "CREATE A NEW TOURNAMENT",
+        "Create Tournament",
+        "Created"
+      ],
+      "chip_elements": [
+        "Scotch Chipper",
+        "Chip",
+        "Chip Place"
+      ],
+      "scotch_elements": [
+        "Scotch Chipper"
+      ],
+      "doubles_elements": [],
+      "screenshot": "discovery_tournament-builder.png"
+    },
+    "https://digitalpool.com/tournament-builder/new": {
+      "title": "DigitalPool - Bridging the gap between player and technology",
+      "actual_url": "https://digitalpool.com/tournament-builder/new/type",
+      "tournament_elements_count": 12,
+      "create_elements_count": 3,
+      "forms_count": 0,
+      "selects_count": 0,
+      "tournament_texts": [
+        "TOURNAMENT SETUP",
+        "Configure your tournament in a few simple steps.",
+        "Tournament Type",
+        "Smart Tournaments",
+        "Unlimited Smart Tournaments up to 256 players (with paid subscription)"
+      ],
+      "create_texts": [
+        "",
+        "",
+        "Create Free Tournament"
+      ],
+      "chip_elements": [
+        "Double elimination, single elimination, round-robin, chip and multi-stage formats"
+      ],
+      "scotch_elements": [],
+      "doubles_elements": [],
+      "screenshot": "discovery_new.png"
+    },
+    "https://digitalpool.com/tournaments/create": {
+      "title": "DigitalPool - Bridging the gap between player and technology",
+      "actual_url": "https://digitalpool.com/tournaments/create",
+      "tournament_elements_count": 1,
+      "create_elements_count": 2,
+      "forms_count": 0,
+      "selects_count": 0,
+      "tournament_texts": [
+        "Tournament not found"
+      ],
+      "create_texts": [
+        "",
+        ""
+      ],
+      "chip_elements": [],
+      "scotch_elements": [],
+      "doubles_elements": [],
+      "screenshot": "discovery_create.png"
+    },
+    "https://digitalpool.com/tournaments/new": {
+      "title": "DigitalPool - Bridging the gap between player and technology",
+      "actual_url": "https://digitalpool.com/tournaments/new",
+      "tournament_elements_count": 1,
+      "create_elements_count": 2,
+      "forms_count": 0,
+      "selects_count": 0,
+      "tournament_texts": [
+        "This tournament is private"
+      ],
+      "create_texts": [
+        "",
+        ""
+      ],
+      "chip_elements": [],
+      "scotch_elements": [],
+      "doubles_elements": [],
+      "screenshot": "discovery_new.png"
+    },
+    "https://digitalpool.com/dashboard": {
+      "title": "DigitalPool - Bridging the gap between player and technology",
+      "actual_url": "https://digitalpool.com/dashboard",
+      "tournament_elements_count": 3,
+      "create_elements_count": 7,
+      "forms_count": 0,
+      "selects_count": 0,
+      "tournament_texts": [
+        "TOURNAMENT STATS",
+        "MY TOURNAMENTS",
+        "New Tournament"
+      ],
+      "create_texts": [
+        "",
+        "",
+        "New Tournament",
+        "New League",
+        "What's new at Digital Pool?"
+      ],
+      "chip_elements": [],
+      "scotch_elements": [],
+      "doubles_elements": [],
+      "screenshot": "discovery_dashboard.png"
+    }
+  },
+  "tournament_builder": {}
+}
