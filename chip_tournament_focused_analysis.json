@@ -1,0 +1,303 @@
+{
+  "tournament_creation_flow": {
+    "creation_path": {
+      "url": "https://digitalpool.com/tournament-builder/new/type",
+      "accessible": true
+    },
+    "form_fields": [],
+    "field_mapping": {},
+    "missing_fields": [
+      {
+        "name": "Name",
+        "type": "Free Text",
+        "required": "Yes",
+        "notes": "The name of the tournament also determines the URL of the tournament. If the name of the tournament changes, the URL should update. For example, in Digital Pool, the URL for this tournament would be https://www.digitalpool.com/tournaments/midway-scotch-chip-1162026\nWe have not decided the domain for this website/app yet, this is just an example."
+      },
+      {
+        "name": "Apply Template",
+        "type": "Dropdown",
+        "required": "No",
+        "notes": "References the list of Tournament Templates the logged in user has saved, if any, to automatically apply the settings to a new tournament being built."
+      },
+      {
+        "name": "Description",
+        "type": "Free Text",
+        "required": "No",
+        "notes": "The description is a free text field for the tournament director to put whatever they want. There should be a character limit of 5000 on this field."
+      },
+      {
+        "name": "Start Date & Time",
+        "type": "Calendar/time selector",
+        "required": "Yes",
+        "notes": "Start Date & Time set before tournament determines when player registration closes. Start Date & Time updates to reflect when the tournament director hits \"Start Tournament\""
+      },
+      {
+        "name": "End Date & Time",
+        "type": "Calendar/time selector",
+        "required": "No",
+        "notes": "End Date & Time updates when the winner is determined and the tournament director confirms the winner and the bracket closes."
+      },
+      {
+        "name": "Venue",
+        "type": "Type and search",
+        "required": "Yes",
+        "notes": "Text typed into this field searches and pulls results from the Venue database and lists them below the field to be selected by mouse click. Once selected, the name of the venue populates in this field automatically. See Venue Build tab."
+      },
+      {
+        "name": "Player Type",
+        "type": "Dropdown",
+        "required": "Yes",
+        "notes": "Options in the dropdown should include \"Singles (1v1)\", \"Doubles (2v2)\", and \"Scotch Doubles (2v2 alternating shot)\" only. This field determines the number of players per tournament - Singles tournaments will have a player cap of the bracket size selected and each entry for the tournament will consist of one player. Doubles and Scotch Doubles tournaments will have a player cap of the bracket size x2 and each entry for the tournament will consist of two players."
+      },
+      {
+        "name": "Game Type",
+        "type": "Dropdown",
+        "required": "Yes",
+        "notes": "Options in the dropdown should include \"Eight Ball\", \"Nine Ball\", and \"Ten Ball\" for now."
+      },
+      {
+        "name": "Tournament Type",
+        "type": "Dropdown",
+        "required": "Yes",
+        "notes": "The only option for now will be \"Chip Tournament\", since the first focus is on getting the Chip tournament piece/rotation of this project working correctly."
+      },
+      {
+        "name": "Race",
+        "type": "Numerical Input Field",
+        "required": "Yes",
+        "notes": "Race is how many games per match to determine the winner/loser.  Numerical dropdown should be 1-10 for now."
+      },
+      {
+        "name": "Estimated Number of Players/Teams",
+        "type": "Numerical Input Field",
+        "required": "Yes",
+        "notes": "For a Chip Tournament, use estimated number of Teams, where a team consists of two separate players."
+      },
+      {
+        "name": "Players Per Table",
+        "type": "Numerical Input Field",
+        "required": "Yes",
+        "notes": "Total number of players that should be at a table during a Scotch Doubles chip tournament is 4; this is the total of two entrants aka two teams.  If the two players of a team need to be bound/given a single unique identifier for the tournament, then the total number of players at a table would be 2."
+      },
+      {
+        "name": "Default Number of Chips Per Player",
+        "type": "Numerical Input Field, with a button to set custom skill level ranges and chips per range",
+        "required": "Yes",
+        "notes": "Number of Chips should be able to be set by ranges of a combined team's Fargo ratings."
+      },
+      {
+        "name": "Bracket Ordering",
+        "type": "Dropdown",
+        "required": "Yes",
+        "notes": "Bracket Ordering determines the inital order of the bracket.  Options should include \"Random draw\" (using the Fisher Yates shuffle algorithm), \"Seeded Draw\" where the highest seeded entrant playes the lowest seeded entrant, second highest plays second lowest, etc., \"Set Order\" where you manually set a seed value for each entrant and this sets the exact order."
+      },
+      {
+        "name": "Autopilot Mode",
+        "type": "Radio Button",
+        "required": "Yes",
+        "notes": "Radio button options are On or Off. For chip tournaments, autopilot mode will automatically assign the next entrant waiting in the queue to an open table waiting for an opponent EXCEPT if that entrant has already played the entrant at that table. If they have, then the next entrant that has not played the entrant at that table will be assigned. At some point all remaining entrants will have played each other at least once so the new rule for assigning entrants to open tables will be entrants that haven't played against twice, etc."
+      },
+      {
+        "name": "Enable Random Player Ordering Each Round",
+        "type": "Radio Button",
+        "required": "Yes",
+        "notes": "Radio button options are On or Off. On allows for players in the bracket to be shuffled in each round.  This does not overwrite the rules around entrants playing each other multiple times as explained in the Autopilot Mode.  If Autopilot Mode is On and this option is Off, Autopilot just round robins entrants as explained in the notes for Autopilot Mode.  If Autopilot Mode is off, and this option is off, entrants are assigned to tables as they become available regardless of if they've played that entrant already or how many times. If Autopilot Mode is On, and this option is On, entrants are shuffled each round in addition to minimizing entrants playing entrants they've already played as much as possible."
+      },
+      {
+        "name": "Rules",
+        "type": "Dropdown",
+        "required": "Yes",
+        "notes": "Options should include BCA, APA, WPA, USAPL, VNEA, and Local. This doesn't change anything about any other part of the tournament it just tells players what rules the tournament is being played under and is used for historical reporting."
+      },
+      {
+        "name": "Rating System",
+        "type": "Dropdown",
+        "required": "Yes",
+        "notes": "Options should include None, Fargo Rate, APA, and In-House. The Player database should include fields for a player's Fargo Rating, and APA 8-Ball rank, APA 9-Ball rank. These values are what should display in parentheses next to the player's name in the bracket if the \"Show player skill levels in bracket\" toggle is set to Yes."
+      },
+      {
+        "name": "Entry Fee",
+        "type": "Free Text with data validation for decimal number values",
+        "required": "No",
+        "notes": "This value will be used for determining the total pot, entry fee is per entrant (for singles, that would be per player, for doubles or scotch doubles, it would be per two players). Total pot is (entry fee x total number of entrants) - Admin Fee + Added Money. The Total Pot is used to determine the payouts, dependent on the number of places (or percentage of the field) being paid out."
+      },
+      {
+        "name": "Admin Fee",
+        "type": "Free Text with data validation for decimal number values",
+        "required": "No",
+        "notes": "This value is subtracted from the Entry Fee. This value cannot be more than the Entry Fee. Total pot is (entry fee x total number of entrants) - Admin Fee + Added Money. The Total Pot is used to determine the payouts, dependent on the number of places (or percentage of the field) being paid out."
+      },
+      {
+        "name": "Added Money",
+        "type": "Free Text with data validation for decimal number values",
+        "required": "No",
+        "notes": "This value is used for determining the total pot.  Added money is a flat amount. Total pot is (entry fee x total number of entrants) - Admin Fee + Added Money. The Total Pot is used to determine the payouts, dependent on the number of places (or percentage of the field) being paid out."
+      },
+      {
+        "name": "Payout Type",
+        "type": "Radio Button",
+        "required": "No",
+        "notes": "Options should be \"Places\" and \"Percentage\""
+      },
+      {
+        "name": "Payout Structure (Places Type)",
+        "type": "Dropdown",
+        "required": "No",
+        "notes": "If \"Places\" was chosen as the Payout Type, this dropdown should apply/populate. The options shoud be Custom, Winner Take All (1-4 entries), Top 2 Places (5-8 entries), Top 3 Places (9-16 entries), Top 4 Places (17-24 entries), Top 6 Places (25-31 entries), Top 8 Places (32-64 entries). This will be used to automatically build the Payout Structure of the tournament based on pre-set percentages of the Total Pot to be determined later."
+      },
+      {
+        "name": "Payout Structure (Percentage Type)",
+        "type": "Dropdown",
+        "required": "No",
+        "notes": "If \"Percentage\" was chosen as the Payout Type, this dropdown should apply/populate. The options should be Custom, 10%, 15%, 20%, 25%, 30%, 35%, 40%, 45%, and 50% where the percentage chosen is how many places, rounded to the nearest whole number, is the number of entrants that will be paid out. This will be used to automatically build the Payout Strucutre of the tournament based on pre-set percentages of the Total Pot to be determined later."
+      },
+      {
+        "name": "Show player skill levels in bracket",
+        "type": "Radio button",
+        "required": "Yes",
+        "notes": "Options should be Yes and No. Toggles the visibility of the players' ratings"
+      },
+      {
+        "name": "Side Pots",
+        "type": "Button that opens the Side Pot Build fields/menus.",
+        "required": "No",
+        "notes": "See Side Pots Build tab. Up to 10 Side Pots can be added to a tournament."
+      },
+      {
+        "name": "Access",
+        "type": "Radio Button",
+        "required": "Yes",
+        "notes": "Options should be Public or Private. Public - Anyone can view the tournament and request to join. Private, only users who have been sent an invite can view or join the tournament."
+      },
+      {
+        "name": "Save As Template",
+        "type": "Checkbox",
+        "required": "No",
+        "notes": "Saves tournament settings as a template to be used in the \"Apply Tournament Template\" setting; Should templates should be accessible, editable after they've been created/saved, deletable, and saving a template with the same name as another template should offer to overwrite the existing template or allow the user to cancel and change the name of the new template they're trying to save."
+      }
+    ],
+    "field_gaps": {},
+    "chip_support": {
+      "chip": true,
+      "chips": false,
+      "scotch doubles": false,
+      "autopilot": true,
+      "fargo": true
+    }
+  },
+  "chip_tournament_support": {
+    "chip_settings": {
+      "chip": true,
+      "chips": false,
+      "chip tournament": false,
+      "default number of chips": false,
+      "chips per player": false,
+      "skill level ranges": false,
+      "fargo rating": false
+    },
+    "fargo_integration": {
+      "found_references": 1,
+      "references": [
+        "Run Fargo Rated tournaments (hot, medium, mild column)"
+      ]
+    },
+    "autopilot_mode": {
+      "found_references": 1
+    },
+    "scotch_doubles": {
+      "found_references": 0
+    }
+  },
+  "fargo_integration": {},
+  "autopilot_features": {},
+  "venue_integration": {
+    "venue_search": {
+      "fields_found": 0
+    },
+    "venue_database": {},
+    "search_functionality": {}
+  },
+  "payout_system": {
+    "entry_fee": {
+      "found": false
+    },
+    "admin_fee": {
+      "found": false
+    },
+    "added_money": {
+      "found": false
+    },
+    "payout_structure": {},
+    "calculations": {},
+    "error": "'payout'"
+  },
+  "bracket_ordering": {},
+  "template_system": {},
+  "gaps_and_improvements": {
+    "missing_features": [],
+    "improvement_opportunities": [],
+    "chip_tournament_gaps": [
+      {
+        "feature": "Default Number of Chips Per Player",
+        "status": "missing_from_digitalpool",
+        "priority": "high"
+      },
+      {
+        "feature": "Autopilot Mode",
+        "status": "missing_from_digitalpool",
+        "priority": "high"
+      },
+      {
+        "feature": "Enable Random Player Ordering Each Round",
+        "status": "missing_from_digitalpool",
+        "priority": "high"
+      },
+      {
+        "feature": "Players Per Table",
+        "status": "missing_from_digitalpool",
+        "priority": "high"
+      }
+    ],
+    "implementation_priorities": [
+      {
+        "feature": "Chip Management System",
+        "priority": 1,
+        "reason": "Core differentiator for chip tournaments"
+      },
+      {
+        "feature": "Fargo Rating Integration",
+        "priority": 2,
+        "reason": "Essential for skill-based chip distribution"
+      },
+      {
+        "feature": "Autopilot Mode",
+        "priority": 3,
+        "reason": "Unique automation feature for chip tournaments"
+      },
+      {
+        "feature": "Scotch Doubles Specialization",
+        "priority": 4,
+        "reason": "Specific format optimization"
+      }
+    ]
+  },
+  "advanced_features": {
+    "templates": {
+      "found_references": 0
+    },
+    "bracket_ordering": {
+      "random": false,
+      "seed": false,
+      "order": true,
+      "bracket": false
+    },
+    "access_controls": {
+      "public": false,
+      "private": false,
+      "access": false
+    },
+    "side_pots": {
+      "found_references": 1
+    }
+  }
+}

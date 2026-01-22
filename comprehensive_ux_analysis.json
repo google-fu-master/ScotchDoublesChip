@@ -1,0 +1,158 @@
+{
+  "authentication": {
+    "login_page": {
+      "form_fields": [
+        {
+          "name": "email",
+          "type": "text",
+          "placeholder": "Email",
+          "required": false
+        },
+        {
+          "name": "password",
+          "type": "password",
+          "placeholder": "Password",
+          "required": false
+        }
+      ]
+    },
+    "registration_flow": {
+      "signup_link": {
+        "href": "/register",
+        "text": "Sign Up Free"
+      }
+    },
+    "user_roles": {},
+    "password_reset": {},
+    "profile_management": {}
+  },
+  "tournament_director_ux": {
+    "dashboard": {
+      "tournament_actions": [
+        {
+          "text": "New Tournament",
+          "type": "button",
+          "href": null,
+          "class": [
+            "ant-btn",
+            "ant-btn-default"
+          ]
+        },
+        {
+          "text": "New Tournament",
+          "type": "a",
+          "href": "/tournament-builder/new",
+          "class": null
+        }
+      ],
+      "metrics": []
+    },
+    "tournament_creation": {},
+    "live_tournament_management": {},
+    "player_management": {},
+    "reporting_analytics": {}
+  },
+  "player_ux": {
+    "player_dashboard": {},
+    "tournament_registration": {},
+    "live_tournament_view": {},
+    "mobile_experience": {
+      "mobile_nav": false,
+      "viewport": "mobile optimized"
+    },
+    "notifications": {}
+  },
+  "public_viewing": {
+    "public_brackets": {
+      "/tournaments": {
+        "accessible": true,
+        "title": "DigitalPool - Bridging the gap between player and technology",
+        "live_indicators": 18,
+        "display_elements": {
+          "tables": 0,
+          "svg_graphics": 93,
+          "canvas_graphics": 0
+        }
+      },
+      "/brackets": {
+        "accessible": true,
+        "title": "DigitalPool - Bridging the gap between player and technology",
+        "live_indicators": 11,
+        "display_elements": {
+          "tables": 0,
+          "svg_graphics": 2,
+          "canvas_graphics": 0
+        }
+      },
+      "/live": {
+        "accessible": true,
+        "title": "DigitalPool - Bridging the gap between player and technology",
+        "live_indicators": 12,
+        "display_elements": {
+          "tables": 0,
+          "svg_graphics": 2,
+          "canvas_graphics": 0
+        }
+      },
+      "/public": {
+        "accessible": true,
+        "title": "DigitalPool - Bridging the gap between player and technology",
+        "live_indicators": 11,
+        "display_elements": {
+          "tables": 0,
+          "svg_graphics": 2,
+          "canvas_graphics": 0
+        }
+      }
+    },
+    "live_updates": {},
+    "casting_display": {
+      "bracket_links": [
+        {
+          "href": "/notifications",
+          "text": "View All"
+        },
+        {
+          "href": "/pricing#add-ons",
+          "text": "View add-ons"
+        }
+      ]
+    },
+    "tournament_discovery": {}
+  },
+  "mobile_experience": {
+    "responsive_design": {
+      "viewport_meta": true
+    },
+    "touch_interactions": {
+      "/dashboard": {
+        "total_buttons": 13,
+        "touch_optimized": 0
+      },
+      "/tournaments": {
+        "total_buttons": 8,
+        "touch_optimized": 0
+      },
+      "/tournament-builder": {
+        "total_buttons": 12,
+        "touch_optimized": 0
+      }
+    },
+    "mobile_navigation": {},
+    "score_entry_mobile": {}
+  },
+  "real_time_features": {
+    "websocket_connections": {
+      "found": false
+    },
+    "auto_refresh": {
+      "meta_refresh": false
+    },
+    "live_scoring": {
+      "ui_elements": 0
+    },
+    "push_notifications": {}
+  },
+  "bracket_displays": {},
+  "user_roles": {}
+}
