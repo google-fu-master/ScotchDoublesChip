@@ -1,0 +1,158 @@
+// Game and match models - flexible for different game types
+model Match {
+  id           String @id @default(cuid())
+  tournamentId String
+  
+  // Match identification
+  round        Int?
+  bracket      String?  // For elimination tournaments
+  matchNumber  Int?
+  
+  // Teams/Players
+  homeTeamId   String?
+  awayTeamId   String?
+  
+  // Match configuration
+  format       MatchFormat
+  bestOf       Int?     // Best of X games/sets
+  
+  // Status and timing
+  status       MatchStatus @default(SCHEDULED)
+  scheduledAt  DateTime?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  
+  // Results
+  homeScore    Int @default(0)
+  awayScore    Int @default(0)
+  winnerId     String? // Team or player ID
+  
+  // Metadata
+  notes        String?
+  settings     Json?   // Match-specific settings
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  homeTeam     Team? @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam     Team? @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  games        Game[]
+
+  @@map("matches")
+}
+
+model Game {
+  id           String @id @default(cuid())
+  tournamentId String
+  matchId      String?
+  
+  // Game identification
+  gameNumber   Int
+  gameType     String  // Pool, darts, etc.
+  
+  // Status and timing
+  status       GameStatus @default(NOT_STARTED)
+  startedAt    DateTime?
+  completedAt  DateTime?
+  
+  // Results and scoring
+  winnerId     String? // Player or team ID
+  
+  // Game-specific data
+  gameData     Json    // Flexible storage for game-specific information
+  
+  // Metadata
+  notes        String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  match        Match? @relation(fields: [matchId], references: [id])
+  results      GameResult[]
+
+  @@map("games")
+}
+
+model GameResult {
+  id              String @id @default(cuid())
+  gameId          String
+  playerProfileId String
+  
+  // Scoring data
+  score           Int?
+  chips           Int?      // For chip tournaments
+  performance     Json?     // Detailed performance metrics
+  
+  // Position and ranking
+  position        Int?      // Finishing position in this game
+  
+  // Metadata
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relationships
+  game            Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  playerProfile   PlayerProfile @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, playerProfileId])
+  @@map("game_results")
+}
+
+// Chip transaction model for chip tournaments
+model ChipTransaction {
+  id              String @id @default(cuid())
+  tournamentId    String
+  playerProfileId String?
+  gameId          String?
+  
+  // Transaction details
+  type            ChipTransactionType
+  amount          Int
+  reason          String?
+  description     String?
+  
+  // Balance tracking
+  balanceAfter    Int
+  
+  // Metadata
+  createdAt       DateTime @default(now())
+  createdBy       String? // User who created the transaction
+
+  // Relationships
+  tournament      Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  playerProfile   PlayerProfile? @relation(fields: [playerProfileId], references: [id])
+
+  @@map("chip_transactions")
+}
+
+// Enums for games and matches
+enum MatchFormat {
+  SINGLE_GAME
+  BEST_OF_SERIES
+  RACE_TO
+  TIME_LIMIT
+}
+
+enum MatchStatus {
+  SCHEDULED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  POSTPONED
+}
+
+enum GameStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ChipTransactionType {
+  AWARD      // Chips awarded for performance
+  PENALTY    // Chips deducted for violations
+  ADJUSTMENT // Manual adjustment
+  PRIZE      // Prize distribution
+}

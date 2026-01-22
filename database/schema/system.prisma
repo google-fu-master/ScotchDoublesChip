@@ -1,0 +1,102 @@
+// System models for audit, notifications, and administration
+model AuditLog {
+  id           String @id @default(cuid())
+  
+  // Event identification
+  entityType   String   // Table/model name
+  entityId     String   // Record ID
+  action       AuditAction
+  
+  // Change tracking
+  oldValues    Json?
+  newValues    Json?
+  
+  // Context
+  userId       String?
+  sessionId    String?
+  ipAddress    String?
+  userAgent    String?
+  
+  // Metadata
+  timestamp    DateTime @default(now())
+  
+  @@map("audit_logs")
+}
+
+model Notification {
+  id           String @id @default(cuid())
+  
+  // Recipient
+  userId       String?
+  email        String?
+  
+  // Content
+  type         NotificationType
+  title        String
+  message      String
+  data         Json?    // Additional notification data
+  
+  // Delivery
+  channel      NotificationChannel
+  status       NotificationStatus @default(PENDING)
+  sentAt       DateTime?
+  readAt       DateTime?
+  
+  // Metadata
+  createdAt    DateTime @default(now())
+  
+  @@map("notifications")
+}
+
+model SystemConfig {
+  id          String @id @default(cuid())
+  key         String @unique
+  value       String
+  type        ConfigType
+  description String?
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+
+  @@map("system_config")
+}
+
+// Enums for system functionality
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+}
+
+enum NotificationType {
+  TOURNAMENT_REMINDER
+  MATCH_STARTING
+  RESULT_UPDATE
+  REGISTRATION_CONFIRMATION
+  SYSTEM_ALERT
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum ConfigType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+}

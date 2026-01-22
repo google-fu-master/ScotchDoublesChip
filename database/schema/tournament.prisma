@@ -1,0 +1,147 @@
+// Tournament models - designed for multiple tournament formats
+model Tournament {
+  id             String          @id @default(cuid())
+  name           String
+  description    String?
+  organizationId String
+  
+  // Flexible tournament type system
+  tournamentType TournamentType  @default(CHIP)
+  format         TournamentFormat
+  status         TournamentStatus @default(SETUP)
+  
+  // Configurable settings per tournament type
+  settings       Json            // Tournament-specific configuration
+  rules          Json?           // Tournament rules and regulations
+  
+  // Scheduling
+  startDate      DateTime?
+  endDate        DateTime?
+  registrationOpenDate  DateTime?
+  registrationCloseDate DateTime?
+  
+  // Limits and constraints
+  maxPlayers     Int?
+  minPlayers     Int?
+  entryFee       Decimal?
+  
+  // Metadata
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String
+
+  // Relationships
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  playerProfiles PlayerProfile[]
+  teams          Team[]
+  matches        Match[]
+  games          Game[]
+  chipTransactions ChipTransaction[]
+
+  @@map("tournaments")
+}
+
+model PlayerProfile {
+  id           String @id @default(cuid())
+  tournamentId String
+  userId       String
+  
+  // Player tournament-specific data
+  displayName  String
+  skillLevel   String?
+  handicap     Int?
+  
+  // Registration and status
+  registrationStatus PlayerRegistrationStatus @default(PENDING)
+  registeredAt       DateTime @default(now())
+  checkedInAt        DateTime?
+  
+  // Tournament-specific settings
+  settings     Json?  // Player preferences for this tournament
+  
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  teamMemberships TeamMember[]
+  gameResults  GameResult[]
+
+  @@unique([tournamentId, userId])
+  @@map("player_profiles")
+}
+
+model Team {
+  id           String @id @default(cuid())
+  tournamentId String
+  name         String
+  
+  // Team status and metadata
+  status       TeamStatus @default(ACTIVE)
+  seed         Int?       // Tournament seeding
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  members      TeamMember[]
+  homeMatches  Match[] @relation("HomeTeam")
+  awayMatches  Match[] @relation("AwayTeam")
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id              String @id @default(cuid())
+  teamId          String
+  playerProfileId String
+  position        String? // For position-specific sports/games
+  isActive        Boolean @default(true)
+  joinedAt        DateTime @default(now())
+
+  // Relationships
+  team          Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  playerProfile PlayerProfile @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, playerProfileId])
+  @@map("team_members")
+}
+
+// Enums for tournament configuration
+enum TournamentType {
+  CHIP        // Chip accumulation tournament
+  ELIMINATION // Single/Double elimination
+  ROUND_ROBIN // Round robin format
+  SWISS       // Swiss system
+  LADDER      // Ladder tournament
+  CUSTOM      // Custom format
+}
+
+enum TournamentFormat {
+  SINGLES
+  DOUBLES
+  SCOTCH_DOUBLES
+  TEAMS
+}
+
+enum TournamentStatus {
+  SETUP
+  REGISTRATION_OPEN
+  REGISTRATION_CLOSED
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum PlayerRegistrationStatus {
+  PENDING
+  CONFIRMED
+  WAITLISTED
+  DECLINED
+  CANCELLED
+}
+
+enum TeamStatus {
+  ACTIVE
+  ELIMINATED
+  WITHDRAWN
+}

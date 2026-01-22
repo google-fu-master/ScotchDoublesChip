@@ -1,0 +1,527 @@
+// Prisma Schema for Scotch Doubles Chip Tournament System
+// Pool hall tournament management - corrected based on real requirements
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../../node_modules/@prisma/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Core models for tournament management
+model Player {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  phone     String?
+  
+  // Birthday chip tracking (month/day only, no year)
+  birthdayMonth     Int? // 1-12
+  birthdayDay       Int? // 1-31
+  lastBirthdayChip  DateTime? // When they last received a birthday chip
+  
+  // Player preferences and settings
+  settings  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relationships
+  tournamentProfiles PlayerProfile[]
+  directorRoles     TournamentDirector[]
+
+  @@map("players")
+}
+
+// Venue management for pool halls
+model Venue {
+  id          String   @id @default(cuid())
+  name        String
+  address     String?
+  phone       String?
+  email       String?
+  
+  // Table management
+  totalTables Int
+  settings    Json? // Operating hours, rules, etc.
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relationships
+  tournaments Tournament[]
+  tables      Table[]
+
+  @@map("venues")
+}
+
+model Table {
+  id        String @id @default(cuid())
+  venueId   String
+  number    String // Table identifier (1, 2, "Bar Table", etc.)
+  isActive  Boolean @default(true)
+  
+  // Table status
+  status    TableStatus @default(AVAILABLE)
+  settings  Json? // Table-specific settings
+  
+  // Relationships
+  venue     Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  games     Game[]
+
+  @@unique([venueId, number])
+  @@map("tables")
+}
+
+enum TableStatus {
+  AVAILABLE
+  IN_USE
+  OUT_OF_ORDER
+  RESERVED
+}
+
+// Tournament management with proper roles
+model Tournament {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  venueId     String
+  
+  // Tournament configuration
+  tournamentType TournamentType  @default(CHIP)
+  format         TournamentFormat @default(SCOTCH_DOUBLES)
+  status         TournamentStatus @default(SETUP)
+  
+  // Chip tournament settings
+  settings       Json            // Tournament-specific configuration
+  rules          Json?           // Tournament rules
+  
+  // Scheduling
+  startDate      DateTime?
+  endDate        DateTime?
+  registrationOpenDate  DateTime?
+  registrationCloseDate DateTime?
+  
+  // Registration limits
+  maxTeams       Int?
+  minTeams       Int?
+  entryFee       Decimal?
+  
+  // Chip configuration
+  startingChips  Int @default(3) // Chips per team at registration
+  
+  // Metadata
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relationships
+  venue          Venue @relation(fields: [venueId], references: [id])
+  directors      TournamentDirector[]
+  playerProfiles PlayerProfile[]
+  teams          Team[]
+  games          Game[]
+  chipTransactions ChipTransaction[]
+  payouts        Payout[]
+  sidePots       SidePot[]
+
+  @@map("tournaments")
+}
+
+model TournamentDirector {
+  id           String @id @default(cuid())
+  tournamentId String
+  playerId     String
+  role         DirectorRole
+  createdAt    DateTime @default(now())
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  player       Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, playerId])
+  @@map("tournament_directors")
+}
+
+model PlayerProfile {
+  id           String @id @default(cuid())
+  tournamentId String
+  playerId     String
+  
+  // Tournament-specific player data
+  displayName  String
+  skillLevel   String?
+  handicap     Int? // For future use
+  
+  // Registration status
+  registrationStatus PlayerRegistrationStatus @default(PENDING)
+  registeredAt       DateTime @default(now())
+  checkedInAt        DateTime?
+  
+  // Birthday chip tracking
+  receivedBirthdayChip Boolean @default(false)
+  birthdayChipDate     DateTime?
+  
+  // Settings for this tournament
+  settings     Json?
+  
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  player       Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  teamMemberships TeamMember[]
+  gameResults  GameResult[]
+  chipTransactions ChipTransaction[]
+
+  @@unique([tournamentId, playerId])
+  @@map("player_profiles")
+}
+
+model Team {
+  id           String @id @default(cuid())
+  tournamentId String
+  name         String
+  
+  // Team status and chip tracking
+  status       TeamStatus @default(ACTIVE)
+  currentChips Int @default(0) // Current chip count
+  totalChipsWon Int @default(0) // Total chips won throughout tournament
+  totalChipsLost Int @default(0) // Total chips lost
+  
+  // Team metadata
+  seed         Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  members      TeamMember[]
+  gamesAsWinner Game[] @relation("WinningTeam")
+  gamesAsLoser  Game[] @relation("LosingTeam")
+  chipTransactions ChipTransaction[] // Team chip tracking
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id              String @id @default(cuid())
+  teamId          String
+  playerProfileId String
+  position        String? // "Player 1", "Player 2" for Scotch Doubles
+  isActive        Boolean @default(true)
+  joinedAt        DateTime @default(now())
+
+  // Relationships
+  team          Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  playerProfile PlayerProfile @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, playerProfileId])
+  @@map("team_members")
+}
+
+model Game {
+  id           String @id @default(cuid())
+  tournamentId String
+  tableId      String?
+  
+  // Game identification
+  gameNumber   Int
+  round        Int?
+  gameType     String @default("pool") // Pool, darts, etc.
+  
+  // Teams involved (no home/away concept)
+  winningTeamId String?
+  losingTeamId  String?
+  
+  // Game status and timing
+  status       GameStatus @default(NOT_STARTED)
+  startedAt    DateTime?
+  completedAt  DateTime?
+  
+  // Game results
+  winnerStays  Boolean @default(true) // Winner stays at table
+  chipsAwarded Int @default(1) // Chips awarded to winner
+  
+  // Game-specific data
+  gameData     Json? // Rack info, break player, etc.
+  notes        String?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  table        Table? @relation(fields: [tableId], references: [id])
+  winningTeam  Team? @relation("WinningTeam", fields: [winningTeamId], references: [id])
+  losingTeam   Team? @relation("LosingTeam", fields: [losingTeamId], references: [id])
+  results      GameResult[]
+  chipTransactions ChipTransaction[] // Chip transactions from this game
+
+  @@map("games")
+}
+
+model GameResult {
+  id              String @id @default(cuid())
+  gameId          String
+  playerProfileId String
+  
+  // Individual player performance in the game
+  score           Int? // Individual score if applicable
+  performance     Json? // Detailed performance metrics
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relationships
+  game            Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  playerProfile   PlayerProfile @relation(fields: [playerProfileId], references: [id], onDelete: Cascade)
+
+  @@unique([gameId, playerProfileId])
+  @@map("game_results")
+}
+
+// Chip transactions for team chip tracking
+model ChipTransaction {
+  id              String @id @default(cuid())
+  tournamentId    String
+  playerProfileId String?
+  teamId          String? // Team chips belong to
+  gameId          String?
+  
+  // Transaction details
+  type            ChipTransactionType
+  amount          Int // Positive for awards, negative for losses
+  reason          String?
+  description     String?
+  
+  // Context
+  createdAt       DateTime @default(now())
+  createdBy       String? // Player/director who created
+
+  // Relationships
+  tournament      Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  playerProfile   PlayerProfile? @relation(fields: [playerProfileId], references: [id])
+  team            Team? @relation(fields: [teamId], references: [id]) // Team relationship
+  game            Game? @relation(fields: [gameId], references: [id]) // Game context
+
+  @@map("chip_transactions")
+}
+
+// Payout structure for tournaments
+model Payout {
+  id           String @id @default(cuid())
+  tournamentId String
+  
+  // Payout details
+  position     Int // 1st, 2nd, 3rd, etc.
+  amount       Decimal
+  percentage   Decimal? // Percentage of total pot
+  description  String? // "1st Place", "Runner-up", etc.
+  
+  // Payout status
+  isPaid       Boolean @default(false)
+  paidAt       DateTime?
+  paidTo       String? // Team or player ID
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@map("payouts")
+}
+
+// Side pots for additional betting/prizes
+model SidePot {
+  id           String @id @default(cuid())
+  tournamentId String
+  
+  // Side pot details
+  name         String // "Break and Run", "High Run", etc.
+  description  String?
+  amount       Decimal
+  entryFee     Decimal?
+  
+  // Qualification criteria
+  criteria     Json // Flexible criteria definition
+  
+  // Status
+  isActive     Boolean @default(true)
+  winnerId     String? // Winner team or player ID
+  paidAt       DateTime?
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@map("side_pots")
+}
+
+// System models for audit, notifications, and administration
+model AuditLog {
+  id           String @id @default(cuid())
+  
+  // Event identification
+  entityType   String   // Table/model name
+  entityId     String   // Record ID
+  action       AuditAction
+  
+  // Change tracking
+  oldValues    Json?
+  newValues    Json?
+  
+  // Context
+  userId       String?
+  sessionId    String?
+  ipAddress    String?
+  userAgent    String?
+  
+  // Metadata
+  timestamp    DateTime @default(now())
+  
+  @@map("audit_logs")
+}
+
+model Notification {
+  id           String @id @default(cuid())
+  
+  // Recipient
+  userId       String?
+  email        String?
+  
+  // Content
+  type         NotificationType
+  title        String
+  message      String
+  data         Json?    // Additional notification data
+  
+  // Delivery
+  channel      NotificationChannel
+  status       NotificationStatus @default(PENDING)
+  sentAt       DateTime?
+  readAt       DateTime?
+  
+  // Metadata
+  createdAt    DateTime @default(now())
+  
+  @@map("notifications")
+}
+
+model SystemConfig {
+  id          String @id @default(cuid())
+  key         String @unique
+  value       String
+  type        ConfigType
+  description String?
+  updatedAt   DateTime @updatedAt
+  updatedBy   String?
+
+  @@map("system_config")
+}
+
+// Updated enum definitions for pool hall tournaments
+enum DirectorRole {
+  TOURNAMENT_DIRECTOR
+  TOURNAMENT_MANAGER
+  ADMIN
+  VIEWER
+}
+
+enum TournamentType {
+  CHIP        // Chip accumulation tournament
+  ELIMINATION // Single/Double elimination  
+  ROUND_ROBIN // Round robin format
+  SWISS       // Swiss system
+  CUSTOM      // Custom format
+}
+
+enum TournamentFormat {
+  SINGLES
+  DOUBLES
+  SCOTCH_DOUBLES
+  TEAMS
+}
+
+enum TournamentStatus {
+  SETUP
+  REGISTRATION_OPEN
+  REGISTRATION_CLOSED
+  IN_PROGRESS
+  PAUSED
+  COMPLETED
+  CANCELLED
+}
+
+enum PlayerRegistrationStatus {
+  PENDING
+  CONFIRMED
+  WAITLISTED
+  DECLINED
+  CANCELLED
+}
+
+enum TeamStatus {
+  ACTIVE
+  ELIMINATED
+  WITHDRAWN
+}
+
+enum GameStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum ChipTransactionType {
+  INITIAL_CHIPS    // Chips given at team registration
+  GAME_WIN        // Chips won from game victory
+  GAME_LOSS       // Chips lost from game defeat  
+  BIRTHDAY_CHIP   // Special birthday chip award
+  ADJUSTMENT      // Manual adjustment
+  PRIZE          // Prize distribution
+}
+
+enum AuditAction {
+  CREATE
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+}
+
+enum NotificationType {
+  TOURNAMENT_REMINDER
+  MATCH_STARTING
+  RESULT_UPDATE
+  REGISTRATION_CONFIRMATION
+  SYSTEM_ALERT
+}
+
+enum NotificationChannel {
+  EMAIL
+  SMS
+  PUSH
+  IN_APP
+}
+
+enum NotificationStatus {
+  PENDING
+  SENT
+  DELIVERED
+  READ
+  FAILED
+}
+
+enum ConfigType {
+  STRING
+  NUMBER
+  BOOLEAN
+  JSON
+}
