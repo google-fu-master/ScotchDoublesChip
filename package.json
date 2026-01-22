@@ -1,0 +1,99 @@
+{
+  "name": "scotch-doubles-chip-tournament",
+  "version": "1.0.0",
+  "description": "Comprehensive tournament management system for chip tournaments",
+  "private": true,
+  "workspaces": [
+    "apps/tournament-director/web",
+    "apps/player/web",
+    "apps/public",
+    "shared/*"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:td\" \"npm run dev:player\" \"npm run dev:public\"",
+    "dev:td": "cd apps/tournament-director/web && npm run dev",
+    "dev:player": "cd apps/player/web && npm run dev",
+    "dev:public": "cd apps/public && npm run dev",
+    
+    "build": "npm run build:shared && npm run build:apps",
+    "build:shared": "npm run build --workspaces --if-present",
+    "build:apps": "concurrently \"npm run build:td\" \"npm run build:player\" \"npm run build:public\"",
+    "build:td": "cd apps/tournament-director/web && npm run build",
+    "build:player": "cd apps/player/web && npm run build",
+    "build:public": "cd apps/public && npm run build",
+    "build:check": "npm run build",
+    "build:all": "npm run build",
+    
+    "test": "jest",
+    "test:unit": "jest --testPathPattern=tests/unit",
+    "test:integration": "jest --testPathPattern=tests/integration",
+    "test:e2e": "playwright test",
+    "test:all": "npm run test:unit && npm run test:integration && npm run test:e2e",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    
+    "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    
+    "db:generate": "prisma generate",
+    "db:migrate:dev": "prisma migrate dev",
+    "db:migrate:staging": "prisma migrate deploy",
+    "db:migrate:production": "prisma migrate deploy",
+    "db:migrate:test": "DATABASE_URL=$TEST_DATABASE_URL prisma migrate deploy",
+    "db:migrate:rollback:test": "DATABASE_URL=$TEST_DATABASE_URL prisma migrate reset --force",
+    "db:seed:dev": "tsx database/seeds/development.ts",
+    "db:seed:staging": "tsx database/seeds/staging.ts",
+    "db:reset:dev": "prisma migrate reset --force && npm run db:seed:dev",
+    "db:studio": "prisma studio",
+    "db:test:setup": "DATABASE_URL=$TEST_DATABASE_URL prisma migrate deploy",
+    
+    "backup:dev": "./scripts/backup/create-backup.sh development",
+    "backup:staging": "./scripts/backup/create-backup.sh staging",
+    "backup:prod": "./scripts/backup/create-backup.sh production",
+    
+    "deploy:staging": "./scripts/deployment/deploy-staging.sh",
+    "deploy:production": "./scripts/deployment/deploy-production.sh",
+    
+    "setup:dev": "./scripts/development/setup-dev-environment.sh",
+    "start:dev": "./start-dev.sh",
+    "stop:dev": "./stop-dev.sh",
+    
+    "logs:dev": "tail -f logs/development.log",
+    "logs:staging": "tail -f logs/staging.log",
+    "logs:production": "tail -f logs/production.log",
+    
+    "clean": "rm -rf node_modules apps/*/node_modules shared/*/node_modules .next apps/*/.next",
+    "clean:build": "rm -rf .next apps/*/.next apps/*/build",
+    "clean:deps": "npm run clean && npm install",
+    
+    "security:audit": "npm audit --audit-level=high",
+    "security:fix": "npm audit fix",
+    
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "concurrently": "^8.2.0",
+    "eslint": "^8.45.0",
+    "eslint-config-next": "^14.0.0",
+    "jest": "^29.6.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "playwright": "^1.36.0",
+    "prettier": "^3.0.0",
+    "prisma": "^5.0.0",
+    "tsx": "^3.12.0",
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}
