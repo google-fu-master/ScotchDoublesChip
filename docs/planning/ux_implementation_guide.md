@@ -1,9 +1,11 @@
 # SCOTCH DOUBLES CHIP TOURNAMENT - UX IMPLEMENTATION GUIDE
+
 *Based on comprehensive DigitalPool analysis*
 
 ## 🎯 USER EXPERIENCE ARCHITECTURE
 
 ### User Types & Access Levels
+
 ```
 👑 SUPER ADMIN
    ├── System configuration
@@ -32,6 +34,7 @@
 ## 📱 RESPONSIVE DESIGN STRATEGY
 
 ### Breakpoint Strategy
+
 ```css
 /* Mobile First Approach */
 @media (min-width: 640px)  { /* sm - Small tablets */ }
@@ -42,6 +45,7 @@
 ```
 
 ### Mobile-First Components
+
 ```typescript
 // Touch-optimized scoring interface
 const MobileScoreEntry = () => {
@@ -64,6 +68,7 @@ const MobileScoreEntry = () => {
 ## 🔐 AUTHENTICATION & USER MANAGEMENT
 
 ### Database Schema
+
 ```sql
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
@@ -90,6 +95,7 @@ CREATE TABLE user_sessions (
 ```
 
 ### Authentication Flow
+
 ```typescript
 // JWT + Session based auth
 interface AuthUser {
@@ -118,6 +124,7 @@ const ProtectedRoute = ({ children, allowedRoles }: {
 ## 🎯 TOURNAMENT DIRECTOR INTERFACE
 
 ### Dashboard Layout
+
 ```typescript
 const TournamentDirectorDashboard = () => {
   return (
@@ -146,6 +153,7 @@ const QuickStats = () => (
 ```
 
 ### Live Tournament Management
+
 ```typescript
 const LiveTournamentControl = ({ tournamentId }: { tournamentId: number }) => {
   const { tournament, matches, teams } = useLiveTournament(tournamentId);
@@ -172,6 +180,7 @@ const LiveTournamentControl = ({ tournamentId }: { tournamentId: number }) => {
 ## 👤 PLAYER INTERFACE
 
 ### Player Dashboard
+
 ```typescript
 const PlayerDashboard = () => {
   const { user } = useAuth();
@@ -199,6 +208,7 @@ const PlayerDashboard = () => {
 ```
 
 ### Tournament Registration
+
 ```typescript
 const TournamentRegistration = ({ tournament }: { tournament: Tournament }) => {
   return (
@@ -219,6 +229,7 @@ const TournamentRegistration = ({ tournament }: { tournament: Tournament }) => {
 ## 📺 PUBLIC BRACKET DISPLAY
 
 ### TV/Casting Display
+
 ```typescript
 const PublicBracketDisplay = ({ tournamentId }: { tournamentId: number }) => {
   const { tournament, bracket } = usePublicTournament(tournamentId);
@@ -244,6 +255,7 @@ const PublicBracketDisplay = ({ tournamentId }: { tournamentId: number }) => {
 ```
 
 ### QR Code Access
+
 ```typescript
 const QRCodeGeneration = ({ tournamentId }: { tournamentId: number }) => {
   const publicUrl = `${window.location.origin}/tournaments/${tournamentId}/public`;
@@ -270,6 +282,7 @@ const QRCodeGeneration = ({ tournamentId }: { tournamentId: number }) => {
 ## ⚡ REAL-TIME FEATURES
 
 ### WebSocket Implementation
+
 ```typescript
 // Socket.IO setup
 const useSocket = (tournamentId?: number) => {
@@ -320,6 +333,7 @@ const useLiveTournament = (tournamentId: number) => {
 ## 🎨 UI/UX COMPONENTS
 
 ### Design System
+
 ```typescript
 // Color palette
 const colors = {
@@ -353,6 +367,7 @@ const Button = styled.button<{ variant: 'primary' | 'secondary' | 'danger' }>`
 ## 📱 PROGRESSIVE WEB APP
 
 ### PWA Manifest
+
 ```json
 {
   "name": "Scotch Doubles Chip Tournament",
@@ -378,6 +393,7 @@ const Button = styled.button<{ variant: 'primary' | 'secondary' | 'danger' }>`
 ```
 
 ### Service Worker for Offline
+
 ```typescript
 // Cache tournament data for offline access
 const cacheName = 'tournament-app-v1';
@@ -405,24 +421,28 @@ self.addEventListener('fetch', (event) => {
 ## 🚀 IMPLEMENTATION ROADMAP
 
 ### Phase 1: Authentication & Basic UI (Week 1)
+
 - ✅ User registration/login system
 - ✅ Role-based access control
 - ✅ Responsive dashboard layouts
 - ✅ Basic tournament CRUD
 
 ### Phase 2: Tournament Management (Week 2)
+
 - ✅ Tournament Director interface
 - ✅ Player registration flow
 - ✅ Team formation with Fargo integration
 - ✅ Basic bracket generation
 
 ### Phase 3: Live Features (Week 3)
+
 - ✅ Real-time WebSocket integration
 - ✅ Live scoring interface
 - ✅ Public bracket viewing
 - ✅ Mobile-optimized scoring
 
 ### Phase 4: Advanced Features (Week 4)
+
 - ✅ TV/casting display mode
 - ✅ PWA capabilities
 - ✅ Offline functionality
@@ -431,6 +451,7 @@ self.addEventListener('fetch', (event) => {
 ## 🎯 SUCCESS METRICS
 
 ### User Experience KPIs
+
 - **Mobile Usability**: 95%+ mobile page speed
 - **Real-time Performance**: <100ms update latency
 - **Accessibility**: WCAG 2.1 AA compliance
@@ -438,6 +459,7 @@ self.addEventListener('fetch', (event) => {
 - **Cross-platform**: Works on iOS, Android, Desktop
 
 ### Business Metrics
+
 - **Tournament Setup Time**: <10 minutes
 - **Player Registration**: <2 minutes
 - **Score Entry Speed**: <30 seconds per match

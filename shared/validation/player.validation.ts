@@ -59,7 +59,7 @@ export const updatePlayerProfileSchema = z.object({
     .min(0, 'Handicap cannot be negative')
     .max(100, 'Handicap cannot exceed 100')
     .optional(),
-  settings: z.record(z.any()).optional()
+  settings: z.record(z.string(), z.any()).optional()
 })
 
 // Team validation

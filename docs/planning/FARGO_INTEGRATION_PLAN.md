@@ -2,14 +2,16 @@
 
 ## 🔍 Research Summary
 
-### What We Discovered:
+### What We Discovered
+
 ✅ **FargoRate is accessible at `https://fargorate.com`** (not fargoratings.com)  
 ✅ **Website loads successfully** (39KB content, modern web app)  
 ❌ **No public API endpoints** found via standard REST patterns  
 ❌ **No traditional HTML forms** (likely JavaScript-based search)  
 ❌ **DigitalPool's "Get Fargo Ratings" button** not accessible in test environment  
 
-### Key Insights:
+### Key Insights
+
 1. **FargoRate uses a modern web application** - likely React/Angular with internal APIs
 2. **DigitalPool has working integration** - they've solved this problem somehow
 3. **Ratings are public data** - searchable but protected by the UI layer
@@ -20,17 +22,20 @@
 ## 🛠️ Implementation Strategies (Prioritized)
 
 ### STRATEGY 1: Official API Integration ⭐⭐⭐⭐⭐
+
 **Status:** Investigate first  
 **Effort:** Low if available  
 **Reliability:** High  
 
 **Action Items:**
+
 1. **Contact FargoRate directly** for API access
-2. **Check for developer documentation** 
+2. **Check for developer documentation**
 3. **Research terms of service** for data usage
 4. **Look for partner/integration programs**
 
 **Implementation:**
+
 ```typescript
 // If official API becomes available
 class FargoOfficialAPI {
@@ -50,17 +55,20 @@ class FargoOfficialAPI {
 ```
 
 ### STRATEGY 2: Browser Automation (Current DigitalPool Method) ⭐⭐⭐⭐
+
 **Status:** Most likely how DigitalPool works  
 **Effort:** Medium  
 **Reliability:** Medium-High  
 
 **How DigitalPool Probably Does It:**
+
 1. **Headless browser automation** (Puppeteer/Playwright)
 2. **Search players by name** on FargoRate website  
 3. **Parse results from DOM**
 4. **Cache results** to minimize requests
 
 **Implementation:**
+
 ```typescript
 import { chromium } from 'playwright';
 
@@ -108,17 +116,20 @@ class FargoBrowserService {
 ```
 
 ### STRATEGY 3: Reverse Engineering Network Calls ⭐⭐⭐
+
 **Status:** Technical investigation needed  
 **Effort:** Medium-High  
 **Reliability:** Medium (may break with updates)  
 
 **Implementation Steps:**
+
 1. **Use browser dev tools** to capture network requests when searching on FargoRate
 2. **Identify the actual API endpoints** used by their frontend
 3. **Replicate the requests** with proper headers/authentication
 4. **Handle any CSRF/authentication tokens**
 
 **Implementation:**
+
 ```typescript
 class FargoReverseAPI {
   private session: RequestSession;
@@ -153,11 +164,13 @@ class FargoReverseAPI {
 ```
 
 ### STRATEGY 4: Manual + Assisted Import ⭐⭐⭐⭐
+
 **Status:** Implement immediately as fallback  
 **Effort:** Low  
 **Reliability:** High  
 
 **Features:**
+
 - Manual rating entry with validation
 - FargoRate profile URL storage
 - Bulk import from CSV/Excel
@@ -165,6 +178,7 @@ class FargoReverseAPI {
 - Link to FargoRate search for verification
 
 **Implementation:**
+
 ```typescript
 // Database schema
 interface Player {
@@ -259,23 +273,27 @@ CREATE TABLE fargo_sync_log (
 ## 🎯 Recommended Implementation Plan
 
 ### Phase 1: Foundation (Week 1)
+
 ✅ **Manual rating management system**  
 ✅ **Database schema implementation**  
 ✅ **Basic UI for rating entry/editing**  
 ✅ **FargoRate profile URL linking**  
 
 ### Phase 2: Research & Contact (Week 2)
+
 🔍 **Contact FargoRate for official API access**  
 🔍 **Detailed reverse engineering of their web app**  
 🔍 **Legal review of ToS for automated access**  
 
 ### Phase 3: Automated Integration (Week 3-4)
+
 🤖 **Implement chosen automated method** (API or browser automation)  
 🤖 **Batch rating update system**  
 🤖 **Error handling and retry logic**  
 🤖 **Rate limiting and respectful usage**  
 
 ### Phase 4: Enhancement (Week 5+)
+
 ⚡ **Real-time rating sync**  
 ⚡ **Rating-based team balancing**  
 ⚡ **Rating analytics and insights**  
@@ -295,19 +313,22 @@ CREATE TABLE fargo_sync_log (
 
 ## 🚨 Important Considerations
 
-### Legal & Ethical:
+### Legal & Ethical
+
 - **Review FargoRate Terms of Service** before automated scraping
 - **Respect rate limits** and server resources  
 - **Cache data appropriately** to minimize requests
 - **Consider reaching out to FargoRate** for partnership
 
-### Technical:
+### Technical
+
 - **Implement robust error handling** for network failures
 - **Plan for website changes** that could break automation
 - **Use appropriate user agents** and headers
 - **Monitor for IP blocking** or anti-bot measures
 
-### User Experience:
+### User Experience
+
 - **Graceful degradation** when automation fails
 - **Clear indication** of data freshness and source
 - **Easy manual override** for incorrect automated data
@@ -315,11 +336,12 @@ CREATE TABLE fargo_sync_log (
 
 ---
 
-## ✅ Ready to Implement!
+## ✅ Ready to Implement
 
 Our tournament system will have **best-in-class Fargo rating integration** that:
+
 - ✅ **Eliminates manual lookup tedium**
-- ✅ **Enables intelligent team balancing** 
+- ✅ **Enables intelligent team balancing**
 - ✅ **Provides real-time rating tracking**
 - ✅ **Supports multiple skill rating systems**
 

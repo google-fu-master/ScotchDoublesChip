@@ -3,17 +3,18 @@
  */
 
 import type {
-  User as PrismaUser,
+  Player as PrismaPlayer,
   PlayerProfile as PrismaPlayerProfile,
   Team as PrismaTeam,
   TeamMember as PrismaTeamMember,
   PlayerRegistrationStatus,
-  TeamStatus
+  TeamStatus,
+  DirectorRole
 } from '@prisma/client'
 
 // Extended user profile with tournament context
 export interface PlayerProfile extends PrismaPlayerProfile {
-  user: PrismaUser
+  player: PrismaPlayer
   currentChips?: number // For chip tournaments
   ranking?: number
   winLossRecord?: {

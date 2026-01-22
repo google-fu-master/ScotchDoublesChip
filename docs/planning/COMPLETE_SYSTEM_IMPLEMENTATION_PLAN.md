@@ -1,4 +1,5 @@
 # COMPLETE SCOTCH DOUBLES CHIP TOURNAMENT SYSTEM
+
 ## Multi-User Interface Implementation Plan
 
 *Based on comprehensive DigitalPool analysis revealing massive gaps in mobile UX, real-time features, and public viewing*
@@ -27,6 +28,7 @@
 ## 🔐 AUTHENTICATION & USER ROLES
 
 ### User Type Definitions
+
 ```typescript
 enum UserRole {
   SUPER_ADMIN = 'super_admin',
@@ -64,6 +66,7 @@ interface UserPreferences {
 ```
 
 ### Database Schema for Multi-User System
+
 ```sql
 -- Users and Authentication
 CREATE TABLE users (
@@ -115,6 +118,7 @@ CREATE TYPE user_role AS ENUM ('super_admin', 'tournament_director', 'player', '
 ## 👑 SUPER ADMIN INTERFACE
 
 ### Admin Dashboard Features
+
 ```typescript
 const SuperAdminDashboard = () => {
   const { stats } = useAdminStats();
@@ -165,6 +169,7 @@ const SystemHealthCard = () => (
 ## 🎯 TOURNAMENT DIRECTOR INTERFACE
 
 ### Desktop/Tablet Interface
+
 ```typescript
 const TournamentDirectorDashboard = () => {
   const { tournaments, stats } = useTournamentDirectorData();
@@ -225,6 +230,7 @@ const LiveTournamentControl = () => {
 ```
 
 ### Mobile Tournament Director Interface
+
 ```typescript
 const MobileTournamentDirector = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -329,6 +335,7 @@ const MobileLiveControl = () => {
 ## 👤 PLAYER INTERFACE
 
 ### Player Dashboard
+
 ```typescript
 const PlayerDashboard = () => {
   const { user } = useAuth();
@@ -441,6 +448,7 @@ const TournamentRegistration = ({ tournament }: { tournament: Tournament }) => {
 ```
 
 ### Mobile Player Experience
+
 ```typescript
 const MobilePlayerApp = () => {
   const [activeTab, setActiveTab] = useState('tournaments');
@@ -493,6 +501,7 @@ const MobilePlayerApp = () => {
 ## 👁️ PUBLIC/SPECTATOR INTERFACE
 
 ### No-Login Tournament Viewing
+
 ```typescript
 const PublicTournamentView = ({ tournamentId }: { tournamentId: string }) => {
   const { tournament, bracket, teams } = usePublicTournament(tournamentId);
@@ -573,6 +582,7 @@ const QRCodeLanding = ({ tournamentId }: { tournamentId: string }) => {
 ## 📺 TV/CASTING DISPLAY MODE
 
 ### Full-Screen Tournament Display
+
 ```typescript
 const TVCastingDisplay = ({ tournamentId }: { tournamentId: string }) => {
   const { tournament, bracket, currentMatch, teams } = useLiveTournament(tournamentId);
@@ -714,6 +724,7 @@ const TVOptimizedBracket = ({ bracket }: { bracket: TournamentBracket }) => {
 ## ⚡ REAL-TIME FEATURES
 
 ### WebSocket Integration
+
 ```typescript
 // Real-time tournament updates
 const useRealTimeTournament = (tournamentId: number) => {
@@ -839,6 +850,7 @@ const useRealTimeNotifications = (userId: number) => {
 ## 📱 PROGRESSIVE WEB APP
 
 ### PWA Configuration
+
 ```json
 {
   "name": "Chip Tournament Pro",
@@ -906,6 +918,7 @@ const useRealTimeNotifications = (userId: number) => {
 ```
 
 ### Service Worker for Offline Functionality
+
 ```typescript
 // service-worker.ts
 const CACHE_NAME = 'chip-tournament-v1';
@@ -997,6 +1010,7 @@ const syncPendingScores = async () => {
 ## 🚀 IMPLEMENTATION TIMELINE
 
 ### **Phase 1: Foundation & Authentication (Week 1)**
+
 - ✅ Project setup with Next.js 13+ App Router
 - ✅ Database schema implementation with Prisma
 - ✅ Multi-user authentication system
@@ -1004,6 +1018,7 @@ const syncPendingScores = async () => {
 - ✅ Basic responsive layouts
 
 ### **Phase 2: Tournament Director Interface (Week 2)**
+
 - ✅ Desktop TD dashboard with full tournament management
 - ✅ Mobile TD interface with touch-optimized controls
 - ✅ Tournament creation wizard
@@ -1011,6 +1026,7 @@ const syncPendingScores = async () => {
 - ✅ Basic bracket generation
 
 ### **Phase 3: Player Experience (Week 2-3)**
+
 - ✅ Player dashboard and profile management
 - ✅ Tournament registration flow with partner selection
 - ✅ Mobile player app with PWA capabilities
@@ -1018,6 +1034,7 @@ const syncPendingScores = async () => {
 - ✅ Push notifications setup
 
 ### **Phase 4: Real-Time Features (Week 3-4)**
+
 - ✅ WebSocket infrastructure with Socket.IO
 - ✅ Live tournament updates across all interfaces
 - ✅ Real-time chip tracking and transfers
@@ -1025,12 +1042,14 @@ const syncPendingScores = async () => {
 - ✅ Cross-device synchronization
 
 ### **Phase 5: Public & TV Display (Week 4)**
+
 - ✅ Public tournament viewing (no login required)
 - ✅ TV/casting display mode with auto-rotation
 - ✅ QR code generation for instant mobile access
 - ✅ SEO optimization for public tournament pages
 
 ### **Phase 6: PWA & Advanced Features (Week 5)**
+
 - ✅ Progressive Web App implementation
 - ✅ Offline functionality with background sync
 - ✅ Push notifications across platforms
@@ -1054,12 +1073,14 @@ const syncPendingScores = async () => {
 | **QR Sharing** | ❌ None | ✅ Instant Access | **Viral Growth** |
 
 ### **🎯 Target User Acquisition**
+
 1. **Tournament Directors frustrated with DigitalPool's desktop-only limitation**
 2. **Pool venues wanting TV display capabilities for customer engagement**
 3. **Players seeking mobile-first tournament experience**
 4. **Tournament organizers needing reliable offline functionality**
 
 ### **💰 Revenue Model**
+
 - **Freemium**: Basic tournaments free, advanced features paid
 - **Venue Licensing**: Monthly fees for pool halls using TV display
 - **Tournament Fees**: Small percentage of entry fees for premium tournaments

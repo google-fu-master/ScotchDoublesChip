@@ -115,7 +115,7 @@ export const formatValidationError = (error: z.ZodError) => {
     error: {
       code: 'VALIDATION_ERROR',
       message: 'Validation failed',
-      details: error.errors.map(err => ({
+      details: error.issues.map((err: any) => ({
         field: err.path.join('.'),
         message: err.message,
         code: err.code

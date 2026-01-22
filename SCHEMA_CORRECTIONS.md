@@ -3,13 +3,15 @@
 ## Key Corrections Made
 
 ### ✅ **Simplified Architecture**
+
 - **Removed Organizations**: Single pool hall focus, no multi-tenancy needed
 - **Players not Users**: What I called "Users" are actually "Players" in your system
 - **Removed Home/Away**: Pool hall format = winners stay, losers move to open tables
 - **Added Venues & Tables**: Proper pool hall table management
 
 ### ✅ **Proper Role Structure**
-```
+
+```text
 DirectorRole:
 - TOURNAMENT_DIRECTOR
 - TOURNAMENT_MANAGER  
@@ -18,13 +20,15 @@ DirectorRole:
 ```
 
 ### ✅ **Birthday Chip System**
+
 - Month/day birthday tracking (no year for privacy)
 - 365-day restriction on birthday chips
 - Track when last birthday chip was received
 - Players can only get 1 birthday chip per year
 
 ### ✅ **Chip Transaction Types**
-```
+
+```text
 ChipTransactionType:
 - INITIAL_CHIPS    // Given at team registration
 - GAME_WIN        // Chips won from victory
@@ -35,12 +39,14 @@ ChipTransactionType:
 ```
 
 ### ✅ **Pool Hall Game Format**
+
 - **No Matches**: Just individual games
 - **Winners Stay**: Winner stays at table, loser moves to open table
 - **Table Tracking**: Track which table each game is played on
 - **Chip Tracking**: Teams track current chips, total won/lost
 
 ### ✅ **Added Missing Features**
+
 - **Venues**: Pool hall management with table tracking
 - **Tables**: Individual table status and assignment
 - **Payouts**: Tournament prize structure (1st, 2nd, 3rd, etc.)
@@ -49,7 +55,8 @@ ChipTransactionType:
 ## Updated Data Model
 
 ### **Core Entities**
-```
+
+```text
 Players (what you call players)
 ├── firstName, lastName, email, phone
 ├── birthdayMonth, birthdayDay (no year)
@@ -74,7 +81,8 @@ Tournaments
 ```
 
 ### **Tournament Flow**
-```
+
+```text
 1. Tournament Setup → Venue + Table assignment
 2. Team Registration → Teams get starting chips
 3. Games → Winners stay, losers move tables
@@ -84,7 +92,8 @@ Tournaments
 ```
 
 ### **Birthday Chip Logic**
-```
+
+```text
 - Players enter birthday month/day in profile
 - Can request birthday chip during their birthday month
 - System checks: lastBirthdayChip + 365 days < today

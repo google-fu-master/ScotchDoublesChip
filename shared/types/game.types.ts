@@ -4,13 +4,11 @@
 
 import type {
   Game as PrismaGame,
-  Match as PrismaMatch,
   GameResult as PrismaGameResult,
   GameStatus,
-  MatchStatus,
-  MatchFormat,
   ChipTransaction as PrismaChipTransaction,
-  ChipTransactionType
+  ChipTransactionType,
+  Team as PrismaTeam
 } from '@prisma/client'
 
 // Extended game interfaces
@@ -80,49 +78,26 @@ export interface GameResult extends PrismaGameResult {
   }
 }
 
-// Match management
-export interface Match extends PrismaMatch {
-  games: Game[]
-  homeTeam?: {
-    id: string
-    name: string
-    members: Array<{
-      playerProfile: {
-        id: string
-        displayName: string
-      }
-    }>
-  }
-  awayTeam?: {
-    id: string
-    name: string
-    members: Array<{
-      playerProfile: {
-        id: string
-        displayName: string
-      }
-    }>
-  }
-  isComplete: boolean
-  canStart: boolean
-  estimatedDuration?: number
-}
-
 // Game creation and management
 export interface CreateGameInput {
   tournamentId: string
-  matchId?: string
   gameNumber: number
   gameType: string
   gameData: Partial<GameData>
-  playerIds: string[] // PlayerProfile IDs
+  tableId?: string
+  raceToWins?: number
 }
 
 export interface UpdateGameInput {
   gameId: string
   status?: GameStatus
   gameData?: Partial<GameData>
-  winnerId?: string
+  winningTeamId?: string
+  losingTeamId?: string
+  winningTeamScore?: number
+  losingTeamScore?: number
+  scoresSubmitted?: boolean
+  scoresApproved?: boolean
   notes?: string
 }
 
@@ -139,37 +114,15 @@ export interface RecordGameResultInput {
   notes?: string
 }
 
-// Match scheduling and management
-export interface CreateMatchInput {
-  tournamentId: string
-  round?: number
-  bracket?: string
-  homeTeamId: string
-  awayTeamId: string
-  format: MatchFormat
-  bestOf?: number
-  scheduledAt?: Date
-}
-
-export interface UpdateMatchInput {
-  matchId: string
-  status?: MatchStatus
-  homeScore?: number
-  awayScore?: number
-  winnerId?: string
-  notes?: string
-  rescheduleAt?: Date
-}
-
 // Chip transaction management for chip tournaments
 export interface ChipTransaction extends PrismaChipTransaction {
   playerProfile?: {
     id: string
     displayName: string
   }
-  createdByUser?: {
-    firstName: string
-    lastName: string
+  team?: {
+    id: string
+    name: string
   }
 }
 
@@ -233,10 +186,16 @@ export interface ChipCalculation {
 }
 
 export type GameWithDetails = Game & {
-  match?: Match
   tournament: {
     id: string
     name: string
     tournamentType: string
+  }
+  table?: {
+    id: string
+    number: string
+    venue: {
+      name: string
+    }
   }
 }

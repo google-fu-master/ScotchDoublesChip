@@ -3,7 +3,7 @@
  */
 
 import { z } from 'zod'
-import { GameStatus, MatchStatus, MatchFormat, ChipTransactionType } from '@prisma/client'
+import { GameStatus, ChipTransactionType } from '@prisma/client'
 import { idSchema } from './tournament.validation'
 
 // Game data validation schemas
@@ -75,7 +75,7 @@ export const gameResultSchema = z.object({
   score: z.number().min(0).optional(),
   chips: z.number().optional(),
   position: z.number().min(1).optional(),
-  performance: z.record(z.any()).optional()
+  performance: z.record(z.string(), z.any()).optional()
 })
 
 export const recordGameResultSchema = z.object({
@@ -107,37 +107,11 @@ export const recordGameResultSchema = z.object({
   message: 'Positions must be consecutive starting from 1'
 })
 
-// Match management
-export const createMatchSchema = z.object({
-  tournamentId: idSchema,
-  round: z.number().min(1).optional(),
-  bracket: z.string().max(20).optional(),
-  homeTeamId: idSchema,
-  awayTeamId: idSchema,
-  format: z.nativeEnum(MatchFormat),
-  bestOf: z.number().min(1).optional(),
-  scheduledAt: z.date().optional()
-}).refine((data) => {
-  // Different teams required
-  return data.homeTeamId !== data.awayTeamId
-}, {
-  message: 'Home and away teams must be different'
-})
-
-export const updateMatchSchema = z.object({
-  matchId: idSchema,
-  status: z.nativeEnum(MatchStatus).optional(),
-  homeScore: z.number().min(0).optional(),
-  awayScore: z.number().min(0).optional(),
-  winnerId: idSchema.optional(),
-  notes: z.string().max(1000).optional(),
-  rescheduleAt: z.date().optional()
-})
-
 // Chip transaction validation
 export const createChipTransactionSchema = z.object({
   tournamentId: idSchema,
-  playerProfileId: idSchema,
+  playerProfileId: idSchema.optional(),
+  teamId: idSchema.optional(), 
   gameId: idSchema.optional(),
   type: z.nativeEnum(ChipTransactionType),
   amount: z.number().refine((val) => {
@@ -152,13 +126,13 @@ export const createChipTransactionSchema = z.object({
 export const liveGameUpdateSchema = z.object({
   gameId: idSchema,
   status: z.nativeEnum(GameStatus),
-  currentScore: z.record(z.number()).optional(),
+  currentScore: z.record(z.string(), z.number()).optional(),
   timeElapsed: z.number().min(0).optional(),
   estimatedTimeRemaining: z.number().min(0).optional(),
   events: z.array(z.object({
     type: z.enum(['score_update', 'penalty', 'timeout', 'game_complete', 'chip_award']),
     playerId: idSchema.optional(),
-    data: z.record(z.any()),
+    data: z.record(z.string(), z.any()),
     description: z.string().max(200)
   }))
 })
@@ -171,20 +145,8 @@ const allowedGameStatusTransitions: Record<GameStatus, GameStatus[]> = {
   CANCELLED: ['NOT_STARTED'] // Can restart cancelled games
 }
 
-const allowedMatchStatusTransitions: Record<MatchStatus, MatchStatus[]> = {
-  SCHEDULED: ['IN_PROGRESS', 'CANCELLED', 'POSTPONED'],
-  IN_PROGRESS: ['COMPLETED', 'CANCELLED'],
-  COMPLETED: [], // Terminal state
-  CANCELLED: ['SCHEDULED'], // Can reschedule
-  POSTPONED: ['SCHEDULED', 'CANCELLED']
-}
-
 export const validateGameStatusTransition = (currentStatus: GameStatus, newStatus: GameStatus): boolean => {
   return allowedGameStatusTransitions[currentStatus]?.includes(newStatus) ?? false
-}
-
-export const validateMatchStatusTransition = (currentStatus: MatchStatus, newStatus: MatchStatus): boolean => {
-  return allowedMatchStatusTransitions[currentStatus]?.includes(newStatus) ?? false
 }
 
 // Business rules validation
@@ -226,8 +188,6 @@ export const validateGameRules = {
 export type CreateGameInput = z.infer<typeof createGameSchema>
 export type UpdateGameInput = z.infer<typeof updateGameSchema>
 export type RecordGameResultInput = z.infer<typeof recordGameResultSchema>
-export type CreateMatchInput = z.infer<typeof createMatchSchema>
-export type UpdateMatchInput = z.infer<typeof updateMatchSchema>
 export type CreateChipTransactionInput = z.infer<typeof createChipTransactionSchema>
 export type LiveGameUpdate = z.infer<typeof liveGameUpdateSchema>
 export type GameData = z.infer<typeof gameDataSchema>

@@ -65,22 +65,31 @@ model Table {
   isActive  Boolean @default(true)
   
   // Table status
-  status    TableStatus @default(AVAILABLE)
+  status    TableStatus @default(OPEN)
   settings  Json? // Table-specific settings
+  
+  // Current assignment
+  currentWinningTeamId String? // Team that stays at table
+  lastAssignedAt       DateTime? // When teams were last assigned
+  
+  // Director controls
+  closedBy    String? // Director who closed the table
+  closedAt    DateTime? // When table was closed
   
   // Relationships
   venue     Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
   games     Game[]
+  assignedTeams Team[] // Teams currently assigned to this table
+  assignments TeamAssignment[] // Assignment history
 
   @@unique([venueId, number])
   @@map("tables")
 }
 
 enum TableStatus {
-  AVAILABLE
-  IN_USE
-  OUT_OF_ORDER
-  RESERVED
+  OPEN      // Available for assignment
+  IN_USE    // Currently has teams playing
+  CLOSED    // Manually closed by director/manager
 }
 
 // Tournament management with proper roles
@@ -113,6 +122,17 @@ model Tournament {
   // Chip configuration
   startingChips  Int @default(3) // Chips per team at registration
   
+  // Game configuration
+  raceToWins     Int @default(1) // Games needed to win a match
+  
+  // Tournament progression settings
+  autoAcceptScores Boolean @default(false) // Auto-accept vs manual approval
+  allowNotifications Boolean @default(true) // SMS/push when teams assigned
+  
+  // Queue management
+  isStarted      Boolean @default(false) // Tournament has started
+  currentRound   Int @default(0) // Current round number
+  
   // Metadata
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
@@ -126,6 +146,9 @@ model Tournament {
   chipTransactions ChipTransaction[]
   payouts        Payout[]
   sidePots       SidePot[]
+  teamPairings   TeamPairing[] // Track team pairing history
+  queue          TournamentQueue? // Current queue state
+  teamAssignments TeamAssignment[] // Team table assignments
 
   @@map("tournaments")
 }
@@ -189,8 +212,18 @@ model Team {
   totalChipsWon Int @default(0) // Total chips won throughout tournament
   totalChipsLost Int @default(0) // Total chips lost
   
-  // Team metadata
-  seed         Int?
+  // Initial chip calculation from combined Fargos
+  combinedFargo Int? // Sum of both players' Fargo ratings
+  initialChips  Int? // Chips calculated from Fargo ratings
+  
+  // Queue and bracket management
+  queuePosition Int? // Position in waiting queue (null if not queued)
+  seed         Int? // Initial bracket seeding
+  isQueued     Boolean @default(false) // Currently in queue for assignment
+  
+  // Current table assignment
+  currentTableId String? // Table they're currently assigned to (if any)
+  assignedAt     DateTime? // When they were assigned to current table
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
@@ -200,6 +233,12 @@ model Team {
   gamesAsWinner Game[] @relation("WinningTeam")
   gamesAsLoser  Game[] @relation("LosingTeam")
   chipTransactions ChipTransaction[] // Team chip tracking
+  currentTable Table? @relation(fields: [currentTableId], references: [id]) // Current table assignment
+  assignments  TeamAssignment[] // Assignment history
+  
+  // Pairing history
+  pairingsAsTeam1 TeamPairing[] @relation("Team1Pairings")
+  pairingsAsTeam2 TeamPairing[] @relation("Team2Pairings")
 
   @@map("teams")
 }
@@ -239,9 +278,22 @@ model Game {
   startedAt    DateTime?
   completedAt  DateTime?
   
+  // Match configuration (race-to-X)
+  raceToWins   Int @default(1) // Games needed to win the match
+  
   // Game results
   winnerStays  Boolean @default(true) // Winner stays at table
   chipsAwarded Int @default(1) // Chips awarded to winner
+  
+  // Score tracking
+  winningTeamScore Int @default(0) // Games won by winning team
+  losingTeamScore  Int @default(0) // Games won by losing team
+  
+  // Scoring approval
+  scoresSubmitted Boolean @default(false) // Scores have been submitted
+  scoresApproved  Boolean @default(false) // Scores approved by director
+  submittedBy     String? // Player who submitted scores
+  approvedBy      String? // Director who approved scores
   
   // Game-specific data
   gameData     Json? // Rack info, break player, etc.
@@ -359,6 +411,71 @@ model SidePot {
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
 
   @@map("side_pots")
+}
+
+// Team pairing history to avoid repeat matchups
+model TeamPairing {
+  id           String @id @default(cuid())
+  tournamentId String
+  team1Id      String
+  team2Id      String
+  
+  // Pairing statistics
+  timesPlayed  Int @default(1) // How many times these teams have played
+  lastPlayed   DateTime @default(now()) // When they last played
+  
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team1        Team @relation("Team1Pairings", fields: [team1Id], references: [id], onDelete: Cascade)
+  team2        Team @relation("Team2Pairings", fields: [team2Id], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, team1Id, team2Id])
+  @@map("team_pairings")
+}
+
+// Tournament queue management
+model TournamentQueue {
+  id           String @id @default(cuid())
+  tournamentId String
+  
+  // Queue state
+  queueData    Json // Serialized queue of team IDs in order
+  lastShuffled DateTime? // When queue was last shuffled
+  shuffledBy   String? // Director who last shuffled
+  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId])
+  @@map("tournament_queues")
+}
+
+// Team assignment notifications
+model TeamAssignment {
+  id           String @id @default(cuid())
+  tournamentId String
+  teamId       String
+  tableId      String
+  
+  // Assignment details
+  assignmentType AssignmentType // INITIAL, WINNER_STAYS, FROM_QUEUE
+  assignedBy   String? // Director who made assignment
+  
+  // Notification status
+  notificationSent Boolean @default(false)
+  sentAt           DateTime?
+  
+  createdAt    DateTime @default(now())
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team         Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  table        Table @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@map("team_assignments")
 }
 
 // System models for audit, notifications, and administration
@@ -484,6 +601,13 @@ enum ChipTransactionType {
   BIRTHDAY_CHIP   // Special birthday chip award
   ADJUSTMENT      // Manual adjustment
   PRIZE          // Prize distribution
+}
+
+enum AssignmentType {
+  INITIAL      // Initial tournament assignment
+  WINNER_STAYS // Winner stays at table
+  FROM_QUEUE   // New team from queue
+  MANUAL       // Manual assignment by director
 }
 
 enum AuditAction {
