@@ -32,6 +32,7 @@ export interface TournamentCreationData {
   adminFee?: number;
   addedMoney?: number;
   payoutType?: PayoutType;
+  settings?: any;
   chipRanges?: Array<{
     minFargo: number;
     maxFargo: number;
@@ -79,6 +80,7 @@ export class TournamentService {
           addedMoney: data.addedMoney,
           payoutType: data.payoutType,
           chipRanges: data.chipRanges ? JSON.stringify(data.chipRanges) : undefined,
+          settings: data.settings || {},
           status: 'SETUP',
           // Create tournament director
           directors: {

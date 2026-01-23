@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { BracketOrdering } from '../types/tournament.types';
+import { BracketOrdering } from '@prisma/client';
 
 export interface QueueTeam {
   id: string;
@@ -36,13 +36,13 @@ export class QueueService {
       let orderedTeams: QueueTeam[];
 
       switch (ordering) {
-        case 'RANDOM_DRAW':
+        case BracketOrdering.RANDOM_DRAW:
           orderedTeams = this.shuffleTeams(teams);
           break;
-        case 'SEEDED_DRAW':
+        case BracketOrdering.SEEDED_DRAW:
           orderedTeams = this.orderBySeeding(teams);
           break;
-        case 'SET_ORDER':
+        case BracketOrdering.SET_ORDER:
           orderedTeams = this.orderByManualSeed(teams);
           break;
         default:
@@ -446,14 +446,15 @@ export class QueueService {
         },
         update: {
           gamesPlayed: { increment: 1 },
-          lastPlayed: new Date()
+          lastPlayedAt: new Date()
         },
         create: {
           tournamentId,
           team1Id: firstTeamId,
           team2Id: secondTeamId,
+          round: 1,
           gamesPlayed: 1,
-          lastPlayed: new Date()
+          lastPlayedAt: new Date()
         }
       });
 

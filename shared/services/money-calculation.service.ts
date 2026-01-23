@@ -3,8 +3,7 @@
  * Manages entry fees, admin fees, added money, payouts, splits, and side pots
  */
 
-import { PrismaClient } from '@prisma/client';
-import { PayoutType, PayoutPlacesSetting } from '../types/tournament.types';
+import { PrismaClient, PayoutType, PayoutPlacesSetting, SidePotEntryType } from '@prisma/client';
 
 export interface PayoutStructure {
   position: number;
@@ -99,13 +98,13 @@ export class MoneyCalculationService {
 
       let payoutStructure: PayoutStructure[] = [];
 
-      if (tournament.payoutType === 'PLACES') {
+      if (tournament.payoutType === PayoutType.PLACES) {
         payoutStructure = this.calculatePlacesPayout(
           entrantCount,
           moneyBreakdown.totalPayout,
           tournament.payoutPlacesSetting
         );
-      } else if (tournament.payoutType === 'PERCENTAGE') {
+      } else if (tournament.payoutType === PayoutType.PERCENTAGE) {
         payoutStructure = this.calculatePercentagePayout(
           entrantCount,
           moneyBreakdown.totalPayout,
@@ -138,22 +137,22 @@ export class MoneyCalculationService {
     }
 
     switch (placesSetting) {
-      case 'WINNER_TAKE_ALL':
+      case PayoutPlacesSetting.WINNER_TAKE_ALL:
         placesConfig = { places: 1, percentages: [100] };
         break;
-      case 'TOP_2':
+      case PayoutPlacesSetting.TOP_2:
         placesConfig = { places: 2, percentages: [60, 40] };
         break;
-      case 'TOP_3':
+      case PayoutPlacesSetting.TOP_3:
         placesConfig = { places: 3, percentages: [50, 30, 20] };
         break;
-      case 'TOP_4':
+      case PayoutPlacesSetting.TOP_4:
         placesConfig = { places: 4, percentages: [40, 25, 20, 15] };
         break;
-      case 'TOP_6':
+      case PayoutPlacesSetting.TOP_6:
         placesConfig = { places: 6, percentages: [35, 25, 15, 12, 8, 5] };
         break;
-      case 'TOP_8':
+      case PayoutPlacesSetting.TOP_8:
         placesConfig = { places: 8, percentages: [30, 20, 15, 12, 10, 6, 4, 3] };
         break;
       default:
@@ -451,8 +450,9 @@ export class MoneyCalculationService {
           name: sidePotData.name,
           description: sidePotData.description,
           entryFee: sidePotData.entryFee,
-          entryType: sidePotData.entryType,
-          criteria: JSON.stringify(sidePotData.criteria)
+          entryType: sidePotData.entryType as SidePotEntryType,
+          criteria: sidePotData.criteria,
+          amount: 0  // Initialize amount to 0
         }
       });
 
@@ -488,11 +488,11 @@ export class MoneyCalculationService {
       }
 
       // Validate entry type matches
-      if (sidePot.entryType === 'TEAM' && !entrantData.teamId) {
+      if (sidePot.entryType === SidePotEntryType.TEAM && !entrantData.teamId) {
         throw new Error('Team ID required for team-based side pot');
       }
 
-      if (sidePot.entryType === 'INDIVIDUAL' && !entrantData.playerId) {
+      if (sidePot.entryType === SidePotEntryType.INDIVIDUAL && !entrantData.playerId) {
         throw new Error('Player ID required for individual side pot');
       }
 

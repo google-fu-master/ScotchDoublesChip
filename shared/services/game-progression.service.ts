@@ -273,7 +273,7 @@ export class GameProgressionService {
       await this.prisma.table.update({
         where: { id: table.id },
         data: {
-          status: 'OPEN',
+          status: 'AVAILABLE',
           currentWinningTeamId: winningTeam.id
         }
       });
@@ -296,7 +296,7 @@ export class GameProgressionService {
       await this.prisma.table.update({
         where: { id: table.id },
         data: {
-          status: 'OPEN',
+          status: 'AVAILABLE',
           currentWinningTeamId: null
         }
       });
@@ -381,7 +381,7 @@ export class GameProgressionService {
       if (game.table) {
         await this.prisma.table.update({
           where: { id: game.table.id },
-          data: { status: 'OPEN' }
+          data: { status: 'AVAILABLE' }
         });
       }
 

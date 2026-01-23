@@ -267,7 +267,7 @@ export class ErrorHandlingService implements IErrorHandler {
           message: error.message,
           category: error.category,
           severity: error.severity,
-          context: error.context ? JSON.stringify(error.context) : null,
+          context: error.context ? JSON.stringify(error.context) : undefined,
           stack: error.stack,
           userId: error.userId,
           tournamentId: error.tournamentId,

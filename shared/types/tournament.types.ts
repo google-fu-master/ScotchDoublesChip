@@ -98,8 +98,8 @@ export type {
 export interface TeamWithDetails extends Team {
   members: TeamMember[];
   currentChips: number;
-  gamesPlayed?: number;
-  gamesWon?: number;
+  gamesPlayed: number;
+  gamesWon: number;
   totalWinnings?: number;
 }
 

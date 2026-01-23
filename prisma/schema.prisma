@@ -116,6 +116,7 @@ model Tournament {
   autoAcceptScores Boolean @default(true)
   randomOrderingEachRound Boolean @default(false)
   raceToWins     Int @default(1)
+  playersPerTable Int @default(4)
   currentRound   Int @default(1)
   maxRounds      Int?
   
@@ -140,6 +141,7 @@ model Tournament {
   // Registration limits
   maxTeams       Int?
   minTeams       Int?
+  estimatedEntrants Int?
   entryFee       Decimal?
   
   // Chip configuration
@@ -297,8 +299,11 @@ model Game {
   status       GameStatus @default(NOT_STARTED)
   raceToWins   Int @default(1)
   winningTeamScore Int?
+  losingTeamScore Int?
   scoresSubmitted Boolean @default(false)
   scoresApproved Boolean @default(false)
+  approvedBy String?
+  submittedBy String?
   startedAt    DateTime?
   completedAt  DateTime?
   
@@ -379,6 +384,7 @@ model Payout {
   // Payout details
   position     Int // 1st, 2nd, 3rd, etc.
   amount       Decimal
+  originalAmount Decimal?
   percentage   Decimal? // Percentage of total pot
   description  String? // "1st Place", "Runner-up", etc.
   
@@ -420,6 +426,7 @@ model SidePot {
   isComplete   Boolean @default(false)
   paidOut      Boolean @default(false)
   winnerId     String? // Winner team or player ID
+  winnerType   String? // Type of winner (TEAM, PLAYER, etc.)
   paidAt       DateTime?
   
   createdAt    DateTime @default(now())
@@ -457,10 +464,14 @@ model PayoutSplit {
   id          String @id @default(cuid())
   payoutId    String
   teamId      String
+  tournamentId String
   playerId    String?
   
   // Split details
+  splitName   String?
+  splitData   Json?
   amount      Decimal
+  totalAmount Decimal?
   percentage  Decimal?
   description String?
   
@@ -505,7 +516,10 @@ model ErrorLog {
   // Error details
   errorType    String
   errorMessage String
+  message      String?
   errorStack   String?
+  stack        String?
+  code         String?
   context      Json?
   
   // Error categorization
@@ -517,6 +531,7 @@ model ErrorLog {
   tournamentId String?
   sessionId    String?
   requestId    String?
+  correlationId String?
   
   // System context  
   service      String?
@@ -654,12 +669,18 @@ enum PayoutType {
   FIXED_AMOUNT
   WINNER_TAKE_ALL
   CUSTOM
+  PLACES
 }
 
 enum PayoutPlacesSetting {
+  TOP_2
   TOP_3
+  TOP_4  
   TOP_5
+  TOP_6
+  TOP_8
   PERCENTAGE_BASED
+  WINNER_TAKE_ALL
   CUSTOM
 }
 
@@ -672,8 +693,10 @@ enum AccessType {
 
 enum SidePotEntryType {
   AUTOMATIC
-  MANUAL
+  MANUAL  
   OPT_IN
+  TEAM
+  INDIVIDUAL
 }
 
 enum SidePotWinnerType {
@@ -740,6 +763,7 @@ enum NotificationType {
   RESULT_UPDATE
   REGISTRATION_CONFIRMATION
   SYSTEM_ALERT
+  ERROR_ALERT
 }
 
 enum NotificationChannel {

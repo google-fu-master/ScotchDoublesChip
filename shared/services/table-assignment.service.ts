@@ -363,7 +363,7 @@ export class TableAssignmentService {
     // Update table status
     await this.prisma.table.update({
       where: { id: tableId },
-      data: { status: 'OPEN' }
+      data: { status: 'AVAILABLE' }
     });
   }
 
@@ -481,7 +481,7 @@ export class TableAssignmentService {
           }
         },
         isActive: true,
-        status: 'OPEN',
+        status: 'AVAILABLE',
         assignedTeams: {
           none: {}
         }
@@ -570,7 +570,7 @@ export class TableAssignmentService {
     await this.prisma.table.update({
       where: { id: tableId },
       data: {
-        status: 'OPEN',
+        status: 'AVAILABLE',
         closedBy: null,
         closedAt: null
       }
