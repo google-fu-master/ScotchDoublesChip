@@ -352,9 +352,9 @@ export class ChipService {
       }
 
       if (amount > 0) {
-        await this.addChipsToTeam(teamId, amount, 'MANUAL_ADJUSTMENT', undefined, reason);
+        await this.addChipsToTeam(teamId, amount, 'ADJUSTMENT', undefined, reason);
       } else {
-        await this.removeChipsFromTeam(teamId, Math.abs(amount), 'MANUAL_ADJUSTMENT', undefined, reason);
+        await this.removeChipsFromTeam(teamId, Math.abs(amount), 'ADJUSTMENT', undefined, reason);
       }
 
       // Mark team as having manual chip override

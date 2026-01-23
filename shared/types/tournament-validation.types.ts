@@ -19,25 +19,15 @@ export type {
   TournamentDirector
 } from '@prisma/client';
 
-export {
+import {
   TournamentType,
-  PlayerType,
-  GameType,
+  TournamentFormat,
   TournamentStatus,
   TeamStatus,
   GameStatus,
   TableStatus,
   DirectorRole,
   ChipTransactionType,
-  AssignmentType,
-  BracketOrdering,
-  Rules,
-  RatingSystem,
-  PayoutType,
-  PayoutPlacesSetting,
-  AccessType,
-  SidePotEntryType,
-  SidePotWinnerType,
   PlayerRegistrationStatus,
   AuditAction,
   NotificationType,
@@ -45,6 +35,95 @@ export {
   NotificationStatus,
   ConfigType
 } from '@prisma/client';
+
+// Define missing enums locally since they're not in Prisma schema yet
+export enum PlayerType {
+  SINGLES = 'SINGLES',
+  DOUBLES = 'DOUBLES',
+  SCOTCH_DOUBLES = 'SCOTCH_DOUBLES',
+  TEAMS = 'TEAMS'
+}
+
+export enum GameType {
+  EIGHT_BALL = 'EIGHT_BALL',
+  NINE_BALL = 'NINE_BALL',
+  TEN_BALL = 'TEN_BALL',
+  STRAIGHT_POOL = 'STRAIGHT_POOL',
+  ONE_POCKET = 'ONE_POCKET',
+  BANK_POOL = 'BANK_POOL'
+}
+
+export enum AssignmentType {
+  AUTO = 'AUTO',
+  MANUAL = 'MANUAL',
+  PRIORITY = 'PRIORITY',
+  INITIAL = 'INITIAL',
+  FROM_QUEUE = 'FROM_QUEUE',
+  WINNER_STAYS = 'WINNER_STAYS'
+}
+
+export enum BracketOrdering {
+  RANDOM = 'RANDOM',
+  FARGO_HIGH_TO_LOW = 'FARGO_HIGH_TO_LOW',
+  FARGO_LOW_TO_HIGH = 'FARGO_LOW_TO_HIGH',
+  REGISTRATION_ORDER = 'REGISTRATION_ORDER'
+}
+
+export enum Rules {
+  BCA = 'BCA',
+  APA = 'APA',
+  TAP = 'TAP',
+  VNEA = 'VNEA',
+  CUSTOM = 'CUSTOM'
+}
+
+export enum RatingSystem {
+  FARGO = 'FARGO',
+  APA = 'APA',
+  TAP = 'TAP',
+  VNEA = 'VNEA',
+  ELO = 'ELO',
+  CUSTOM = 'CUSTOM'
+}
+
+export enum PayoutType {
+  PERCENTAGE = 'PERCENTAGE',
+  FIXED_AMOUNT = 'FIXED_AMOUNT',
+  WINNER_TAKE_ALL = 'WINNER_TAKE_ALL',
+  CUSTOM = 'CUSTOM'
+}
+
+export enum PayoutPlacesSetting {
+  TOP_2 = 'TOP_2',
+  TOP_3 = 'TOP_3',
+  TOP_4 = 'TOP_4',
+  TOP_5 = 'TOP_5',
+  TOP_6 = 'TOP_6',
+  TOP_8 = 'TOP_8',
+  PERCENTAGE_BASED = 'PERCENTAGE_BASED',
+  WINNER_TAKE_ALL = 'WINNER_TAKE_ALL',
+  CUSTOM = 'CUSTOM'
+}
+
+export enum AccessType {
+  PUBLIC = 'PUBLIC',
+  PRIVATE = 'PRIVATE',
+  INVITE_ONLY = 'INVITE_ONLY',
+  MEMBERS_ONLY = 'MEMBERS_ONLY'
+}
+
+export enum SidePotEntryType {
+  AUTOMATIC = 'AUTOMATIC',
+  MANUAL = 'MANUAL',
+  OPT_IN = 'OPT_IN'
+}
+
+export enum SidePotWinnerType {
+  HIGH_RUN = 'HIGH_RUN',
+  BREAKS = 'BREAKS',
+  SAFETIES = 'SAFETIES',
+  CUSTOM = 'CUSTOM'
+}
 
 // Tournament Creation and Management Types
 export interface CreateTournamentRequest {

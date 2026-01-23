@@ -479,7 +479,7 @@ export class GameProgressionService {
             tournamentId: transaction.tournamentId,
             teamId: transaction.teamId,
             gameId: gameId,
-            type: 'MANUAL_ADJUSTMENT',
+            type: 'ADJUSTMENT',
             amount: reverseAmount,
             description: `Reversal of previous game result`,
             createdBy: 'system'

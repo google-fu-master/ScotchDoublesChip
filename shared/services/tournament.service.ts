@@ -3,14 +3,12 @@
  * Handles tournament lifecycle, state management, and coordination between services
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, BracketOrdering, PayoutType } from '@prisma/client';
 import { 
   Tournament, 
   TournamentStatus, 
   Team, 
-  PlayerType,
-  BracketOrdering,
-  PayoutType 
+  PlayerType
 } from '../types/tournament.types';
 import { ChipService } from './chip.service';
 import { QueueService } from './queue.service';
@@ -80,7 +78,7 @@ export class TournamentService {
           adminFee: data.adminFee,
           addedMoney: data.addedMoney,
           payoutType: data.payoutType,
-          chipRanges: data.chipRanges ? JSON.stringify(data.chipRanges) : null,
+          chipRanges: data.chipRanges ? JSON.stringify(data.chipRanges) : undefined,
           status: 'SETUP',
           // Create tournament director
           directors: {
@@ -92,7 +90,7 @@ export class TournamentService {
           // Initialize tournament queue
           queue: {
             create: {
-              queueData: JSON.stringify([])
+              queueOrder: JSON.stringify([])
             }
           }
         },

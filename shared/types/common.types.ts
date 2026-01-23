@@ -178,6 +178,7 @@ export interface Dashboard {
 
 // Export all types from other modules for convenience
 export * from './tournament.types'
-export * from './player.types'
-export * from './game.types'
 export * from './api.types'
+
+// Import what exists from other type files to avoid conflicts
+// Most types are already exported from tournament.types.ts

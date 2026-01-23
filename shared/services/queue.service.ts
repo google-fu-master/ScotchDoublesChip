@@ -81,6 +81,8 @@ export class QueueService {
 
     return teams.map(team => ({
       ...team,
+      combinedFargo: team.combinedFargo ?? undefined, // Convert null to undefined
+      seed: team.seed ?? undefined, // Convert null to undefined
       isActive: true
     }));
   }
@@ -143,12 +145,12 @@ export class QueueService {
     await this.prisma.tournamentQueue.upsert({
       where: { tournamentId },
       update: {
-        queueData: JSON.stringify(teamIds),
+        queueOrder: JSON.stringify(teamIds),
         lastShuffled: new Date()
       },
       create: {
         tournamentId,
-        queueData: JSON.stringify(teamIds),
+        queueOrder: JSON.stringify(teamIds),
         lastShuffled: new Date()
       }
     });
@@ -241,14 +243,14 @@ export class QueueService {
           { team2Id: currentTeamId }
         ]
       },
-      orderBy: { timesPlayed: 'asc' }
+      orderBy: { gamesPlayed: 'asc' }
     });
 
     // Create map of opponent -> times played
     const playHistory = new Map<string, number>();
     pairings.forEach(pairing => {
       const opponentId = pairing.team1Id === currentTeamId ? pairing.team2Id : pairing.team1Id;
-      playHistory.set(opponentId, pairing.timesPlayed);
+      playHistory.set(opponentId, pairing.gamesPlayed);
     });
 
     // Find team with least play history
@@ -336,7 +338,7 @@ export class QueueService {
       await this.prisma.tournamentQueue.update({
         where: { tournamentId },
         data: {
-          queueData: JSON.stringify(shuffledIds),
+          queueOrder: JSON.stringify(shuffledIds),
           lastShuffled: new Date(),
           shuffledBy: directorId
         }
@@ -365,12 +367,12 @@ export class QueueService {
       where: { tournamentId }
     });
 
-    if (!queue?.queueData) {
+    if (!queue?.queueOrder) {
       return [];
     }
 
     try {
-      return JSON.parse(queue.queueData as string);
+      return JSON.parse(queue.queueOrder as string);
     } catch {
       return [];
     }
@@ -443,14 +445,14 @@ export class QueueService {
           }
         },
         update: {
-          timesPlayed: { increment: 1 },
+          gamesPlayed: { increment: 1 },
           lastPlayed: new Date()
         },
         create: {
           tournamentId,
           team1Id: firstTeamId,
           team2Id: secondTeamId,
-          timesPlayed: 1,
+          gamesPlayed: 1,
           lastPlayed: new Date()
         }
       });

@@ -3,8 +3,7 @@
  * Handles automatic assignments, manual director assignments, and winner-stays logic
  */
 
-import { PrismaClient } from '@prisma/client';
-import { AssignmentType } from '../types/tournament.types';
+import { PrismaClient, AssignmentType } from '@prisma/client';
 import { QueueService } from './queue.service';
 
 export interface TableAssignment {
@@ -36,7 +35,7 @@ export class TableAssignmentService {
               tables: {
                 where: {
                   isActive: true,
-                  status: 'OPEN'
+                  status: 'AVAILABLE'
                 }
               }
             }
@@ -72,13 +71,13 @@ export class TableAssignmentService {
         assignments.push({
           tableId: table.id,
           teamId: team1Id,
-          assignmentType: 'INITIAL'
+          assignmentType: AssignmentType.INITIAL
         });
 
         assignments.push({
           tableId: table.id,
           teamId: team2Id,
-          assignmentType: 'INITIAL'
+          assignmentType: AssignmentType.INITIAL
         });
 
         teamIndex += 2;
@@ -170,7 +169,7 @@ export class TableAssignmentService {
           const nextTeamId = await this.queueService.getNextTeamForTable(tournamentId, tableId);
           
           if (nextTeamId) {
-            await this.assignTeamToTable(tableId, nextTeamId, 'FROM_QUEUE');
+            await this.assignTeamToTable(tableId, nextTeamId, AssignmentType.FROM_QUEUE);
             await this.queueService.removeTeamFromQueue(tournamentId, nextTeamId);
             
             // Create new game
@@ -191,8 +190,8 @@ export class TableAssignmentService {
         const team2Id = queueTeamIds[1];
 
         // Assign both teams
-        await this.assignTeamToTable(tableId, team1Id, 'FROM_QUEUE');
-        await this.assignTeamToTable(tableId, team2Id, 'FROM_QUEUE');
+        await this.assignTeamToTable(tableId, team1Id, AssignmentType.FROM_QUEUE);
+        await this.assignTeamToTable(tableId, team2Id, AssignmentType.FROM_QUEUE);
 
         // Remove from queue
         await this.queueService.removeTeamFromQueue(tournamentId, team1Id);
@@ -214,7 +213,7 @@ export class TableAssignmentService {
     tableId: string,
     teamId: string,
     directorId: string,
-    assignmentType: AssignmentType = 'INITIAL'
+    assignmentType: AssignmentType = AssignmentType.INITIAL
   ): Promise<void> {
     try {
       // Verify director access
@@ -339,7 +338,7 @@ export class TableAssignmentService {
       if (remainingTeams === 0) {
         await this.prisma.table.update({
           where: { id: team.currentTableId },
-          data: { status: 'OPEN' }
+          data: { status: 'AVAILABLE' }
         });
       }
 
@@ -553,7 +552,7 @@ export class TableAssignmentService {
       await this.prisma.table.update({
         where: { id: tableId },
         data: {
-          status: 'CLOSED',
+          status: 'IN_USE',
           closedBy: directorId,
           closedAt: new Date()
         }
@@ -629,7 +628,7 @@ export class TableAssignmentService {
       const nextTeamId = await this.queueService.getNextTeamForTable(team.tournamentId, tableId);
       
       if (nextTeamId) {
-        await this.assignTeamToTable(tableId, nextTeamId, 'WINNER_STAYS', directorId);
+        await this.assignTeamToTable(tableId, nextTeamId, AssignmentType.WINNER_STAYS, directorId);
         await this.queueService.removeTeamFromQueue(team.tournamentId, nextTeamId);
         
         // Create new game

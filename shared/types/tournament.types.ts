@@ -2,7 +2,55 @@
  * Tournament related type definitions and interfaces
  */
 
-// Re-export Prisma types for convenience
+// Import Prisma types and enums
+import type {
+  Tournament,
+  Team,
+  Player,
+  Game,
+  ChipTransaction,
+  Payout,
+  SidePot,
+  Venue,
+  Table,
+  PlayerProfile,
+  TeamMember,
+  TournamentDirector,
+  AuditLog,
+  Notification,
+  SystemConfig,
+  TournamentType,
+  TournamentFormat,
+  TournamentStatus,
+  TeamStatus,
+  GameStatus,
+  TableStatus,
+  DirectorRole,
+  ChipTransactionType,
+  PlayerRegistrationStatus,
+  AuditAction,
+  NotificationType,
+  NotificationChannel,
+  NotificationStatus,
+  ConfigType
+} from '@prisma/client';
+
+// Import missing enums from validation types
+import type {
+  PlayerType,
+  GameType,
+  AssignmentType,
+  BracketOrdering,
+  Rules,
+  RatingSystem,
+  PayoutType,
+  PayoutPlacesSetting,
+  AccessType,
+  SidePotEntryType,
+  SidePotWinnerType
+} from './tournament-validation.types';
+
+// Re-export all types
 export type {
   Tournament,
   Team,
@@ -15,20 +63,26 @@ export type {
   Table,
   PlayerProfile,
   TeamMember,
-  TournamentDirector
-} from '@prisma/client';
-
-// Re-export Prisma enums
-export {
+  TournamentDirector,
+  AuditLog,
+  Notification,
+  SystemConfig,
   TournamentType,
-  PlayerType,
-  GameType,
+  TournamentFormat,
   TournamentStatus,
   TeamStatus,
   GameStatus,
   TableStatus,
   DirectorRole,
   ChipTransactionType,
+  PlayerRegistrationStatus,
+  AuditAction,
+  NotificationType,
+  NotificationChannel,
+  NotificationStatus,
+  ConfigType,
+  PlayerType,
+  GameType,
   AssignmentType,
   BracketOrdering,
   Rules,
@@ -37,19 +91,13 @@ export {
   PayoutPlacesSetting,
   AccessType,
   SidePotEntryType,
-  SidePotWinnerType,
-  PlayerRegistrationStatus,
-  AuditAction,
-  NotificationType,
-  NotificationChannel,
-  NotificationStatus,
-  ConfigType
-} from '@prisma/client';
+  SidePotWinnerType
+};
 
 // Enhanced interfaces with relationships
 export interface TeamWithDetails extends Team {
   members: TeamMember[];
-  currentChips?: number;
+  currentChips: number;
   gamesPlayed?: number;
   gamesWon?: number;
   totalWinnings?: number;
@@ -241,6 +289,14 @@ export interface SubmitScoresRequest {
   awayScore: number;
   forfeit?: boolean;
   notes?: string;
+}
+
+// Error classes
+export class TournamentValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'TournamentValidationError';
+  }
 }
 
 // Service interfaces
