@@ -264,6 +264,8 @@ export class ErrorHandlingService implements IErrorHandler {
         data: {
           id: error.id,
           code: error.code,
+          errorType: error.category,
+          errorMessage: error.message,
           message: error.message,
           category: error.category,
           severity: error.severity,

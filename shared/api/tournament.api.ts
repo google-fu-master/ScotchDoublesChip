@@ -272,7 +272,7 @@ export class TournamentApiController {
 
       const gameId = Array.isArray(req.params.gameId) ? req.params.gameId[0] : req.params.gameId;
       const { homeScore, awayScore, forfeit, notes } = validation.data;
-      const winner = forfeit ? 'away' : (homeScore > awayScore ? 'home' : 'away');
+      const winner: 'home' | 'away' = forfeit ? 'away' : (homeScore > awayScore ? 'home' : 'away');
       
       const submission = {
         gameId,
