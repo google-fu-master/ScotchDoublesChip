@@ -4,7 +4,7 @@
  */
 
 import { PrismaClient } from '@prisma/client';
-import { GameStatus } from '../types/tournament.types';
+import { GameStatus, GameSubmission, GameWithDetails } from '../types/tournament.types';
 import { ChipService } from './chip.service';
 import { QueueService } from './queue.service';
 
@@ -81,10 +81,10 @@ export class GameProgressionService {
   /**
    * Submit game scores
    */
-  async submitGameScores(gameId: string, scoreData: GameScore): Promise<void> {
+  async submitGameScores(submission: GameSubmission): Promise<GameWithDetails> {
     try {
       const game = await this.prisma.game.findUnique({
-        where: { id: gameId },
+        where: { id: submission.gameId },
         include: {
           tournament: true,
           table: {
@@ -103,38 +103,71 @@ export class GameProgressionService {
         throw new Error('Game already completed');
       }
 
-      // Validate teams are at the table
-      const teamsAtTable = game.table?.assignedTeams?.map(t => t.id) || [];
-      if (!teamsAtTable.includes(scoreData.winningTeamId) || 
-          !teamsAtTable.includes(scoreData.losingTeamId)) {
-        throw new Error('Teams must be assigned to this table');
+      // Get the teams assigned to this table for this game
+      const teamsAtTable = game.table?.assignedTeams || [];
+      if (teamsAtTable.length !== 2) {
+        throw new Error('Game must have exactly 2 teams assigned');
       }
 
-      // Validate race completion
-      const raceToWins = game.raceToWins;
-      if (scoreData.winningTeamScore < raceToWins) {
-        throw new Error(`Winning team must reach race to ${raceToWins}`);
-      }
+      // Determine winner and loser from scores
+      const isHomeWinner = submission.homeScore > submission.awayScore;
+      const team1 = teamsAtTable[0];
+      const team2 = teamsAtTable[1];
+      
+      // Assign winner/loser based on score (we don't have home/away, so use team order)
+      const winningTeamId = isHomeWinner ? team1.id : team2.id;
+      const losingTeamId = isHomeWinner ? team2.id : team1.id;
 
       // Update game with scores
-      await this.prisma.game.update({
-        where: { id: gameId },
+      const updatedGame = await this.prisma.game.update({
+        where: { id: submission.gameId },
         data: {
-          winningTeamId: scoreData.winningTeamId,
-          losingTeamId: scoreData.losingTeamId,
-          winningTeamScore: scoreData.winningTeamScore,
-          losingTeamScore: scoreData.losingTeamScore,
+          winningTeamId,
+          losingTeamId,
+          winningTeamScore: isHomeWinner ? submission.homeScore : submission.awayScore,
+          losingTeamScore: isHomeWinner ? submission.awayScore : submission.homeScore,
+          notes: submission.notes,
           scoresSubmitted: true,
-          submittedBy: scoreData.submittedBy,
-          status: game.tournament?.autoAcceptScores ? 'COMPLETED' : 'IN_PROGRESS'
+          submittedBy: 'system', // TODO: Get actual user
+          status: 'COMPLETED',
+          completedAt: new Date()
+        },
+        include: {
+          tournament: true,
+          winningTeam: {
+            include: {
+              members: {
+                include: {
+                  playerProfile: {
+                    include: {
+                      player: true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          losingTeam: {
+            include: {
+              members: {
+                include: {
+                  playerProfile: {
+                    include: {
+                      player: true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          table: true
         }
       });
 
-      // Auto-approve if enabled
-      if (game.tournament?.autoAcceptScores) {
-        await this.approveGameScores(gameId, 'system');
-      }
+      // Process game completion
+      await this.processGameCompletion(submission.gameId);
 
+      return updatedGame as GameWithDetails;
     } catch (error) {
       throw new Error(`Failed to submit game scores: ${error}`);
     }

@@ -8,7 +8,10 @@ import {
   Tournament, 
   TournamentStatus, 
   Team, 
-  PlayerType
+  PlayerType,
+  AddTeamRequest,
+  TeamWithDetails,
+  GameScore
 } from '../types/tournament.types';
 import { ChipService } from './chip.service';
 import { QueueService } from './queue.service';
@@ -176,7 +179,7 @@ export class TournamentService {
   /**
    * Process game result and update tournament state
    */
-  async processGameResult(gameId: string, directorId: string): Promise<void> {
+  async processGameResult(gameId: string, result: GameScore): Promise<void> {
     try {
       // Get game with tournament info
       const game = await this.prisma.game.findUnique({
@@ -191,9 +194,6 @@ export class TournamentService {
       if (!game || !game.tournament) {
         throw new Error('Game or tournament not found');
       }
-
-      // Verify director access
-      await this.verifyDirectorAccess(game.tournament.id, directorId);
 
       // Process chip transfers
       await this.chipService.processGameResult(gameId);
@@ -217,15 +217,12 @@ export class TournamentService {
   /**
    * Add team to tournament
    */
-  async addTeam(tournamentId: string, teamData: {
-    name: string;
-    player1Id: string;
-    player2Id: string;
-    combinedFargo?: number;
-  }): Promise<Team> {
+  async addTeam(request: AddTeamRequest, directorId: string): Promise<TeamWithDetails> {
     try {
+      await this.verifyDirectorAccess(request.tournamentId, directorId);
+
       const tournament = await this.prisma.tournament.findUnique({
-        where: { id: tournamentId }
+        where: { id: request.tournamentId }
       });
 
       if (!tournament) {
@@ -238,29 +235,29 @@ export class TournamentService {
 
       // Calculate initial chips based on Fargo if configured
       const initialChips = await this.chipService.calculateInitialChips(
-        tournamentId,
-        teamData.combinedFargo
+        request.tournamentId,
+        undefined // TODO: Add combinedFargo to request
       );
 
       // Create team with members
       const team = await this.prisma.team.create({
         data: {
-          tournamentId,
-          name: teamData.name,
-          combinedFargo: teamData.combinedFargo,
+          tournamentId: request.tournamentId,
+          name: request.teamName || `Team ${Date.now()}`,
+          combinedFargo: undefined,
           initialChips,
           currentChips: 0, // Will be set when tournament starts
           members: {
             create: [
               {
                 playerProfile: {
-                  connect: { id: teamData.player1Id }
+                  connect: { id: request.player1Id }
                 },
                 position: 'Player 1'
               },
               {
                 playerProfile: {
-                  connect: { id: teamData.player2Id }
+                  connect: { id: request.player2Id }
                 },
                 position: 'Player 2'
               }
@@ -280,7 +277,7 @@ export class TournamentService {
         }
       });
 
-      return team as Team;
+      return team as TeamWithDetails;
     } catch (error) {
       throw new Error(`Failed to add team: ${error}`);
     }

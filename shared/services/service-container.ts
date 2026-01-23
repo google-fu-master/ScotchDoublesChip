@@ -166,14 +166,7 @@ export class ServiceContainer implements IServiceContainer {
   public getTournamentService(): ITournamentService {
     if (!this._tournamentService) {
       this._tournamentService = new TournamentService(
-        this.getPrisma(),
-        this.getChipService(),
-        this.getQueueService(),
-        this.getTableAssignmentService(),
-        this.getGameProgressionService(),
-        this.getMoneyCalculationService(),
-        this.getErrorHandler(),
-        this.getLogger()
+        this.getPrisma()
       );
     }
     return this._tournamentService;
@@ -185,9 +178,7 @@ export class ServiceContainer implements IServiceContainer {
   public getChipService(): IChipService {
     if (!this._chipService) {
       this._chipService = new ChipService(
-        this.getPrisma(),
-        this.getErrorHandler(),
-        this.getLogger()
+        this.getPrisma()
       );
     }
     return this._chipService;
@@ -199,9 +190,7 @@ export class ServiceContainer implements IServiceContainer {
   public getQueueService(): IQueueService {
     if (!this._queueService) {
       this._queueService = new QueueService(
-        this.getPrisma(),
-        this.getErrorHandler(),
-        this.getLogger()
+        this.getPrisma()
       );
     }
     return this._queueService;
@@ -213,10 +202,7 @@ export class ServiceContainer implements IServiceContainer {
   public getTableAssignmentService(): ITableAssignmentService {
     if (!this._tableAssignmentService) {
       this._tableAssignmentService = new TableAssignmentService(
-        this.getPrisma(),
-        this.getQueueService(),
-        this.getErrorHandler(),
-        this.getLogger()
+        this.getPrisma()
       );
     }
     return this._tableAssignmentService;
@@ -228,11 +214,7 @@ export class ServiceContainer implements IServiceContainer {
   public getGameProgressionService(): IGameProgressionService {
     if (!this._gameProgressionService) {
       this._gameProgressionService = new GameProgressionService(
-        this.getPrisma(),
-        this.getChipService(),
-        this.getQueueService(),
-        this.getErrorHandler(),
-        this.getLogger()
+        this.getPrisma()
       );
     }
     return this._gameProgressionService;
@@ -244,9 +226,7 @@ export class ServiceContainer implements IServiceContainer {
   public getMoneyCalculationService(): IMoneyCalculationService {
     if (!this._moneyCalculationService) {
       this._moneyCalculationService = new MoneyCalculationService(
-        this.getPrisma(),
-        this.getErrorHandler(),
-        this.getLogger()
+        this.getPrisma()
       );
     }
     return this._moneyCalculationService;

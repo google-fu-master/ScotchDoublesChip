@@ -19,6 +19,8 @@ export type {
   TournamentDirector
 } from '@prisma/client';
 
+export { BracketOrdering, AssignmentType } from '@prisma/client';
+
 import {
   TournamentType,
   TournamentFormat,
@@ -33,7 +35,9 @@ import {
   NotificationType,
   NotificationChannel,
   NotificationStatus,
-  ConfigType
+  ConfigType,
+  BracketOrdering,
+  AssignmentType
 } from '@prisma/client';
 
 // Define missing enums locally since they're not in Prisma schema yet
@@ -51,22 +55,6 @@ export enum GameType {
   STRAIGHT_POOL = 'STRAIGHT_POOL',
   ONE_POCKET = 'ONE_POCKET',
   BANK_POOL = 'BANK_POOL'
-}
-
-export enum AssignmentType {
-  AUTO = 'AUTO',
-  MANUAL = 'MANUAL',
-  PRIORITY = 'PRIORITY',
-  INITIAL = 'INITIAL',
-  FROM_QUEUE = 'FROM_QUEUE',
-  WINNER_STAYS = 'WINNER_STAYS'
-}
-
-export enum BracketOrdering {
-  RANDOM = 'RANDOM',
-  FARGO_HIGH_TO_LOW = 'FARGO_HIGH_TO_LOW',
-  FARGO_LOW_TO_HIGH = 'FARGO_LOW_TO_HIGH',
-  REGISTRATION_ORDER = 'REGISTRATION_ORDER'
 }
 
 export enum Rules {

@@ -5,6 +5,7 @@
 
 import { PrismaClient } from '@prisma/client';
 import { BracketOrdering } from '@prisma/client';
+import { TeamWithDetails } from '../types/tournament.types';
 
 export interface QueueTeam {
   id: string;

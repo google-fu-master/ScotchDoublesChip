@@ -5,6 +5,7 @@
 
 import { PrismaClient, AssignmentType } from '@prisma/client';
 import { QueueService } from './queue.service';
+import { GameWithDetails } from '../types/tournament.types';
 
 export interface TableAssignment {
   tableId: string;
@@ -99,21 +100,23 @@ export class TableAssignmentService {
   /**
    * Process automatic assignments after a game completes
    */
-  async processAutomaticAssignments(tournamentId: string): Promise<void> {
+  async processAutomaticAssignments(tournamentId: string): Promise<TableAssignment[]> {
     try {
       const tournament = await this.prisma.tournament.findUnique({
         where: { id: tournamentId }
       });
 
       if (!tournament?.autopilotMode) {
-        return; // Autopilot not enabled
+        return []; // Autopilot not enabled
       }
 
       // Get open tables that need assignments
       const openTables = await this.getTablesNeedingAssignments(tournamentId);
+      const assignments: TableAssignment[] = [];
 
       for (const table of openTables) {
-        await this.assignNextTeamsToTable(tournamentId, table.id);
+        const tableAssignments = await this.createTableAssignments(tournamentId, table.id);
+        assignments.push(...tableAssignments);
       }
 
       // Shuffle queue if random ordering is enabled
@@ -121,6 +124,7 @@ export class TableAssignmentService {
         await this.queueService.shuffleQueue(tournamentId);
       }
 
+      return assignments;
     } catch (error) {
       throw new Error(`Failed to process automatic assignments: ${error}`);
     }
@@ -207,54 +211,68 @@ export class TableAssignmentService {
   }
 
   /**
-   * Manually assign team to table (director override)
+   * Manually assign teams to table (director override)
    */
   async manualTableAssignment(
     tableId: string,
-    teamId: string,
-    directorId: string,
-    assignmentType: AssignmentType = AssignmentType.INITIAL
-  ): Promise<void> {
+    homeTeamId: string,
+    awayTeamId: string
+  ): Promise<GameWithDetails> {
     try {
-      // Verify director access
-      const team = await this.prisma.team.findUnique({
-        where: { id: teamId },
+      // Get team and verify tournament access
+      const homeTeam = await this.prisma.team.findUnique({
+        where: { id: homeTeamId },
         include: { tournament: true }
       });
 
-      if (!team) {
-        throw new Error('Team not found');
+      if (!homeTeam) {
+        throw new Error('Home team not found');
       }
 
-      const director = await this.prisma.tournamentDirector.findFirst({
-        where: {
-          tournamentId: team.tournamentId,
-          playerId: directorId
-        }
+      const awayTeam = await this.prisma.team.findUnique({
+        where: { id: awayTeamId },
+        include: { tournament: true }
       });
 
-      if (!director) {
-        throw new Error('Director access denied');
+      if (!awayTeam) {
+        throw new Error('Away team not found');
       }
 
-      // Remove team from queue if queued
-      if (team.isQueued) {
-        await this.queueService.removeTeamFromQueue(team.tournamentId, teamId);
+      if (homeTeam.tournamentId !== awayTeam.tournamentId) {
+        throw new Error('Teams must be from the same tournament');
       }
 
-      // Remove from current table if assigned
-      if (team.currentTableId) {
-        await this.removeTeamFromTable(teamId);
+      // Remove teams from queue if queued
+      if (homeTeam.isQueued) {
+        await this.queueService.removeTeamFromQueue(homeTeam.tournamentId, homeTeamId);
+      }
+      if (awayTeam.isQueued) {
+        await this.queueService.removeTeamFromQueue(awayTeam.tournamentId, awayTeamId);
       }
 
-      // Assign to new table
-      await this.assignTeamToTable(tableId, teamId, assignmentType, directorId);
+      // Remove from current tables if assigned
+      if (homeTeam.currentTableId) {
+        await this.removeTeamFromTable(homeTeamId);
+      }
+      if (awayTeam.currentTableId) {
+        await this.removeTeamFromTable(awayTeamId);
+      }
 
-      // Check if table is ready for a game
-      await this.checkAndCreateGame(team.tournamentId, tableId);
+      // Assign both teams to new table
+      await this.assignTeamToTable(tableId, homeTeamId, AssignmentType.MANUAL);
+      await this.assignTeamToTable(tableId, awayTeamId, AssignmentType.MANUAL);
 
+      // Create and return new game
+      const game = await this.createGameWithDetails(
+        homeTeam.tournamentId,
+        tableId,
+        homeTeamId,
+        awayTeamId
+      );
+
+      return game;
     } catch (error) {
-      throw new Error(`Failed to manually assign team to table: ${error}`);
+      throw new Error(`Failed to manually assign teams to table: ${error}`);
     }
   }
 
@@ -638,5 +656,105 @@ export class TableAssignmentService {
     } catch (error) {
       throw new Error(`Failed to force winner stays: ${error}`);
     }
+  }
+
+  /**
+   * Create table assignments for automatic assignment process
+   */
+  private async createTableAssignments(tournamentId: string, tableId: string): Promise<TableAssignment[]> {
+    const assignments: TableAssignment[] = [];
+    
+    // Get next 2 teams from queue
+    const queueTeamIds = await this.queueService.getQueueState(tournamentId);
+    
+    if (queueTeamIds.length >= 2) {
+      const team1Id = queueTeamIds[0];
+      const team2Id = queueTeamIds[1];
+
+      assignments.push({
+        tableId,
+        teamId: team1Id,
+        assignmentType: AssignmentType.FROM_QUEUE
+      });
+
+      assignments.push({
+        tableId,
+        teamId: team2Id,
+        assignmentType: AssignmentType.FROM_QUEUE
+      });
+
+      // Execute assignments
+      await this.assignTeamToTable(tableId, team1Id, AssignmentType.FROM_QUEUE);
+      await this.assignTeamToTable(tableId, team2Id, AssignmentType.FROM_QUEUE);
+
+      // Remove from queue
+      await this.queueService.removeTeamFromQueue(tournamentId, team1Id);
+      await this.queueService.removeTeamFromQueue(tournamentId, team2Id);
+
+      // Create game
+      await this.createGame(tournamentId, tableId, team1Id, team2Id);
+    }
+
+    return assignments;
+  }
+
+  /**
+   * Create game with full details for API response
+   */
+  private async createGameWithDetails(
+    tournamentId: string,
+    tableId: string,
+    homeTeamId: string,
+    awayTeamId: string
+  ): Promise<GameWithDetails> {
+    // Get tournament settings
+    const tournament = await this.prisma.tournament.findUnique({
+      where: { id: tournamentId }
+    });
+
+    if (!tournament) {
+      throw new Error('Tournament not found');
+    }
+
+    // Get next game number
+    const gameCount = await this.prisma.game.count({
+      where: { tournamentId }
+    });
+
+    // Create game
+    const game = await this.prisma.game.create({
+      data: {
+        tournamentId,
+        tableId,
+        gameNumber: gameCount + 1,
+        raceToWins: tournament.raceToWins,
+        status: 'NOT_STARTED'
+      },
+      include: {
+        tournament: true,
+        table: {
+          include: {
+            assignedTeams: {
+              include: {
+                members: {
+                  include: {
+                    playerProfile: {
+                      include: {
+                        player: true
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    });
+
+    // Update pairing history
+    await this.queueService.updatePairingHistory(tournamentId, homeTeamId, awayTeamId);
+
+    return game as GameWithDetails;
   }
 }

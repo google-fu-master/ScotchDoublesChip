@@ -2,6 +2,8 @@
  * Tournament related type definitions and interfaces
  */
 
+import { PayoutSplitData } from '../services/money-calculation.service';
+
 // Import Prisma types and enums
 import type {
   Tournament,
@@ -13,6 +15,7 @@ import type {
   SidePot,
   Venue,
   Table,
+  BracketOrdering,
   PlayerProfile,
   TeamMember,
   TournamentDirector,
@@ -40,7 +43,6 @@ import type {
   PlayerType,
   GameType,
   AssignmentType,
-  BracketOrdering,
   Rules,
   RatingSystem,
   PayoutType,
@@ -104,9 +106,9 @@ export interface TeamWithDetails extends Team {
 }
 
 export interface GameWithDetails extends Game {
-  homeTeam: TeamWithDetails;
-  awayTeam: TeamWithDetails;
-  table: Table;
+  winningTeam?: TeamWithDetails;
+  losingTeam?: TeamWithDetails;
+  table?: Table;
   tournament: Tournament;
   scoreEnteredBy?: Player;
   scoreApprovedBy?: Player;
@@ -136,10 +138,9 @@ export interface PlayerWithStats extends Player {
 export interface MoneyBreakdown {
   totalEntryFees: number;
   totalAdminFees: number;
-  totalAddedMoney: number;
-  totalPrizePool: number;
-  houseTake: number;
-  payoutAmount: number;
+  addedMoney: number;
+  totalPayout: number;
+  adminFeeTotal: number;
 }
 
 export interface PayoutSplit {
@@ -160,12 +161,9 @@ export interface PayoutCalculation {
 // Table management interfaces
 export interface TableAssignment {
   tableId: string;
-  tableName: string;
-  homeTeamId: string;
-  awayTeamId: string;
-  gameNumber: number;
-  estimatedStartTime?: Date;
-  priority?: number;
+  teamId: string;
+  assignmentType: AssignmentType;
+  assignedBy?: string;
 }
 
 export interface QueueEntry {
@@ -187,6 +185,7 @@ export interface GameScore {
 }
 
 export interface GameSubmission extends GameScore {
+  gameId: string;
   submittedBy: string;
   submittedAt: Date;
   requiresApproval: boolean;
@@ -302,28 +301,28 @@ export class TournamentValidationError extends Error {
 // Service interfaces
 export interface ITournamentService {
   createTournament(data: CreateTournamentRequest, createdBy: string): Promise<Tournament>;
-  startTournament(tournamentId: string, directorId: string): Promise<void>;
-  getTournamentState(tournamentId: string): Promise<TournamentState>;
+  startTournament(tournamentId: string, directorId: string): Promise<Tournament>;
+  getTournamentState(tournamentId: string): Promise<Tournament | null>;
   addTeam(request: AddTeamRequest, directorId: string): Promise<TeamWithDetails>;
   processGameResult(gameId: string, result: GameScore): Promise<void>;
 }
 
 export interface IChipService {
-  calculateInitialChips(playerId: string, tournamentId: string): Promise<ChipCalculationResult>;
+  calculateInitialChips(tournamentId: string, combinedFargo?: number): Promise<number>;
   initializeTeamChips(teamId: string): Promise<void>;
   processGameResult(gameId: string, winnerTeamId: string, chipsWon: number): Promise<void>;
   manualChipAdjustment(teamId: string, amount: number, reason: string, directorId: string): Promise<void>;
 }
 
 export interface IQueueService {
-  initializeQueue(tournamentId: string, seedType?: 'random' | 'fargo'): Promise<void>;
-  getNextTeamForTable(tournamentId: string, tableId: string): Promise<{ homeTeam: TeamWithDetails; awayTeam: TeamWithDetails } | null>;
+  initializeQueue(tournamentId: string, ordering: BracketOrdering): Promise<void>;
+  getNextTeamForTable(tournamentId: string, tableId: string): Promise<string | null>;
   updatePairingHistory(tournamentId: string, homeTeamId: string, awayTeamId: string): Promise<void>;
   shuffleQueue(tournamentId: string): Promise<void>;
 }
 
 export interface ITableAssignmentService {
-  makeInitialAssignments(tournamentId: string): Promise<TableAssignment[]>;
+  makeInitialAssignments(tournamentId: string): Promise<void>;
   processAutomaticAssignments(tournamentId: string): Promise<TableAssignment[]>;
   manualTableAssignment(tableId: string, homeTeamId: string, awayTeamId: string): Promise<GameWithDetails>;
 }
@@ -332,12 +331,12 @@ export interface IGameProgressionService {
   submitGameScores(submission: GameSubmission): Promise<GameWithDetails>;
   approveGameScores(gameId: string, directorId: string): Promise<void>;
   processGameCompletion(gameId: string): Promise<void>;
-  modifyGameScores(gameId: string, newScores: GameScore, directorId: string): Promise<void>;
+  modifyGameScores(gameId: string, scoreData: { winningTeamId: string; losingTeamId: string; winningTeamScore: number; losingTeamScore: number; submittedBy: string; }, directorId: string, reason?: string): Promise<void>;
 }
 
 export interface IMoneyCalculationService {
   calculateTournamentMoney(tournamentId: string): Promise<MoneyBreakdown>;
   createPayouts(tournamentId: string, payouts: PayoutCalculation[]): Promise<void>;
-  createPayoutSplit(payoutId: string, splits: PayoutSplit[]): Promise<void>;
+  createPayoutSplit(tournamentId: string, splitData: { splitName: string; description?: string; splits: PayoutSplitData[]; }, directorId: string): Promise<void>;
   processPayment(payoutId: string, amount: number, method: string): Promise<void>;
 }

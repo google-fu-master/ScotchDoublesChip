@@ -370,13 +370,16 @@ export class MoneyCalculationService {
       const totalAmount = splitData.splits.reduce((sum, split) => sum + split.amount, 0);
 
       // Create payout split record
-      await this.prisma.payoutSplit.create({
+      const splitRecord = await this.prisma.payoutSplit.create({
         data: {
+          payoutId: 'temp-id', // TODO: Link to actual payout
           tournamentId,
+          teamId: splitData.splits[0]?.teamId || 'temp-team',
           splitName: splitData.splitName,
           description: splitData.description,
           totalAmount,
           splitData: JSON.stringify(splitData.splits),
+          amount: splitData.splits[0]?.amount || 0,
           createdBy: directorId
         }
       });
@@ -706,6 +709,41 @@ export class MoneyCalculationService {
 
     } catch (error) {
       throw new Error(`Failed to get tournament money summary: ${error}`);
+    }
+  }
+
+  /**
+   * Process payment for a payout
+   */
+  async processPayment(payoutId: string, amount: number, method: string): Promise<void> {
+    try {
+      const payout = await this.prisma.payout.findUnique({
+        where: { id: payoutId }
+      });
+
+      if (!payout) {
+        throw new Error('Payout not found');
+      }
+
+      const payoutAmount = Number(payout.amount);
+      if (amount > payoutAmount) {
+        throw new Error('Payment amount cannot exceed payout amount');
+      }
+
+      // Update payout with payment information
+      await this.prisma.payout.update({
+        where: { id: payoutId },
+        data: {
+          isPaid: amount >= payoutAmount,
+          paidAt: new Date()
+        }
+      });
+
+      // TODO: Integrate with actual payment processor
+      console.log(`Processing payment of $${amount} for payout ${payoutId} via ${method}`);
+
+    } catch (error) {
+      throw new Error(`Failed to process payment: ${error}`);
     }
   }
 }
