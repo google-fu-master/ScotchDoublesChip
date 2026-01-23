@@ -383,6 +383,43 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+model ErrorLog {
+  id           String @id @default(cuid())
+  
+  // Error details
+  errorType    String
+  errorMessage String
+  errorStack   String?
+  context      Json?
+  
+  // Error categorization
+  severity     String // ERROR, WARNING, INFO
+  category     String // SERVICE_ERROR, VALIDATION_ERROR, SYSTEM_ERROR
+  
+  // Request context
+  userId       String?
+  tournamentId String?
+  sessionId    String?
+  requestId    String?
+  
+  // System context  
+  service      String?
+  method       String?
+  endpoint     String?
+  
+  // Metadata
+  timestamp    DateTime @default(now())
+  resolved     Boolean @default(false)
+  resolvedAt   DateTime?
+  resolvedBy   String?
+  
+  @@map("error_logs")
+  @@index([errorType])
+  @@index([category])
+  @@index([severity])
+  @@index([timestamp])
+}
+
 model Notification {
   id           String @id @default(cuid())
   
@@ -441,6 +478,87 @@ enum TournamentFormat {
   DOUBLES
   SCOTCH_DOUBLES
   TEAMS
+}
+
+enum PlayerType {
+  SINGLES
+  DOUBLES
+  SCOTCH_DOUBLES
+  TEAMS
+}
+
+enum GameType {
+  EIGHT_BALL
+  NINE_BALL
+  TEN_BALL
+  STRAIGHT_POOL
+  ONE_POCKET
+  BANK_POOL
+  SNOOKER
+}
+
+enum AssignmentType {
+  AUTO
+  MANUAL
+  PRIORITY
+}
+
+enum BracketOrdering {
+  RANDOM
+  FARGO_HIGH_TO_LOW
+  FARGO_LOW_TO_HIGH
+  REGISTRATION_ORDER
+}
+
+enum Rules {
+  BCA
+  APA
+  TAP
+  VNEA
+  CUSTOM
+}
+
+enum RatingSystem {
+  FARGO
+  APA
+  TAP
+  VNEA
+  ELO
+  CUSTOM
+}
+
+enum PayoutType {
+  PERCENTAGE
+  FIXED_AMOUNT
+  WINNER_TAKE_ALL
+  CUSTOM
+}
+
+enum PayoutPlacesSetting {
+  TOP_3
+  TOP_5
+  PERCENTAGE_BASED
+  CUSTOM
+}
+
+enum AccessType {
+  PUBLIC
+  PRIVATE
+  INVITE_ONLY
+  MEMBERS_ONLY
+}
+
+enum SidePotEntryType {
+  AUTOMATIC
+  MANUAL
+  OPT_IN
+}
+
+enum SidePotWinnerType {
+  HIGH_RUN
+  BREAKS
+  SAFETIES
+  CUSTOM
 }
 
 enum TournamentStatus {

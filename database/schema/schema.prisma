@@ -25,11 +25,11 @@ model Player {
   lastBirthdayChip  DateTime? // When they last received a birthday chip
   
   // Player skill ratings
-  fargoRating       Int? // Overall Fargo rating
+  fargoRating       Int? // Overall Fargo rating (-100 to 900)
   apaEightBallRank  String? // APA 8-ball rank
   apaNineBallRank   String? // APA 9-ball rank
   inHouseRating     String? // Venue-specific rating
-  
+
   // Player preferences and settings
   settings  Json?
   createdAt DateTime @default(now())
@@ -39,6 +39,7 @@ model Player {
   tournamentProfiles PlayerProfile[]
   directorRoles     TournamentDirector[]
   sidePotEntries    SidePotEntry[] // Individual side pot entries
+  errorLogs         ErrorLog[] @relation("PlayerErrors")
 
   @@map("players")
 }
@@ -187,6 +188,7 @@ model Tournament {
   teamPairings   TeamPairing[]
   queue          TournamentQueue?
   teamAssignments TeamAssignment[]
+  errorLogs      ErrorLog[] @relation("TournamentErrors")
 
   @@map("tournaments")
 }
@@ -641,6 +643,34 @@ model SystemConfig {
   updatedBy   String?
 
   @@map("system_config")
+}
+
+// Error logging
+model ErrorLog {
+  id            String    @id @default(cuid())
+  code          String
+  message       String
+  category      String
+  severity      String
+  context       String?   // JSON string of context data
+  stack         String?   // Error stack trace
+  
+  // Tracking
+  userId        String?
+  tournamentId  String?
+  correlationId String?   // For tracking related operations
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  user         Player?      @relation("PlayerErrors", fields: [userId], references: [id])
+  tournament   Tournament?  @relation("TournamentErrors", fields: [tournamentId], references: [id])
+  
+  @@index([category, createdAt])
+  @@index([severity, createdAt])
+  @@index([correlationId])
+  @@map("error_logs")
 }
 
 // Updated enum definitions for pool hall tournaments

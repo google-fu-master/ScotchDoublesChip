@@ -1,121 +1,287 @@
 /**
- * Core tournament types and interfaces
- * Extends Prisma-generated types with business logic types
+ * Tournament related type definitions and interfaces
  */
 
-import type { 
-  Tournament as PrismaTournament,
+// Re-export Prisma types for convenience
+export type {
+  Tournament,
+  Team,
+  Player,
+  Game,
+  ChipTransaction,
+  Payout,
+  SidePot,
+  Venue,
+  Table,
+  PlayerProfile,
+  TeamMember,
+  TournamentDirector
+} from '@prisma/client';
+
+// Re-export Prisma enums
+export {
   TournamentType,
-  TournamentFormat,
+  PlayerType,
+  GameType,
   TournamentStatus,
-  PlayerProfile as PrismaPlayerProfile,
-  Team as PrismaTeam
-} from '@prisma/client'
+  TeamStatus,
+  GameStatus,
+  TableStatus,
+  DirectorRole,
+  ChipTransactionType,
+  AssignmentType,
+  BracketOrdering,
+  Rules,
+  RatingSystem,
+  PayoutType,
+  PayoutPlacesSetting,
+  AccessType,
+  SidePotEntryType,
+  SidePotWinnerType,
+  PlayerRegistrationStatus,
+  AuditAction,
+  NotificationType,
+  NotificationChannel,
+  NotificationStatus,
+  ConfigType
+} from '@prisma/client';
 
-// Tournament configuration for different tournament types
-export interface TournamentSettings {
-  // Chip Tournament specific settings
-  chipTournament?: {
-    startingChips: number
-    chipMultipliers: {
-      win: number
-      loss: number
-      breakAndRun: number
-      eightOnBreak: number
-    }
-    penaltyChips: {
-      lateness: number
-      unsportsmanlike: number
-      noShow: number
-    }
-  }
-  
-  // Elimination Tournament settings  
-  elimination?: {
-    eliminationType: 'single' | 'double'
-    seedingMethod: 'random' | 'skill' | 'manual'
-  }
-  
-  // Round Robin settings
-  roundRobin?: {
-    pointsPerWin: number
-    pointsPerLoss: number
-    tiebreakMethod: 'headToHead' | 'pointDifferential' | 'totalPoints'
-  }
-  
-  // Swiss system settings
-  swiss?: {
-    rounds: number
-    pairingMethod: 'swiss' | 'modified'
-  }
-  
-  // General settings for all tournament types
-  general: {
-    gameType: string // 'pool', 'darts', etc.
-    timeLimit?: number // minutes per game
-    allowLateRegistration: boolean
-    requireCheckin: boolean
-    autoPairTeams: boolean // For doubles formats
-  }
+// Enhanced interfaces with relationships
+export interface TeamWithDetails extends Team {
+  members: TeamMember[];
+  currentChips?: number;
+  gamesPlayed?: number;
+  gamesWon?: number;
+  totalWinnings?: number;
 }
 
-// Extended tournament interface
-export interface Tournament extends Omit<PrismaTournament, 'settings'> {
-  settings: TournamentSettings
-  playerCount?: number
-  teamCount?: number
-  isRegistrationOpen: boolean
-  canUserRegister: boolean
+export interface GameWithDetails extends Game {
+  homeTeam: TeamWithDetails;
+  awayTeam: TeamWithDetails;
+  table: Table;
+  tournament: Tournament;
+  scoreEnteredBy?: Player;
+  scoreApprovedBy?: Player;
 }
 
-// Tournament creation/update types
-export interface CreateTournamentInput {
-  name: string
-  description?: string
-  tournamentType: TournamentType
-  format: TournamentFormat
-  settings: TournamentSettings
-  startDate?: Date
-  endDate?: Date
-  registrationOpenDate?: Date
-  registrationCloseDate?: Date
-  maxPlayers?: number
-  minPlayers?: number
-  entryFee?: number
+export interface TournamentWithDetails extends Tournament {
+  venue: Venue;
+  teams: TeamWithDetails[];
+  games: GameWithDetails[];
+  tables: Table[];
+  directors: TournamentDirector[];
+  chipTransactions?: ChipTransaction[];
+  payouts?: Payout[];
+  sidePots?: SidePot[];
 }
 
-export interface UpdateTournamentInput extends Partial<CreateTournamentInput> {
-  id: string
-  status?: TournamentStatus
+export interface PlayerWithStats extends Player {
+  gamesPlayed: number;
+  gamesWon: number;
+  totalChipsWon: number;
+  totalWinnings: number;
+  currentTournamentChips?: number;
+  averageOpponentRating?: number;
 }
 
-// Tournament statistics and analytics
-export interface TournamentStats {
-  totalPlayers: number
-  totalTeams: number
-  totalGames: number
-  averageGameTime: number
-  completionRate: number
-  topPerformers: Array<{
-    playerId: string
-    playerName: string
-    score: number
-    gamesPlayed: number
-  }>
+// Money calculation interfaces
+export interface MoneyBreakdown {
+  totalEntryFees: number;
+  totalAdminFees: number;
+  totalAddedMoney: number;
+  totalPrizePool: number;
+  houseTake: number;
+  payoutAmount: number;
 }
 
-// Tournament state for real-time updates
+export interface PayoutSplit {
+  playerId: string;
+  playerName: string;
+  amount: number;
+  percentage: number;
+}
+
+export interface PayoutCalculation {
+  place: number;
+  totalAmount: number;
+  numberOfWinners: number;
+  amountPerWinner: number;
+  splits?: PayoutSplit[];
+}
+
+// Table management interfaces
+export interface TableAssignment {
+  tableId: string;
+  tableName: string;
+  homeTeamId: string;
+  awayTeamId: string;
+  gameNumber: number;
+  estimatedStartTime?: Date;
+  priority?: number;
+}
+
+export interface QueueEntry {
+  teamId: string;
+  priority: number;
+  lastGameTime?: Date;
+  gamesPlayed: number;
+  waitingSince: Date;
+  avoidTeamIds?: string[]; // Teams to avoid for repeat matchups
+}
+
+// Game progression interfaces
+export interface GameScore {
+  homeScore: number;
+  awayScore: number;
+  winner: 'home' | 'away';
+  forfeit?: boolean;
+  notes?: string;
+}
+
+export interface GameSubmission extends GameScore {
+  submittedBy: string;
+  submittedAt: Date;
+  requiresApproval: boolean;
+}
+
+// Tournament state interfaces
 export interface TournamentState {
-  id: string
-  status: TournamentStatus
-  currentRound?: number
-  activeMatches: number
-  completedMatches: number
-  lastUpdated: Date
+  tournament: TournamentWithDetails;
+  activeGames: GameWithDetails[];
+  availableTables: Table[];
+  teamQueue: QueueEntry[];
+  completedGames: GameWithDetails[];
+  leaderboard: TeamWithDetails[];
+  moneyBreakdown: MoneyBreakdown;
+  nextGameNumber: number;
 }
 
-export type TournamentWithDetails = Tournament & {
-  playerProfiles: PrismaPlayerProfile[]
-  teams: PrismaTeam[]
-  stats: TournamentStats
+// Director action interfaces
+export interface DirectorAction {
+  action: 'approve_scores' | 'modify_scores' | 'assign_table' | 'manual_payout' | 'chip_adjustment';
+  targetId: string; // gameId, teamId, etc.
+  parameters: Record<string, any>;
+  reason?: string;
+}
+
+// Chip calculation interfaces
+export interface ChipCalculationResult {
+  playerId: string;
+  playerName: string;
+  fargoRating: number;
+  birthdayChips: number;
+  baseChips: number;
+  bonusChips: number;
+  totalChips: number;
+  appliedRange?: string;
+}
+
+export interface ChipTransactionData {
+  id: string;
+  teamId: string;
+  amount: number;
+  type: ChipTransactionType;
+  description: string;
+  gameId?: string;
+  createdBy: string;
+  createdAt: Date;
+}
+
+// API request/response interfaces
+export interface CreateTournamentRequest {
+  name: string;
+  description?: string;
+  venueId: string;
+  playerType: PlayerType;
+  gameType: GameType;
+  estimatedEntrants?: number;
+  playersPerTable?: number;
+  raceToWins?: number;
+  bracketOrdering?: BracketOrdering;
+  autopilotMode?: boolean;
+  randomOrderingEachRound?: boolean;
+  rules?: Rules;
+  ratingSystem?: RatingSystem;
+  showSkillLevels?: boolean;
+  access?: AccessType;
+  
+  // Money settings
+  entryFee?: number;
+  adminFee?: number;
+  addedMoney?: number;
+  payoutType?: PayoutType;
+  payoutPlacesSetting?: PayoutPlacesSetting;
+  payoutPercentage?: number;
+  
+  // Chip settings
+  defaultChipsPerPlayer?: number;
+  chipRanges?: ChipRange[];
+  
+  // Template settings
+  isTemplate?: boolean;
+  templateName?: string;
+}
+
+export interface ChipRange {
+  minFargo: number;
+  maxFargo: number;
+  chips: number;
+}
+
+export interface AddTeamRequest {
+  tournamentId: string;
+  player1Id: string;
+  player2Id: string;
+  teamName?: string;
+}
+
+export interface SubmitScoresRequest {
+  gameId: string;
+  homeScore: number;
+  awayScore: number;
+  forfeit?: boolean;
+  notes?: string;
+}
+
+// Service interfaces
+export interface ITournamentService {
+  createTournament(data: CreateTournamentRequest, createdBy: string): Promise<Tournament>;
+  startTournament(tournamentId: string, directorId: string): Promise<void>;
+  getTournamentState(tournamentId: string): Promise<TournamentState>;
+  addTeam(request: AddTeamRequest, directorId: string): Promise<TeamWithDetails>;
+  processGameResult(gameId: string, result: GameScore): Promise<void>;
+}
+
+export interface IChipService {
+  calculateInitialChips(playerId: string, tournamentId: string): Promise<ChipCalculationResult>;
+  initializeTeamChips(teamId: string): Promise<void>;
+  processGameResult(gameId: string, winnerTeamId: string, chipsWon: number): Promise<void>;
+  manualChipAdjustment(teamId: string, amount: number, reason: string, directorId: string): Promise<void>;
+}
+
+export interface IQueueService {
+  initializeQueue(tournamentId: string, seedType?: 'random' | 'fargo'): Promise<void>;
+  getNextTeamForTable(tournamentId: string, tableId: string): Promise<{ homeTeam: TeamWithDetails; awayTeam: TeamWithDetails } | null>;
+  updatePairingHistory(tournamentId: string, homeTeamId: string, awayTeamId: string): Promise<void>;
+  shuffleQueue(tournamentId: string): Promise<void>;
+}
+
+export interface ITableAssignmentService {
+  makeInitialAssignments(tournamentId: string): Promise<TableAssignment[]>;
+  processAutomaticAssignments(tournamentId: string): Promise<TableAssignment[]>;
+  manualTableAssignment(tableId: string, homeTeamId: string, awayTeamId: string): Promise<GameWithDetails>;
+}
+
+export interface IGameProgressionService {
+  submitGameScores(submission: GameSubmission): Promise<GameWithDetails>;
+  approveGameScores(gameId: string, directorId: string): Promise<void>;
+  processGameCompletion(gameId: string): Promise<void>;
+  modifyGameScores(gameId: string, newScores: GameScore, directorId: string): Promise<void>;
+}
+
+export interface IMoneyCalculationService {
+  calculateTournamentMoney(tournamentId: string): Promise<MoneyBreakdown>;
+  createPayouts(tournamentId: string, payouts: PayoutCalculation[]): Promise<void>;
+  createPayoutSplit(payoutId: string, splits: PayoutSplit[]): Promise<void>;
+  processPayment(payoutId: string, amount: number, method: string): Promise<void>;
 }
