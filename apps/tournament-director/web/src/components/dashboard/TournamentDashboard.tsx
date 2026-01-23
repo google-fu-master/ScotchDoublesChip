@@ -3,6 +3,7 @@
 import { Calendar, MapPin, Users, Trophy, Plus } from 'lucide-react';
 import { useState } from 'react';
 import { TournamentCreationWizard } from '@/components/tournament/TournamentCreationWizard';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export function TournamentDashboard() {
   const [showCreateWizard, setShowCreateWizard] = useState(false);
