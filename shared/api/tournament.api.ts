@@ -54,7 +54,7 @@ const submitScoresSchema = z.object({
 const directorActionSchema = z.object({
   action: z.enum(['approve_scores', 'modify_scores', 'assign_table', 'manual_payout', 'chip_adjustment']),
   targetId: z.string(),
-  parameters: z.record(z.any()),
+  parameters: z.record(z.string(), z.any()),
   reason: z.string().optional()
 });
 
@@ -174,7 +174,7 @@ export class TournamentApiController {
 
   private async getTournament(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const tournamentId = req.params.id;
+      const tournamentId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const tournament = await this.serviceContainer
         .getPrisma()
         .tournament.findUnique({
@@ -211,7 +211,7 @@ export class TournamentApiController {
 
   private async getTournamentState(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const tournamentId = req.params.id;
+      const tournamentId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const state = await this.serviceContainer
         .getTournamentService()
         .getTournamentState(tournamentId);
@@ -225,7 +225,7 @@ export class TournamentApiController {
   // Tournament lifecycle
   private async startTournament(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const tournamentId = req.params.id;
+      const tournamentId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       await this.serviceContainer
         .getTournamentService()
         .startTournament(tournamentId, req.user!.id);
@@ -245,7 +245,7 @@ export class TournamentApiController {
         return;
       }
 
-      const tournamentId = req.params.id;
+      const tournamentId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const teamRequest: AddTeamRequest = {
         tournamentId,
         ...validation.data
@@ -270,10 +270,17 @@ export class TournamentApiController {
         return;
       }
 
-      const gameId = req.params.gameId;
+      const gameId = Array.isArray(req.params.gameId) ? req.params.gameId[0] : req.params.gameId;
+      const { homeScore, awayScore, forfeit, notes } = validation.data;
+      const winner = forfeit ? 'away' : (homeScore > awayScore ? 'home' : 'away');
+      
       const submission = {
         gameId,
-        ...validation.data,
+        homeScore,
+        awayScore,
+        winner,
+        forfeit,
+        notes,
         submittedBy: req.user!.id,
         submittedAt: new Date(),
         requiresApproval: true
@@ -291,7 +298,7 @@ export class TournamentApiController {
 
   private async approveScores(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const gameId = req.params.gameId;
+      const gameId = Array.isArray(req.params.gameId) ? req.params.gameId[0] : req.params.gameId;
       await this.serviceContainer
         .getGameProgressionService()
         .approveGameScores(gameId, req.user!.id);
@@ -305,7 +312,7 @@ export class TournamentApiController {
   // Money management
   private async getMoneyBreakdown(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const tournamentId = req.params.id;
+      const tournamentId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const breakdown = await this.serviceContainer
         .getMoneyCalculationService()
         .calculateTournamentMoney(tournamentId);
@@ -318,7 +325,7 @@ export class TournamentApiController {
 
   private async createPayouts(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> {
     try {
-      const tournamentId = req.params.id;
+      const tournamentId = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
       const { payouts }: { payouts: PayoutCalculation[] } = req.body;
 
       await this.serviceContainer

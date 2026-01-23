@@ -35,6 +35,14 @@ export interface IServiceContainer {
   getLogger(): ILogger;
   getPrisma(): PrismaClient;
   
+  // Health and lifecycle
+  healthCheck(): Promise<{
+    status: 'healthy' | 'unhealthy';
+    services: Record<string, boolean>;
+    database: boolean;
+    timestamp: Date;
+  }>;
+  
   // Cleanup
   dispose(): Promise<void>;
 }

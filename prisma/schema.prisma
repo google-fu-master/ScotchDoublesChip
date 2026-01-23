@@ -474,6 +474,7 @@ model PayoutSplit {
   totalAmount Decimal?
   percentage  Decimal?
   description String?
+  createdBy   String?
   
   createdAt   DateTime @default(now())
   

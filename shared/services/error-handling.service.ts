@@ -271,8 +271,7 @@ export class ErrorHandlingService implements IErrorHandler {
           stack: error.stack,
           userId: error.userId,
           tournamentId: error.tournamentId,
-          correlationId: error.correlationId,
-          createdAt: error.timestamp
+          correlationId: error.correlationId
         }
       });
 
@@ -340,7 +339,7 @@ export class ErrorHandlingService implements IErrorHandler {
         category: error.category
       });
     } catch (notifyError) {
-      this.logger.error('Failed to create error notification', notifyError, {
+      this.logger.error('Failed to create error notification', notifyError instanceof Error ? notifyError : new Error(String(notifyError)), {
         originalErrorId: error.id
       });
     }
@@ -357,7 +356,7 @@ export class ErrorHandlingService implements IErrorHandler {
   }> {
     const errors = await this.prisma.errorLog.findMany({
       where: {
-        createdAt: {
+        timestamp: {
           gte: timeRange.start,
           lte: timeRange.end
         }
@@ -389,7 +388,9 @@ export class ErrorHandlingService implements IErrorHandler {
     errors.forEach(error => {
       stats.errorsByCategory[error.category as ErrorCategory]++;
       stats.errorsBySeverity[error.severity as ErrorSeverity]++;
-      codeCount[error.code] = (codeCount[error.code] || 0) + 1;
+      if (error.code) {
+        codeCount[error.code] = (codeCount[error.code] || 0) + 1;
+      }
     });
 
     // Get top error codes
