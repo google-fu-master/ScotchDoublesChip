@@ -1,0 +1,19 @@
+{
+  "name": "@scotch-doubles/api",
+  "version": "1.0.0",
+  "description": "Shared API utilities and client for the Scotch Doubles Tournament System",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist"
+  },
+  "dependencies": {
+    "@scotch-doubles/types": "*",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
