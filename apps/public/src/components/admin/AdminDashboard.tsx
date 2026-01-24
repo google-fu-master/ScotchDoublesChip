@@ -113,13 +113,13 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const totalRevenue = tournaments.reduce((sum, t) => sum + (t.buyIn * t.registeredTeams), 0);
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white dark:bg-slate-800 rounded-lg max-w-6xl w-full my-8">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+      <div className="bg-white dark:bg-slate-800 rounded-lg w-full max-w-6xl max-h-[95vh] flex flex-col shadow-xl">
+        <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-3">
               <Shield className="w-8 h-8 text-red-600" />
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Admin Dashboard - God Mode</h2>
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Admin Dashboard - God Mode</h2>
             </div>
             <button 
               onClick={onClose}
@@ -129,7 +129,7 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
             </button>
           </div>
 
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-1 mt-4 overflow-x-auto scrollbar-hide">
             {[
               { id: 'overview', label: 'Overview', icon: BarChart },
               { id: 'users', label: 'Users', icon: Users },
@@ -156,10 +156,10 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
           </div>
         </div>
 
-        <div className="p-6 max-h-[70vh] overflow-y-auto">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1">
           {activeTab === 'overview' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                   <div className="flex items-center gap-2 mb-2">
                     <Trophy className="w-5 h-5 text-blue-600" />

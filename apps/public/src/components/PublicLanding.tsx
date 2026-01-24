@@ -209,19 +209,26 @@ export function PublicLanding() {
           
           {/* Mobile Menu */}
           {mobileMenuOpen && (
-            <div className="md:hidden mt-4 pb-4 border-t border-slate-200 dark:border-slate-700">
-              <nav className="flex flex-col space-y-2 mt-4">
-                <button 
-                  onClick={() => {
-                    setShowTournamentSearch(true);
-                    setMobileMenuOpen(false);
-                  }}
-                  className="text-left text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors py-2"
-                >
-                  Tournaments
-                </button>
-                <a href="#venues" className="text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors py-2">Venues</a>
-                <a href="#rankings" className="text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors py-2">Rankings</a>
+            <>
+              {/* Overlay */}
+              <div 
+                className="fixed inset-0 bg-black/20 z-40 md:hidden" 
+                onClick={() => setMobileMenuOpen(false)}
+              />
+              {/* Menu */}
+              <div className="md:hidden mt-4 pb-4 border-t border-slate-200 dark:border-slate-700 relative z-50 bg-white dark:bg-slate-800">
+                <nav className="flex flex-col space-y-2 mt-4">
+                  <button 
+                    onClick={() => {
+                      setShowTournamentSearch(true);
+                      setMobileMenuOpen(false);
+                    }}
+                    className="text-left text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors py-3 px-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 min-h-[44px] flex items-center"
+                  >
+                    Tournaments
+                  </button>
+                  <a href="#venues" className="text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors py-3 px-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 min-h-[44px] flex items-center">Venues</a>
+                  <a href="#rankings" className="text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors py-3 px-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 min-h-[44px] flex items-center">Rankings</a>
                 <div className="py-2">
                   <ThemeToggle />
                   {!isLoggedIn ? (
@@ -232,7 +239,7 @@ export function PublicLanding() {
                           setShowAuthModal(true);
                           setMobileMenuOpen(false);
                         }}
-                        className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors py-2"
+                        className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors py-3 px-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 min-h-[44px]"
                       >
                         <LogIn className="w-4 h-4" />
                         Login
@@ -243,7 +250,7 @@ export function PublicLanding() {
                           setShowAuthModal(true);
                           setMobileMenuOpen(false);
                         }}
-                        className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors text-center"
+                        className="bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors text-center min-h-[44px] flex items-center justify-center"
                       >
                         Sign Up
                       </button>
@@ -272,7 +279,8 @@ export function PublicLanding() {
                   )}
                 </div>
               </nav>
-            </div>
+              </div>
+            </>
           )}
         </div>
       </header>
@@ -281,7 +289,7 @@ export function PublicLanding() {
       <section className="py-20 px-6">
         <div className="max-w-7xl mx-auto text-center">
           <div className="mb-8">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6">
+            <h1 className="text-4xl sm:text-5xl lg:text-7xl font-bold mb-6">
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600">
                 Elite Pool
               </span>

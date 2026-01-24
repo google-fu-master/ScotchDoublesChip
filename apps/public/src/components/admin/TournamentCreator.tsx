@@ -88,11 +88,11 @@ export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps)
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 z-50 overflow-y-auto">
-      <div className="bg-white dark:bg-slate-800 rounded-lg max-w-3xl w-full my-8">
-        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" role="dialog" aria-labelledby="tournament-modal-title" aria-modal="true">
+      <div className="bg-white dark:bg-slate-800 rounded-lg w-full max-w-sm sm:max-w-lg lg:max-w-3xl max-h-[95vh] flex flex-col shadow-xl">
+        <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-700 flex-shrink-0">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Create Tournament</h2>
+            <h2 id="tournament-modal-title" className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Create Tournament</h2>
             <button 
               onClick={onClose}
               className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
@@ -132,7 +132,7 @@ export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps)
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6 overflow-y-auto flex-1">
           {step === 1 && (
             <div className="space-y-4">
               <div>

@@ -120,8 +120,8 @@ export function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md">
-        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-600">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md max-h-[90vh] flex flex-col">
+        <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-600 flex-shrink-0">
           <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
             {mode === 'login' ? 'Login' : 'Create Account'}
           </h2>
@@ -133,7 +133,7 @@ export function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-6 overflow-y-auto flex-1">
           {/* Step 1: Contact Method */}
           {step === 'contact' && (
             <form onSubmit={handleContactSubmit} className="space-y-6">

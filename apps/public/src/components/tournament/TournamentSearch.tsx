@@ -87,7 +87,7 @@ export function TournamentSearch({ onClose, isLoggedIn, userType }: TournamentSe
   if (selectedTournament) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <div className="bg-white dark:bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="bg-white dark:bg-slate-800 rounded-lg w-full max-w-sm sm:max-w-lg lg:max-w-2xl max-h-[90vh] flex flex-col shadow-xl">
           <div className="p-6">
             <div className="flex justify-between items-start mb-4">
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
@@ -181,10 +181,10 @@ export function TournamentSearch({ onClose, isLoggedIn, userType }: TournamentSe
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white dark:bg-slate-800 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Find Tournaments</h2>
+      <div className="bg-white dark:bg-slate-800 rounded-lg w-full max-w-sm sm:max-w-lg lg:max-w-4xl max-h-[90vh] flex flex-col shadow-xl">
+        <div className="p-4 sm:p-6 border-b border-slate-200 dark:border-slate-600 flex-shrink-0">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">Find Tournaments</h2>
             <button 
               onClick={onClose}
               className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
@@ -192,7 +192,9 @@ export function TournamentSearch({ onClose, isLoggedIn, userType }: TournamentSe
               <X className="w-5 h-5" />
             </button>
           </div>
+        </div>
 
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
           <div className="mb-6">
             <div className="relative">
               <Search className="w-5 h-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />

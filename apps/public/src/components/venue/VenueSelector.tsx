@@ -178,8 +178,8 @@ export function VenueSelector({ onVenueSelect, selectedVenue, allowNoVenue = tru
       {/* Venue Selection Modal */}
       {isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-4xl max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-600">
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-sm sm:max-w-lg lg:max-w-4xl max-h-[90vh] flex flex-col">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-slate-200 dark:border-slate-600 flex-shrink-0">
               <h3 className="text-lg font-semibold text-slate-900 dark:text-white">
                 Select Tournament Venue
               </h3>
@@ -191,7 +191,7 @@ export function VenueSelector({ onVenueSelect, selectedVenue, allowNoVenue = tru
               </button>
             </div>
 
-            <div className="p-6 flex-1 overflow-hidden flex flex-col">
+            <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
               {!showAddVenue ? (
                 <>
                   {/* Search Bar */}
