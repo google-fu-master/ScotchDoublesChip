@@ -67,37 +67,47 @@ const mockUsers: User[] = [
   { id: 4, name: "John Smith", email: "john@example.com", type: "player", status: "suspended", lastLogin: "2026-01-20" },
 ];
 
+// TODO: Replace with real database integration when Prisma is connected
+
 export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'tournaments' | 'financials' | 'database' | 'fargo' | 'system' | 'reports'>('overview');
   const [tournaments, setTournaments] = useState<Tournament[]>(mockTournaments);
   const [users, setUsers] = useState<User[]>(mockUsers);
   const [showTournamentCreator, setShowTournamentCreator] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleCreateTournament = () => {
     setShowTournamentCreator(true);
   };
 
-  const handleTournamentSubmit = (data: any) => {
-    // Create new tournament from form data
-    const newTournament: Tournament = {
-      id: Math.max(...tournaments.map(t => t.id)) + 1,
-      name: data.name,
-      date: data.startDateTime ? data.startDateTime.split('T')[0] : '',
-      venue: data.venue?.name || 'TBD',
-      status: 'upcoming',
-      registeredTeams: 0,
-      maxTeams: data.estimatedPlayers || 32,
-      buyIn: data.entryFee || 0,
-      chipStructure: `${data.defaultChipsPerPlayer} Starting Chips`,
-      tdName: 'Current User', // TODO: Get from auth context
-      isPublic: data.access === 'public'
-    };
+  const handleTournamentSubmit = async (data: any) => {
+    setIsLoading(true);
+    try {
+      // The TournamentCreatorNew component now handles API submission internally
+      // This is just for updating the local state and UI
+      const newTournament: Tournament = {
+        id: Math.max(...tournaments.map(t => t.id)) + 1,
+        name: data.name,
+        date: data.startDateTime ? data.startDateTime.split('T')[0] : '',
+        venue: data.venue?.name || 'TBD',
+        status: 'upcoming',
+        registeredTeams: 0,
+        maxTeams: data.estimatedPlayers || 32,
+        buyIn: data.entryFee || 0,
+        chipStructure: `${data.defaultChipsPerPlayer} Starting Chips`,
+        tdName: 'Current User', // TODO: Get from auth context
+        isPublic: data.access === 'public'
+      };
 
-    setTournaments(prev => [...prev, newTournament]);
-    setShowTournamentCreator(false);
-    
-    // TODO: Save to database via API
-    console.log('New tournament created:', newTournament);
+      setTournaments(prev => [...prev, newTournament]);
+      setShowTournamentCreator(false);
+      
+      console.log('Tournament created successfully:', newTournament);
+    } catch (error) {
+      console.error('Error in tournament creation handler:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleDeleteTournament = (id: number) => {

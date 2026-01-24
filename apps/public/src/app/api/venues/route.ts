@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { venueManager } from '../../../lib/venue';
+import { venueManager, CreateVenueData } from '../../../lib/venue';
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,11 +33,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const venueData = await request.json();
+    const venueData: any = await request.json();
 
     // Validate required fields
     const required = ['name', 'address', 'city', 'state', 'zipCode'];
-    const missing = required.filter(field => !venueData[field]);
+    const missing = required.filter((field: string) => !venueData[field]);
     
     if (missing.length > 0) {
       return NextResponse.json(
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const venue = venueManager.createVenue(venueData);
+    const venue = venueManager.createVenue(venueData as CreateVenueData);
     
     return NextResponse.json({
       success: true,

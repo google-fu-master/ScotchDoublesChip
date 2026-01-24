@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verificationManager } from '../../../../lib/verification';
+import { VerifyCodeSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function POST(request: NextRequest) {
   try {
-    const { contact, code } = await request.json();
+    const body = await request.json();
+    const { contact, code } = VerifyCodeSchema.parse(body);
 
     if (!contact || !code) {
       return NextResponse.json(

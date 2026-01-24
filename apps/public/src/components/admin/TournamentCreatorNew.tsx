@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { X, Calendar, MapPin, Trophy, Users, DollarSign, Clock, Plus, Settings, Save, FileText, Trash2 } from 'lucide-react';
 import { VenueSelector } from '../venue/VenueSelector';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Venue {
   id: string;
@@ -96,6 +97,7 @@ interface TournamentCreatorProps {
 }
 
 export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps) {
+  const { user, isAuthenticated } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 5;
   const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
@@ -108,10 +110,14 @@ export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps)
         const response = await fetch('/api/tournament-templates');
         if (response.ok) {
           const templatesData = await response.json();
-          setTemplates(templatesData);
+          setTemplates(templatesData || []); // Ensure we always have an array
+        } else {
+          console.warn('Failed to load templates:', response.status, response.statusText);
+          setTemplates([]); // Graceful fallback
         }
       } catch (error) {
         console.error('Error loading templates:', error);
+        setTemplates([]); // Graceful fallback
       }
     };
 
@@ -1194,149 +1200,4 @@ export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps)
       </div>
     </div>
   );
-
-  // Helper Functions
-  function updateFormData(updates: Partial<TournamentFormData>) {
-    setFormData(prev => ({ ...prev, ...updates }));
-  }
-
-  function updateChipRange(index: number, updates: Partial<ChipRange>) {
-    setFormData(prev => ({
-      ...prev,
-      chipRanges: prev.chipRanges.map((range, i) => 
-        i === index ? { ...range, ...updates } : range
-      )
-    }));
-  }
-
-  function addChipRange() {
-    const newRange: ChipRange = { minRating: 0, maxRating: 0, chips: 150 };
-    setFormData(prev => ({
-      ...prev,
-      chipRanges: [...prev.chipRanges, newRange]
-    }));
-  }
-
-  function removeChipRange(index: number) {
-    setFormData(prev => ({
-      ...prev,
-      chipRanges: prev.chipRanges.filter((_, i) => i !== index)
-    }));
-  }
-
-  function addSidePot() {
-    const newPot: SidePot = {
-      id: Date.now().toString(),
-      name: '',
-      entryFee: 0,
-      description: ''
-    };
-    setFormData(prev => ({
-      ...prev,
-      sidePots: [...prev.sidePots, newPot]
-    }));
-  }
-
-  function updateSidePot(id: string, updates: Partial<SidePot>) {
-    setFormData(prev => ({
-      ...prev,
-      sidePots: prev.sidePots.map(pot => 
-        pot.id === id ? { ...pot, ...updates } : pot
-      )
-    }));
-  }
-
-  function removeSidePot(id: string) {
-    setFormData(prev => ({
-      ...prev,
-      sidePots: prev.sidePots.filter(pot => pot.id !== id)
-    }));
-  }
-
-  function loadTemplate(templateId: string) {
-    const template = templates.find(t => t.id === templateId);
-    if (template && template.settings) {
-      const settings = template.settings as TournamentFormData;
-      setFormData(prev => ({
-        ...settings,
-        name: '', // Don't copy the name
-        applyTemplate: templateId,
-        saveAsTemplate: false,
-        templateName: ''
-      }));
-    }
-  }
-
-  function calculateTotalPot(): number {
-    const entrants = formData.playerType === 'singles' ? formData.estimatedPlayers : Math.floor(formData.estimatedPlayers / 2);
-    const totalEntry = formData.entryFee * entrants;
-    return totalEntry - formData.adminFee + formData.addedMoney;
-  }
-
-  function getPayoutStructureOptions(): string[] {
-    return ['Winner Takes All', 'Top 2', 'Top 3', 'Top 4', 'Top 8'];
-  }
-
-  function isStepValid(): boolean {
-    switch (currentStep) {
-      case 1:
-        return formData.name.trim() !== '' && 
-               formData.startDateTime !== '' && 
-               formData.venue !== null;
-      case 2:
-        return formData.estimatedPlayers > 0 && 
-               formData.race > 0;
-      case 3:
-        return formData.defaultChipsPerPlayer > 0 && 
-               formData.chipRanges.length > 0;
-      case 4:
-        return formData.entryFee > 0;
-      case 5:
-        return !formData.saveAsTemplate || formData.templateName.trim() !== '';
-      default:
-        return true;
-    }
-  }
-
-  function handleNext() {
-    if (isStepValid()) {
-      setCurrentStep(prev => Math.min(prev + 1, totalSteps));
-    }
-  }
-
-  function handlePrevious() {
-    setCurrentStep(prev => Math.max(prev - 1, 1));
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    if (!isStepValid()) return;
-
-    setIsLoading(true);
-    try {
-      // Submit tournament data to API
-      const response = await fetch('/api/tournaments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create tournament');
-      }
-
-      const tournament = await response.json();
-      console.log('Tournament created successfully:', tournament);
-
-      // Call the parent's onSubmit to update the UI
-      onSubmit(formData);
-    } catch (error) {
-      console.error('Error creating tournament:', error);
-      alert('Failed to create tournament. Please try again.');
-    } finally {
-      setIsLoading(false);
-    }
-  }
 }

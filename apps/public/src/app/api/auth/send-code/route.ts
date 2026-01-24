@@ -1,10 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { emailService } from '../../../../lib/email';
 import { verificationManager } from '../../../../lib/verification';
+import { SendCodeSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function POST(request: NextRequest) {
   try {
-    const { contact, method } = await request.json();
+    const body = await request.json();
+    const { contact, method } = SendCodeSchema.parse(body);
 
     if (!contact || !method) {
       return NextResponse.json(

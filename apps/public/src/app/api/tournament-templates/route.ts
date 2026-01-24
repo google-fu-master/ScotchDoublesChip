@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { TournamentTemplateCreateSchema } from '@/lib/validations';
+import { z } from 'zod';
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,14 +31,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const data = await request.json();
+    const body = await request.json();
+    const validatedData = TournamentTemplateCreateSchema.parse(body);
 
     const template = await prisma.tournamentTemplate.create({
       data: {
-        name: data.name,
-        description: data.description,
-        settings: data.settings,
-        isPublic: data.isPublic || false,
+        name: validatedData.name,
+        description: validatedData.description,
+        settings: validatedData.settings,
+        isPublic: validatedData.isPublic,
         // TODO: Set createdBy when auth is implemented
         // createdBy: userId
       }
@@ -45,6 +48,14 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(template);
   } catch (error) {
     console.error('Error creating tournament template:', error);
+    
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: 'Invalid request data', details: error.issues },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json(
       { error: 'Failed to create tournament template' },
       { status: 500 }

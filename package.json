@@ -81,6 +81,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
+    "@types/jsonwebtoken": "^9.0.10",
+    "jsonwebtoken": "^9.0.3",
     "zod": "^4.3.5"
   },
   "engines": {
