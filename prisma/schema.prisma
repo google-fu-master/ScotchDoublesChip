@@ -106,9 +106,10 @@ model Tournament {
   
   // Chip tournament settings
   settings       Json            // Tournament-specific configuration
-  rules          Json?           // Tournament rules
+  rules          RulesSystem?    // Tournament rules system
+  ratingSystem   RatingSystem?   // Rating system used
   defaultChipsPerPlayer Int @default(3)
-  chipRanges     Json?           // FARGO-based chip distribution ranges
+  birthdayChip   Boolean @default(true) // Enable birthday chip bonus
   
   // Tournament flow
   bracketOrdering BracketOrdering @default(RANDOM)
@@ -119,6 +120,10 @@ model Tournament {
   playersPerTable Int @default(4)
   currentRound   Int @default(1)
   maxRounds      Int?
+  
+  // Display settings
+  showSkillLevels Boolean @default(true)
+  access         AccessType @default(PUBLIC)
   
   // Financial settings
   adminFee       Decimal @default(0)
@@ -131,6 +136,7 @@ model Tournament {
   // Tournament state
   isCompleted    Boolean @default(false)
   isStarted      Boolean @default(false)
+  isPublic       Boolean @default(true) // Legacy field, use access instead
   
   // Scheduling
   startDate      DateTime?
@@ -160,6 +166,7 @@ model Tournament {
   chipTransactions ChipTransaction[]
   payouts        Payout[]
   sidePots       SidePot[]
+  chipRanges     ChipRange[]
   queue          TournamentQueue?
   teamPairings   TeamPairing[]
   teamAssignments TeamAssignment[]
@@ -460,6 +467,46 @@ model SidePotEntry {
   @@map("side_pot_entries")
 }
 
+// Chip distribution ranges based on Fargo ratings
+model ChipRange {
+  id           String @id @default(cuid())
+  tournamentId String
+  
+  // Range definition
+  minRating    Int
+  maxRating    Int
+  chips        Int
+  
+  // Metadata
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  
+  @@map("chip_ranges")
+}
+
+// Tournament templates for reusable configurations
+model TournamentTemplate {
+  id          String @id @default(cuid())
+  name        String
+  description String?
+  
+  // Template settings (stored as JSON matching TournamentFormData structure)
+  settings    Json
+  
+  // Metadata
+  isPublic    Boolean @default(false) // Can other users use this template
+  createdBy   String? // User ID who created the template
+  usageCount  Int @default(0) // How many times this template has been used
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@map("tournament_templates")
+}
+
 model PayoutSplit {
   id          String @id @default(cuid())
   payoutId    String
@@ -648,20 +695,21 @@ enum BracketOrdering {
   SET_ORDER   // Manually set order
 }
 
-enum Rules {
+enum RulesSystem {
   BCA
   APA
-  TAP
+  WPA
+  USAPL
   VNEA
+  LOCAL
   CUSTOM
 }
 
 enum RatingSystem {
+  NONE
   FARGO
   APA
-  TAP
-  VNEA
-  ELO
+  INHOUSE
   CUSTOM
 }
 

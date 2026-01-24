@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { X, Plus, Settings, Users, Trophy, Shield, BarChart, Calendar, Edit, Trash2, Play, Pause, RotateCcw, Database, DollarSign, FileText, Download, Upload, Key, Lock, Unlock, UserX, UserCheck, Crown, AlertTriangle, Activity, TrendingUp, HardDrive, Wifi, Server } from 'lucide-react';
+import { TournamentCreator } from './TournamentCreatorNew';
 
 interface AdminDashboardProps {
   onClose: () => void;
@@ -70,9 +71,33 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'tournaments' | 'financials' | 'database' | 'fargo' | 'system' | 'reports'>('overview');
   const [tournaments, setTournaments] = useState<Tournament[]>(mockTournaments);
   const [users, setUsers] = useState<User[]>(mockUsers);
+  const [showTournamentCreator, setShowTournamentCreator] = useState(false);
 
   const handleCreateTournament = () => {
-    alert('Tournament creation interface would open here');
+    setShowTournamentCreator(true);
+  };
+
+  const handleTournamentSubmit = (data: any) => {
+    // Create new tournament from form data
+    const newTournament: Tournament = {
+      id: Math.max(...tournaments.map(t => t.id)) + 1,
+      name: data.name,
+      date: data.startDateTime ? data.startDateTime.split('T')[0] : '',
+      venue: data.venue?.name || 'TBD',
+      status: 'upcoming',
+      registeredTeams: 0,
+      maxTeams: data.estimatedPlayers || 32,
+      buyIn: data.entryFee || 0,
+      chipStructure: `${data.defaultChipsPerPlayer} Starting Chips`,
+      tdName: 'Current User', // TODO: Get from auth context
+      isPublic: data.access === 'public'
+    };
+
+    setTournaments(prev => [...prev, newTournament]);
+    setShowTournamentCreator(false);
+    
+    // TODO: Save to database via API
+    console.log('New tournament created:', newTournament);
   };
 
   const handleDeleteTournament = (id: number) => {
@@ -551,6 +576,14 @@ export function AdminDashboard({ onClose }: AdminDashboardProps) {
           )}
         </div>
       </div>
+
+      {/* Tournament Creator Modal */}
+      {showTournamentCreator && (
+        <TournamentCreator 
+          onClose={() => setShowTournamentCreator(false)}
+          onSubmit={handleTournamentSubmit}
+        />
+      )}
     </div>
   );
 }

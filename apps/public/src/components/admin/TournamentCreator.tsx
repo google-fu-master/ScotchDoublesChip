@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { X, Calendar, MapPin, Trophy, Users, DollarSign, Clock } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Calendar, MapPin, Trophy, Users, DollarSign, Clock, Plus, Settings, Save, FileText } from 'lucide-react';
 import { VenueSelector } from '../venue/VenueSelector';
 
 interface Venue {
@@ -24,30 +24,132 @@ interface Venue {
   isVerified: boolean;
 }
 
+interface ChipRange {
+  minRating: number;
+  maxRating: number;
+  chips: number;
+}
+
+interface SidePot {
+  id: string;
+  name: string;
+  entryFee: number;
+  description: string;
+}
+
+interface TournamentTemplate {
+  id: string;
+  name: string;
+  settings: TournamentFormData;
+}
+
+interface TournamentFormData {
+  // Basic Information
+  name: string;
+  applyTemplate: string;
+  description: string;
+  startDateTime: string;
+  endDateTime: string;
+  venue: Venue | null;
+  
+  // Tournament Configuration
+  playerType: 'singles' | 'doubles' | 'scotch_doubles';
+  gameType: 'eight_ball' | 'nine_ball' | 'ten_ball';
+  tournamentType: 'chip_tournament';
+  race: number;
+  estimatedPlayers: number;
+  playersPerTable: number;
+  
+  // Chip Settings
+  defaultChipsPerPlayer: number;
+  chipRanges: ChipRange[];
+  birthdayChip: boolean;
+  
+  // Tournament Settings
+  bracketOrdering: 'random' | 'seeded' | 'set_order';
+  autopilotMode: boolean;
+  randomPlayerOrdering: boolean;
+  rules: 'bca' | 'apa' | 'wpa' | 'usapl' | 'vnea' | 'local';
+  ratingSystem: 'none' | 'fargo' | 'apa' | 'inhouse';
+  
+  // Financial Settings
+  entryFee: number;
+  adminFee: number;
+  addedMoney: number;
+  payoutType: 'places' | 'percentage';
+  payoutStructurePlaces: string;
+  payoutStructurePercentage: string;
+  
+  // Display & Access
+  showSkillLevels: boolean;
+  access: 'public' | 'private';
+  sidePots: SidePot[];
+  
+  // Template
+  saveAsTemplate: boolean;
+  templateName: string;
+}
+
 interface TournamentCreatorProps {
   onClose: () => void;
-  onSubmit: (data: any) => void;
+  onSubmit: (data: TournamentFormData) => void;
 }
 
 export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps) {
-  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
-  const [formData, setFormData] = useState({
+  const [currentStep, setCurrentStep] = useState(1);
+  const totalSteps = 5;
+  const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
+  const [formData, setFormData] = useState<TournamentFormData>({
+    // Basic Information
     name: '',
-    date: '',
-    startTime: '',
-    maxTeams: 32,
-    buyIn: 25,
-    chipStructure: '150 Starting Chips',
+    applyTemplate: '',
     description: '',
-    isPublic: true,
-    registrationDeadline: '',
-    prizeStructure: 'Standard (70/20/10)',
-    tdName: 'Admin User',
-    contactInfo: 'admin@scotchdoubles.com',
-    specialRules: '',
-    entryFee: 0,
-    chipRebuyRules: 'No rebuys',
-    lateRegistration: true,
+    startDateTime: '',
+    endDateTime: '',
+    venue: null,
+    
+    // Tournament Configuration
+    playerType: 'scotch_doubles',
+    gameType: 'nine_ball',
+    tournamentType: 'chip_tournament',
+    race: 1,
+    estimatedPlayers: 16,
+    playersPerTable: 4,
+    
+    // Chip Settings
+    defaultChipsPerPlayer: 150,
+    chipRanges: [
+      { minRating: 200, maxRating: 400, chips: 200 },
+      { minRating: 401, maxRating: 500, chips: 175 },
+      { minRating: 501, maxRating: 600, chips: 150 },
+      { minRating: 601, maxRating: 700, chips: 125 },
+      { minRating: 701, maxRating: 800, chips: 100 }
+    ],
+    birthdayChip: true,
+    
+    // Tournament Settings
+    bracketOrdering: 'random',
+    autopilotMode: true,
+    randomPlayerOrdering: true,
+    rules: 'bca',
+    ratingSystem: 'fargo',
+    
+    // Financial Settings
+    entryFee: 50,
+    adminFee: 5,
+    addedMoney: 0,
+    payoutType: 'places',
+    payoutStructurePlaces: 'auto',
+    payoutStructurePercentage: '25',
+    
+    // Display & Access
+    showSkillLevels: true,
+    access: 'public',
+    sidePots: [],
+    
+    // Template
+    saveAsTemplate: false,
+    templateName: ''
     maxLateRegTime: 30,
   });
 
