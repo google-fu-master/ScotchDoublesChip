@@ -1,12 +1,13 @@
 'use client';
 
-import { Calendar, MapPin, Users, Trophy, Plus } from 'lucide-react';
+import { Calendar, MapPin, Users, Trophy, Plus, ChevronLeft } from 'lucide-react';
 import { useState } from 'react';
 import { TournamentCreationWizard } from '@/components/tournament/TournamentCreationWizard';
 import { ThemeToggle } from '@/components/theme-toggle';
 
 export function TournamentDashboard() {
   const [showCreateWizard, setShowCreateWizard] = useState(false);
+  const [activeView, setActiveView] = useState('dashboard'); // dashboard, players, venues
 
   const stats = [
     { 
@@ -44,6 +45,64 @@ export function TournamentDashboard() {
           setShowCreateWizard(false);
         }}
       />
+    );
+  }
+
+  if (activeView === 'players') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8 flex justify-between items-start">
+            <div>
+              <button
+                onClick={() => setActiveView('dashboard')}
+                className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-4"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back to Dashboard
+              </button>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Player Management</h1>
+              <p className="text-slate-600 dark:text-slate-400">Manage player registrations and profiles</p>
+            </div>
+            <ThemeToggle />
+          </div>
+          
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 text-center">
+            <Users className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" suppressHydrationWarning />
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">Player Management</h3>
+            <p className="text-slate-600 dark:text-slate-400">Player management features coming soon!</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (activeView === 'venues') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 p-6">
+        <div className="max-w-7xl mx-auto">
+          <div className="mb-8 flex justify-between items-start">
+            <div>
+              <button
+                onClick={() => setActiveView('dashboard')}
+                className="inline-flex items-center gap-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white mb-4"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                Back to Dashboard
+              </button>
+              <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">Venue Management</h1>
+              <p className="text-slate-600 dark:text-slate-400">Configure tables and venue layout</p>
+            </div>
+            <ThemeToggle />
+          </div>
+          
+          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 p-8 text-center">
+            <MapPin className="w-16 h-16 text-slate-300 dark:text-slate-600 mx-auto mb-4" suppressHydrationWarning />
+            <h3 className="text-lg font-medium text-slate-900 dark:text-white mb-2">Venue Setup</h3>
+            <p className="text-slate-600 dark:text-slate-400">Venue management features coming soon!</p>
+          </div>
+        </div>
+      </div>
     );
   }
 
@@ -126,7 +185,10 @@ export function TournamentDashboard() {
                   <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">Create a new scotch doubles tournament</p>
                 </button>
                 
-                <button className="w-full text-left p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-green-300 hover:bg-green-50 dark:hover:bg-slate-700 transition-colors">
+                <button 
+                  onClick={() => setActiveView('players')}
+                  className="w-full text-left p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-green-300 hover:bg-green-50 dark:hover:bg-slate-700 transition-colors"
+                >
                   <div className="flex items-center gap-3">
                     <Users className="w-5 h-5 text-green-600" suppressHydrationWarning />
                     <span className="font-medium text-slate-900 dark:text-white">Manage Players</span>
@@ -134,7 +196,10 @@ export function TournamentDashboard() {
                   <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">View and manage player registrations</p>
                 </button>
                 
-                <button className="w-full text-left p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-purple-300 hover:bg-purple-50 dark:hover:bg-slate-700 transition-colors">
+                <button 
+                  onClick={() => setActiveView('venues')}
+                  className="w-full text-left p-3 rounded-lg border border-slate-200 dark:border-slate-600 hover:border-purple-300 hover:bg-purple-50 dark:hover:bg-slate-700 transition-colors"
+                >
                   <div className="flex items-center gap-3">
                     <MapPin className="w-5 h-5 text-purple-600" suppressHydrationWarning />
                     <span className="font-medium text-slate-900 dark:text-white">Venue Setup</span>
