@@ -26,26 +26,76 @@ export function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
     availableAsManager: false
   });
   const [isVerifying, setIsVerifying] = useState(false);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const handleContactSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsVerifying(true);
+    setIsLoading(true);
+    setError('');
+    setSuccessMessage('');
     
-    // Simulate sending verification code
-    setTimeout(() => {
-      setIsVerifying(false);
+    try {
+      const response = await fetch('/api/auth/send-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contact: formData.contact,
+          method: contactMethod
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send verification code');
+      }
+
+      setSuccessMessage(data.message);
       setStep('verify');
-    }, 1500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to send verification code');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleVerificationSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError('');
     
-    if (mode === 'login') {
-      // Mock successful login
-      onSuccess({ accountType: formData.accountType });
-    } else {
-      setStep('profile');
+    try {
+      const response = await fetch('/api/auth/verify-code', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contact: formData.contact,
+          code: formData.verificationCode
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Invalid verification code');
+      }
+
+      // Verification successful
+      if (mode === 'login') {
+        onSuccess({ accountType: formData.accountType });
+      } else {
+        setStep('profile');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Verification failed');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -87,6 +137,18 @@ export function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
           {/* Step 1: Contact Method */}
           {step === 'contact' && (
             <form onSubmit={handleContactSubmit} className="space-y-6">
+              {/* Error/Success Messages */}
+              {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                  <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                </div>
+              )}
+              {successMessage && (
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
+                  <p className="text-sm text-green-700 dark:text-green-300">{successMessage}</p>
+                </div>
+              )}
+
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">
                   How would you like to receive your login code?
@@ -140,10 +202,10 @@ export function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
 
               <button
                 type="submit"
-                disabled={!isValidContact(formData.contact) || isVerifying}
+                disabled={!isValidContact(formData.contact) || isLoading}
                 className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
-                {isVerifying ? 'Sending Code...' : `Send ${contactMethod === 'email' ? 'Email' : 'Text'} Code`}
+                {isLoading ? 'Sending Code...' : `Send ${contactMethod === 'email' ? 'Email' : 'Text'} Code`}
               </button>
             </form>
           )}
@@ -151,6 +213,13 @@ export function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
           {/* Step 2: Verify Code */}
           {step === 'verify' && (
             <form onSubmit={handleVerificationSubmit} className="space-y-6">
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3">
+                  <p className="text-sm text-red-700 dark:text-red-300">{error}</p>
+                </div>
+              )}
+
               <div className="text-center">
                 <p className="text-slate-600 dark:text-slate-400">
                   We sent a verification code to:
@@ -158,6 +227,11 @@ export function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
                 <p className="font-medium text-slate-900 dark:text-white mt-1">
                   {formData.contact}
                 </p>
+                {contactMethod === 'phone' && (
+                  <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                    📱 SMS not yet implemented - check server console for code
+                  </p>
+                )}
               </div>
 
               <div>
@@ -185,10 +259,10 @@ export function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
                 </button>
                 <button
                   type="submit"
-                  disabled={formData.verificationCode.length !== 6}
+                  disabled={formData.verificationCode.length !== 6 || isLoading}
                   className="flex-1 bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                 >
-                  Verify
+                  {isLoading ? 'Verifying...' : 'Verify'}
                 </button>
               </div>
             </form>

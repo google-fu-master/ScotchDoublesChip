@@ -1,11 +1,12 @@
 'use client';
 
-import { Calendar, MapPin, Trophy, Users, Search, ArrowRight, Menu, X, LogIn, UserPlus, Shield } from 'lucide-react';
+import { Calendar, MapPin, Trophy, Users, Search, ArrowRight, Menu, X, LogIn, UserPlus, Shield, Zap, Target, Award, Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from './theme-toggle';
 import { AuthModal } from './auth/AuthModal';
 import { TournamentSearch } from './tournament/TournamentSearch';
 import { AdminDashboard } from './admin/AdminDashboard';
+import { brand, brandClasses } from '../lib/brand';
 
 export function PublicLanding() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -18,24 +19,28 @@ export function PublicLanding() {
   
   const features = [
     {
-      icon: Trophy,
-      title: "Tournament Management",
-      description: "Advanced chip-based tournament system with real-time tracking"
+      icon: Zap,
+      title: "Lightning-Fast Tournaments",
+      description: "Advanced chip-based system with real-time scoring and instant results",
+      color: "from-purple-500 to-pink-500"
     },
     {
-      icon: Users,
-      title: "Team Formation",
-      description: "Smart pairing system for scotch doubles partnerships"
+      icon: Target,
+      title: "Smart Team Pairing",
+      description: "Intelligent scotch doubles partnership system with skill-based matching",
+      color: "from-blue-500 to-purple-500"
     },
     {
-      icon: Calendar,
-      title: "Event Scheduling",
-      description: "Easy tournament creation and registration management"
+      icon: Award,
+      title: "Professional Management",
+      description: "Tournament director tools with venue integration and prize distribution",
+      color: "from-pink-500 to-red-500"
     },
     {
-      icon: MapPin,
-      title: "Venue Support",
-      description: "Multi-table management and venue-specific configurations"
+      icon: Sparkles,
+      title: "Dynamic Experience",
+      description: "Multi-table coordination with live leaderboards and player analytics",
+      color: "from-green-500 to-blue-500"
     }
   ];
 
@@ -115,14 +120,22 @@ export function PublicLanding() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-700">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 dark:from-slate-900 dark:via-purple-900 dark:to-slate-800">
       {/* Header */}
-      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-b border-slate-200 dark:border-slate-700 sticky top-0 z-50">
+      <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-purple-100 dark:border-slate-700 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Trophy className="w-8 h-8 text-blue-600" suppressHydrationWarning />
-              <span className="text-xl font-bold text-slate-900 dark:text-white">Scotch Doubles</span>
+            {/* Logo */}
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg">
+                <Trophy className="w-6 h-6 text-white" suppressHydrationWarning />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  Scotch Doubles
+                </span>
+                <span className="text-xs text-slate-500 dark:text-slate-400 -mt-1">Tournament Platform</span>
+              </div>
             </div>
             <nav className="hidden md:flex items-center gap-6">
               <button 
@@ -141,7 +154,7 @@ export function PublicLanding() {
                       setAuthMode('login');
                       setShowAuthModal(true);
                     }}
-                    className="flex items-center gap-2 text-slate-600 dark:text-slate-300 hover:text-blue-600 transition-colors px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
+                    className="flex items-center gap-2 text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors px-3 py-2 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-900/20"
                   >
                     <LogIn className="w-4 h-4" />
                     Login
@@ -151,7 +164,7 @@ export function PublicLanding() {
                       setAuthMode('signup');
                       setShowAuthModal(true);
                     }}
-                    className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 flex items-center gap-2 shadow-lg"
                   >
                     <UserPlus className="w-4 h-4" />
                     Sign Up
@@ -162,7 +175,7 @@ export function PublicLanding() {
                   {userType === 'admin' ? (
                     <button 
                       onClick={() => setShowAdminDashboard(true)}
-                      className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                      className="bg-gradient-to-r from-red-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:from-red-700 hover:to-pink-700 transition-all duration-200 flex items-center gap-2 shadow-lg"
                     >
                       <Shield className="w-4 h-4" />
                       Admin Dashboard
@@ -170,7 +183,7 @@ export function PublicLanding() {
                   ) : (
                     <button 
                       onClick={() => alert('Tournament signup functionality')}
-                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                      className="bg-gradient-to-r from-emerald-600 to-green-600 text-white px-4 py-2 rounded-lg hover:from-emerald-700 hover:to-green-700 transition-all duration-200 shadow-lg"
                     >
                       Tournament Sign Up
                     </button>
@@ -265,20 +278,29 @@ export function PublicLanding() {
       </header>
 
       {/* Hero Section */}
-      <section className="py-20">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <h1 className="text-5xl font-bold text-slate-900 dark:text-white mb-6">
-            The Future of
-            <span className="text-blue-600"> Pool Tournaments</span>
-          </h1>
-          <p className="text-xl text-slate-600 dark:text-slate-300 mb-8 max-w-3xl mx-auto">
-            Experience the most advanced scotch doubles tournament system. 
-            Chip-based gameplay, smart matchmaking, and real-time tournament management.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      <section className="py-20 px-6">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="mb-8">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 via-pink-600 to-blue-600">
+                Elite Pool
+              </span>
+              <br />
+              <span className="text-slate-900 dark:text-white">
+                Tournaments
+              </span>
+            </h1>
+            <p className="text-xl md:text-2xl text-slate-600 dark:text-slate-300 mb-8 max-w-4xl mx-auto leading-relaxed">
+              The premium scotch doubles tournament platform. 
+              <br className="hidden md:block" />
+              Advanced chip system, smart matchmaking, and real-time tournament management.
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <button 
               onClick={() => setShowTournamentSearch(true)}
-              className="bg-blue-600 text-white px-8 py-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2 justify-center"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-purple-700 hover:to-pink-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 justify-center"
             >
               <Search className="w-5 h-5" />
               Find Tournaments
@@ -289,49 +311,80 @@ export function PublicLanding() {
                   setAuthMode('signup');
                   setShowAuthModal(true);
                 }}
-                className="border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-8 py-4 rounded-lg font-semibold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-2 justify-center"
+                className="bg-white dark:bg-slate-800 text-purple-600 dark:text-purple-400 border-2 border-purple-200 dark:border-purple-700 px-8 py-4 rounded-xl font-semibold hover:border-purple-300 dark:hover:border-purple-600 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 justify-center"
               >
                 <UserPlus className="w-5 h-5" />
-                Get Started
+                Join Platform
               </button>
             ) : (
               <button 
                 onClick={() => alert('Tournament signup functionality')}
-                className="border border-green-300 dark:border-green-600 text-green-700 dark:text-green-300 px-8 py-4 rounded-lg font-semibold hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors flex items-center gap-2 justify-center"
+                className="bg-gradient-to-r from-emerald-500 to-green-600 text-white px-8 py-4 rounded-xl font-semibold hover:from-emerald-600 hover:to-green-700 transition-all duration-200 transform hover:scale-105 shadow-lg hover:shadow-xl flex items-center gap-2 justify-center"
               >
                 <Trophy className="w-5 h-5" />
-                Sign Up for Tournament
+                Enter Tournament
               </button>
             )}
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-purple-600">500+</div>
+              <div className="text-slate-600 dark:text-slate-400">Active Players</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-pink-600">120+</div>
+              <div className="text-slate-600 dark:text-slate-400">Tournaments</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-blue-600">50+</div>
+              <div className="text-slate-600 dark:text-slate-400">Venues</div>
+            </div>
+            <div className="text-center">
+              <div className="text-3xl md:text-4xl font-bold text-emerald-600">$25K+</div>
+              <div className="text-slate-600 dark:text-slate-400">Prizes Awarded</div>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-16 bg-white dark:bg-slate-900">
+      <section id="features" className="py-20 bg-white/50 dark:bg-slate-900/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 dark:text-white mb-4">Why Choose Our Platform?</h2>
-            <p className="text-slate-600 dark:text-slate-300 max-w-2xl mx-auto">
-              Built specifically for scotch doubles tournaments with advanced features 
-              that traditional systems can't match.
+          <div className="text-center mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-600">
+                Why Choose
+              </span>
+              <br />
+              <span className="text-slate-900 dark:text-white">Our Platform?</span>
+            </h2>
+            <p className="text-xl text-slate-600 dark:text-slate-300 max-w-3xl mx-auto leading-relaxed">
+              Built specifically for scotch doubles tournaments with cutting-edge features 
+              that traditional systems simply can't match.
             </p>
           </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {features.map((feature, index) => {
               const Icon = feature.icon;
               return (
-                <button 
+                <div 
                   key={index} 
-                  className="text-center p-4 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
-                  onClick={() => alert(`Learn more about ${feature.title}`)}
+                  className="group relative bg-white/80 dark:bg-slate-800/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-105 border border-purple-100 dark:border-slate-700"
                 >
-                  <div className="bg-blue-50 dark:bg-blue-900/30 w-16 h-16 rounded-xl flex items-center justify-center mx-auto mb-4">
-                    <Icon className="w-8 h-8 text-blue-600" />
+                  <div className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${feature.color} p-0.5 mx-auto mb-6`}>
+                    <div className="w-full h-full bg-white dark:bg-slate-800 rounded-2xl flex items-center justify-center">
+                      <Icon className="w-8 h-8 text-purple-600" />
+                    </div>
                   </div>
-                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{feature.title}</h3>
-                  <p className="text-slate-600 dark:text-slate-400 text-sm">{feature.description}</p>
-                </button>
+                  <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-4 text-center">{feature.title}</h3>
+                  <p className="text-slate-600 dark:text-slate-400 text-center leading-relaxed">{feature.description}</p>
+                  
+                  {/* Hover effect */}
+                  <div className={`absolute inset-0 bg-gradient-to-r ${feature.color} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-300`}></div>
+                </div>
               );
             })}
           </div>

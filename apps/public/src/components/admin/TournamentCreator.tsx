@@ -2,6 +2,27 @@
 
 import { useState } from 'react';
 import { X, Calendar, MapPin, Trophy, Users, DollarSign, Clock } from 'lucide-react';
+import { VenueSelector } from '../venue/VenueSelector';
+
+interface Venue {
+  id: string;
+  name: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  phone?: string;
+  email?: string;
+  website?: string;
+  description?: string;
+  amenities: string[];
+  tableCount?: number;
+  maxCapacity?: number;
+  hourlyRate?: number;
+  contactName?: string;
+  isVerified: boolean;
+}
 
 interface TournamentCreatorProps {
   onClose: () => void;
@@ -9,12 +30,11 @@ interface TournamentCreatorProps {
 }
 
 export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps) {
+  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     date: '',
     startTime: '',
-    venue: '',
-    address: '',
     maxTeams: 32,
     buyIn: 25,
     chipStructure: '150 Starting Chips',
@@ -48,13 +68,16 @@ export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSubmit(formData);
+    onSubmit({
+      ...formData,
+      venue: selectedVenue
+    });
   };
 
   const isStepValid = () => {
     switch (step) {
       case 1:
-        return formData.name && formData.date && formData.venue;
+        return formData.name && formData.date; // Venue is optional
       case 2:
         return formData.buyIn > 0 && formData.maxTeams > 0;
       case 3:
@@ -162,35 +185,12 @@ export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps)
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Venue <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <MapPin className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    value={formData.venue}
-                    onChange={(e) => handleInputChange('venue', e.target.value)}
-                    placeholder="e.g., Downtown Billiards"
-                    className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                  Venue Address
-                </label>
-                <input
-                  type="text"
-                  value={formData.address}
-                  onChange={(e) => handleInputChange('address', e.target.value)}
-                  placeholder="123 Main St, City, State"
-                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
+              {/* Venue Selection */}
+              <VenueSelector
+                onVenueSelect={setSelectedVenue}
+                selectedVenue={selectedVenue}
+                allowNoVenue={true}
+              />
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
