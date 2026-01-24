@@ -1,18 +1,20 @@
 'use client';
 
-import { Calendar, MapPin, Trophy, Users, Search, ArrowRight, Menu, X, LogIn, UserPlus } from 'lucide-react';
+import { Calendar, MapPin, Trophy, Users, Search, ArrowRight, Menu, X, LogIn, UserPlus, Shield } from 'lucide-react';
 import { useState } from 'react';
 import { ThemeToggle } from './theme-toggle';
 import { AuthModal } from './auth/AuthModal';
 import { TournamentSearch } from './tournament/TournamentSearch';
+import { AdminDashboard } from './admin/AdminDashboard';
 
 export function PublicLanding() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showTournamentSearch, setShowTournamentSearch] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const [authMode, setAuthMode] = useState<'login' | 'signup'>('login');
   const [isLoggedIn, setIsLoggedIn] = useState(false); // Mock auth state
-  const [userType, setUserType] = useState<'player' | 'td'>('player'); // Mock user type
+  const [userType, setUserType] = useState<'player' | 'td' | 'admin'>('player'); // Mock user type
   
   const features = [
     {
@@ -157,12 +159,22 @@ export function PublicLanding() {
                 </div>
               ) : (
                 <div className="flex gap-2">
-                  <button 
-                    onClick={() => alert('Tournament signup functionality')}
-                    className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
-                  >
-                    Tournament Sign Up
-                  </button>
+                  {userType === 'admin' ? (
+                    <button 
+                      onClick={() => setShowAdminDashboard(true)}
+                      className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                    >
+                      <Shield className="w-4 h-4" />
+                      Admin Dashboard
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={() => alert('Tournament signup functionality')}
+                      className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      Tournament Sign Up
+                    </button>
+                  )}
                   <button 
                     onClick={() => setIsLoggedIn(false)}
                     className="text-slate-600 dark:text-slate-300 hover:text-red-600 transition-colors px-3 py-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
@@ -460,6 +472,13 @@ export function PublicLanding() {
           onClose={() => setShowTournamentSearch(false)}
           isLoggedIn={isLoggedIn}
           userType={userType}
+        />
+      )}
+
+      {/* Admin Dashboard Modal */}
+      {showAdminDashboard && (
+        <AdminDashboard
+          onClose={() => setShowAdminDashboard(false)}
         />
       )}
     </div>

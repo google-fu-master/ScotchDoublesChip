@@ -1,0 +1,447 @@
+'use client';
+
+import { useState } from 'react';
+import { X, Calendar, MapPin, Trophy, Users, DollarSign, Clock } from 'lucide-react';
+
+interface TournamentCreatorProps {
+  onClose: () => void;
+  onSubmit: (data: any) => void;
+}
+
+export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps) {
+  const [formData, setFormData] = useState({
+    name: '',
+    date: '',
+    startTime: '',
+    venue: '',
+    address: '',
+    maxTeams: 32,
+    buyIn: 25,
+    chipStructure: '150 Starting Chips',
+    description: '',
+    isPublic: true,
+    registrationDeadline: '',
+    prizeStructure: 'Standard (70/20/10)',
+    tdName: 'Admin User',
+    contactInfo: 'admin@scotchdoubles.com',
+    specialRules: '',
+    entryFee: 0,
+    chipRebuyRules: 'No rebuys',
+    lateRegistration: true,
+    maxLateRegTime: 30,
+  });
+
+  const [step, setStep] = useState(1);
+  const totalSteps = 3;
+
+  const handleInputChange = (field: string, value: any) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  const handleNext = () => {
+    if (step < totalSteps) setStep(step + 1);
+  };
+
+  const handlePrevious = () => {
+    if (step > 1) setStep(step - 1);
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSubmit(formData);
+  };
+
+  const isStepValid = () => {
+    switch (step) {
+      case 1:
+        return formData.name && formData.date && formData.venue;
+      case 2:
+        return formData.buyIn > 0 && formData.maxTeams > 0;
+      case 3:
+        return true; // Optional fields
+      default:
+        return false;
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-start justify-center p-4 z-50 overflow-y-auto">
+      <div className="bg-white dark:bg-slate-800 rounded-lg max-w-3xl w-full my-8">
+        <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Create Tournament</h2>
+            <button 
+              onClick={onClose}
+              className="p-2 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Progress indicator */}
+          <div className="flex items-center space-x-2">
+            {[1, 2, 3].map((stepNumber) => (
+              <div key={stepNumber} className="flex items-center">
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                  stepNumber === step 
+                    ? 'bg-blue-600 text-white'
+                    : stepNumber < step
+                    ? 'bg-green-600 text-white'
+                    : 'bg-slate-200 dark:bg-slate-600 text-slate-600 dark:text-slate-300'
+                }`}>
+                  {stepNumber}
+                </div>
+                {stepNumber < totalSteps && (
+                  <div className={`w-8 h-1 mx-2 ${
+                    stepNumber < step ? 'bg-green-600' : 'bg-slate-200 dark:bg-slate-600'
+                  }`} />
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 text-sm text-slate-600 dark:text-slate-300">
+            Step {step} of {totalSteps}: {
+              step === 1 ? 'Basic Information' :
+              step === 2 ? 'Tournament Settings' :
+              'Additional Details'
+            }
+          </div>
+        </div>
+
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          {step === 1 && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Tournament Name <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <Trophy className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => handleInputChange('name', e.target.value)}
+                    placeholder="e.g., Winter Championship 2026"
+                    className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Date <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Calendar className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="date"
+                      value={formData.date}
+                      onChange={(e) => handleInputChange('date', e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Start Time
+                  </label>
+                  <div className="relative">
+                    <Clock className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="time"
+                      value={formData.startTime}
+                      onChange={(e) => handleInputChange('startTime', e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Venue <span className="text-red-500">*</span>
+                </label>
+                <div className="relative">
+                  <MapPin className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="text"
+                    value={formData.venue}
+                    onChange={(e) => handleInputChange('venue', e.target.value)}
+                    placeholder="e.g., Downtown Billiards"
+                    className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Venue Address
+                </label>
+                <input
+                  type="text"
+                  value={formData.address}
+                  onChange={(e) => handleInputChange('address', e.target.value)}
+                  placeholder="123 Main St, City, State"
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Tournament Description
+                </label>
+                <textarea
+                  value={formData.description}
+                  onChange={(e) => handleInputChange('description', e.target.value)}
+                  placeholder="Describe your tournament..."
+                  rows={3}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          )}
+
+          {step === 2 && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Maximum Teams <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <Users className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="number"
+                      value={formData.maxTeams}
+                      onChange={(e) => handleInputChange('maxTeams', parseInt(e.target.value))}
+                      min="4"
+                      max="128"
+                      className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                    Buy-in Amount <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <DollarSign className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                    <input
+                      type="number"
+                      value={formData.buyIn}
+                      onChange={(e) => handleInputChange('buyIn', parseInt(e.target.value))}
+                      min="0"
+                      className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Chip Structure
+                </label>
+                <select
+                  value={formData.chipStructure}
+                  onChange={(e) => handleInputChange('chipStructure', e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="100 Starting Chips">100 Starting Chips (Fast)</option>
+                  <option value="150 Starting Chips">150 Starting Chips (Standard)</option>
+                  <option value="200 Starting Chips">200 Starting Chips (Deep Stack)</option>
+                  <option value="250 Starting Chips">250 Starting Chips (Very Deep)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Prize Structure
+                </label>
+                <select
+                  value={formData.prizeStructure}
+                  onChange={(e) => handleInputChange('prizeStructure', e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="Winner Takes All">Winner Takes All (100%)</option>
+                  <option value="Standard (70/20/10)">Standard (70/20/10)</option>
+                  <option value="Top Heavy (80/15/5)">Top Heavy (80/15/5)</option>
+                  <option value="Flat (60/25/15)">Flat (60/25/15)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Registration Deadline
+                </label>
+                <input
+                  type="datetime-local"
+                  value={formData.registrationDeadline}
+                  onChange={(e) => handleInputChange('registrationDeadline', e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="isPublic"
+                  checked={formData.isPublic}
+                  onChange={(e) => handleInputChange('isPublic', e.target.checked)}
+                  className="rounded"
+                />
+                <label htmlFor="isPublic" className="text-sm text-slate-700 dark:text-slate-300">
+                  Make tournament public (visible to all users)
+                </label>
+              </div>
+            </div>
+          )}
+
+          {step === 3 && (
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Tournament Director Contact
+                </label>
+                <input
+                  type="email"
+                  value={formData.contactInfo}
+                  onChange={(e) => handleInputChange('contactInfo', e.target.value)}
+                  placeholder="contact@example.com"
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Entry Fee (separate from buy-in)
+                </label>
+                <div className="relative">
+                  <DollarSign className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
+                  <input
+                    type="number"
+                    value={formData.entryFee}
+                    onChange={(e) => handleInputChange('entryFee', parseInt(e.target.value))}
+                    min="0"
+                    className="w-full pl-10 pr-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Chip Rebuy Rules
+                </label>
+                <select
+                  value={formData.chipRebuyRules}
+                  onChange={(e) => handleInputChange('chipRebuyRules', e.target.value)}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="No rebuys">No Rebuys</option>
+                  <option value="1 rebuy allowed">1 Rebuy Allowed</option>
+                  <option value="Unlimited rebuys first hour">Unlimited Rebuys (First Hour)</option>
+                  <option value="1 rebuy + 1 addon">1 Rebuy + 1 Add-on</option>
+                </select>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="lateRegistration"
+                    checked={formData.lateRegistration}
+                    onChange={(e) => handleInputChange('lateRegistration', e.target.checked)}
+                    className="rounded"
+                  />
+                  <label htmlFor="lateRegistration" className="text-sm text-slate-700 dark:text-slate-300">
+                    Allow late registration
+                  </label>
+                </div>
+
+                {formData.lateRegistration && (
+                  <div className="ml-6">
+                    <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                      Late registration cutoff (minutes after start)
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.maxLateRegTime}
+                      onChange={(e) => handleInputChange('maxLateRegTime', parseInt(e.target.value))}
+                      min="0"
+                      max="120"
+                      className="w-32 px-3 py-2 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Special Rules & Notes
+                </label>
+                <textarea
+                  value={formData.specialRules}
+                  onChange={(e) => handleInputChange('specialRules', e.target.value)}
+                  placeholder="Any special rules, dress code, or additional information..."
+                  rows={4}
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+          )}
+
+          <div className="flex justify-between pt-6 border-t border-slate-200 dark:border-slate-700">
+            <div>
+              {step > 1 && (
+                <button
+                  type="button"
+                  onClick={handlePrevious}
+                  className="px-6 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Previous
+                </button>
+              )}
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-6 py-2 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+
+              {step < totalSteps ? (
+                <button
+                  type="button"
+                  onClick={handleNext}
+                  disabled={!isStepValid()}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:bg-slate-300 disabled:cursor-not-allowed"
+                >
+                  Next
+                </button>
+              ) : (
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center gap-2"
+                >
+                  <Trophy className="w-4 h-4" />
+                  Create Tournament
+                </button>
+              )}
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { X, Mail, Phone, User, MapPin, Calendar } from 'lucide-react';
+import { X, Mail, Phone, User, MapPin, Calendar, Shield, Trophy, Users } from 'lucide-react';
 
 interface AuthModalProps {
   mode: 'login' | 'signup';
@@ -15,7 +15,7 @@ export function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
   const [formData, setFormData] = useState({
     contact: '',
     verificationCode: '',
-    accountType: 'player' as 'player' | 'td',
+    accountType: 'player' as 'player' | 'td' | 'admin',
     firstName: '',
     lastName: '',
     city: '',
@@ -212,7 +212,7 @@ export function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <User className="w-5 h-5 text-blue-600" />
+                      <Users className="w-5 h-5 text-blue-600" />
                       <div>
                         <div className="font-medium text-slate-900 dark:text-white">Player</div>
                         <div className="text-sm text-slate-600 dark:text-slate-400">Join and participate in tournaments</div>
@@ -229,10 +229,27 @@ export function AuthModal({ mode, onClose, onSuccess }: AuthModalProps) {
                     }`}
                   >
                     <div className="flex items-center gap-3">
-                      <MapPin className="w-5 h-5 text-green-600" />
+                      <Trophy className="w-5 h-5 text-green-600" />
                       <div>
                         <div className="font-medium text-slate-900 dark:text-white">Tournament Director</div>
                         <div className="text-sm text-slate-600 dark:text-slate-400">Create and manage tournaments + all Player features</div>
+                      </div>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setFormData({ ...formData, accountType: 'admin' })}
+                    className={`p-4 rounded-lg border text-left transition-colors ${
+                      formData.accountType === 'admin'
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-slate-300 dark:border-slate-600 hover:border-slate-400'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Shield className="w-5 h-5 text-red-600" />
+                      <div>
+                        <div className="font-medium text-slate-900 dark:text-white">Admin</div>
+                        <div className="text-sm text-slate-600 dark:text-slate-400">Full system control + all TD and Player features</div>
                       </div>
                     </div>
                   </button>

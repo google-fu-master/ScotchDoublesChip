@@ -6,7 +6,7 @@ import { Search, MapPin, Users, Trophy, Calendar, X, ArrowRight } from 'lucide-r
 interface TournamentSearchProps {
   onClose: () => void;
   isLoggedIn: boolean;
-  userType: 'player' | 'td';
+  userType: 'player' | 'td' | 'admin';
 }
 
 interface Tournament {
