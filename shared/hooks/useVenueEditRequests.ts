@@ -1,1 +1,298 @@
-'use client';\n\nimport { useState, useEffect, useCallback } from 'react';\nimport { VenueEditRequestStatus } from '../../types/age-restriction.types';\n\ninterface VenueEditRequest {\n  id: string;\n  venueId: string;\n  requesterId: string;\n  requester: {\n    id: string;\n    firstName: string;\n    lastName: string;\n    email: string;\n  };\n  proposedChanges: Record<string, any>;\n  status: VenueEditRequestStatus;\n  reviewedById?: string;\n  reviewedBy?: {\n    id: string;\n    firstName: string;\n    lastName: string;\n    email: string;\n  };\n  rejectionReason?: string;\n  createdAt: Date;\n  reviewedAt?: Date;\n  expiresAt: Date;\n}\n\ninterface UseVenueEditRequestsOptions {\n  venueId: string;\n  refreshInterval?: number;\n  includeExpired?: boolean;\n}\n\nexport function useVenueEditRequests({ \n  venueId, \n  refreshInterval = 30000, // 30 seconds\n  includeExpired = false \n}: UseVenueEditRequestsOptions) {\n  const [editRequests, setEditRequests] = useState<VenueEditRequest[]>([]);\n  const [loading, setLoading] = useState(true);\n  const [error, setError] = useState<string | null>(null);\n\n  const fetchEditRequests = useCallback(async () => {\n    try {\n      const url = new URL(`/api/venues/${venueId}/edit-requests`, window.location.origin);\n      if (!includeExpired) {\n        url.searchParams.set('status', 'PENDING');\n      }\n      \n      const response = await fetch(url.toString());\n      if (!response.ok) {\n        throw new Error(`Failed to fetch edit requests: ${response.statusText}`);\n      }\n      \n      const data = await response.json();\n      setEditRequests(data.map((request: any) => ({\n        ...request,\n        createdAt: new Date(request.createdAt),\n        reviewedAt: request.reviewedAt ? new Date(request.reviewedAt) : undefined,\n        expiresAt: new Date(request.expiresAt)\n      })));\n      setError(null);\n    } catch (error: any) {\n      console.error('Error fetching venue edit requests:', error);\n      setError(error.message);\n    } finally {\n      setLoading(false);\n    }\n  }, [venueId, includeExpired]);\n\n  const createEditRequest = useCallback(async (\n    requesterId: string,\n    proposedChanges: Record<string, any>\n  ): Promise<VenueEditRequest> => {\n    const response = await fetch(`/api/venues/${venueId}/edit-requests`, {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({\n        requesterId,\n        proposedChanges\n      })\n    });\n\n    if (!response.ok) {\n      const errorData = await response.json();\n      throw new Error(errorData.error || 'Failed to create edit request');\n    }\n\n    const data = await response.json();\n    const newRequest = {\n      ...data,\n      createdAt: new Date(data.createdAt),\n      reviewedAt: data.reviewedAt ? new Date(data.reviewedAt) : undefined,\n      expiresAt: new Date(data.expiresAt)\n    };\n    \n    // Refresh the list\n    fetchEditRequests();\n    \n    return newRequest;\n  }, [venueId, fetchEditRequests]);\n\n  const approveEditRequest = useCallback(async (\n    requestId: string,\n    reviewedById: string,\n    approveChanges = true\n  ) => {\n    const response = await fetch(`/api/venues/${venueId}/edit-requests/${requestId}`, {\n      method: 'PUT',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({\n        status: VenueEditRequestStatus.APPROVED,\n        reviewedById,\n        approveChanges\n      })\n    });\n\n    if (!response.ok) {\n      const errorData = await response.json();\n      throw new Error(errorData.error || 'Failed to approve edit request');\n    }\n\n    // Refresh the list\n    fetchEditRequests();\n  }, [venueId, fetchEditRequests]);\n\n  const rejectEditRequest = useCallback(async (\n    requestId: string,\n    reviewedById: string,\n    rejectionReason: string\n  ) => {\n    const response = await fetch(`/api/venues/${venueId}/edit-requests/${requestId}`, {\n      method: 'PUT',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({\n        status: VenueEditRequestStatus.REJECTED,\n        reviewedById,\n        rejectionReason\n      })\n    });\n\n    if (!response.ok) {\n      const errorData = await response.json();\n      throw new Error(errorData.error || 'Failed to reject edit request');\n    }\n\n    // Refresh the list\n    fetchEditRequests();\n  }, [venueId, fetchEditRequests]);\n\n  const cancelEditRequest = useCallback(async (\n    requestId: string,\n    requesterId: string\n  ) => {\n    const response = await fetch(\n      `/api/venues/${venueId}/edit-requests/${requestId}?requesterId=${requesterId}`, \n      { method: 'DELETE' }\n    );\n\n    if (!response.ok) {\n      const errorData = await response.json();\n      throw new Error(errorData.error || 'Failed to cancel edit request');\n    }\n\n    // Refresh the list\n    fetchEditRequests();\n  }, [venueId, fetchEditRequests]);\n\n  const transferOwnership = useCallback(async (\n    currentOwnerId: string,\n    newOwnerId: string,\n    reason?: string\n  ) => {\n    const response = await fetch(`/api/venues/${venueId}/ownership`, {\n      method: 'PUT',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({\n        currentOwnerId,\n        newOwnerId,\n        reason\n      })\n    });\n\n    if (!response.ok) {\n      const errorData = await response.json();\n      throw new Error(errorData.error || 'Failed to transfer ownership');\n    }\n\n    const data = await response.json();\n    return data.venue;\n  }, [venueId]);\n\n  const claimOwnership = useCallback(async (\n    requesterId: string,\n    reason?: string\n  ) => {\n    const response = await fetch(`/api/venues/${venueId}/ownership`, {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n      },\n      body: JSON.stringify({\n        requesterId,\n        reason\n      })\n    });\n\n    if (!response.ok) {\n      const errorData = await response.json();\n      throw new Error(errorData.error || 'Failed to claim ownership');\n    }\n\n    const data = await response.json();\n    return data.venue;\n  }, [venueId]);\n\n  // Fetch initial data\n  useEffect(() => {\n    fetchEditRequests();\n  }, [fetchEditRequests]);\n\n  // Auto-refresh\n  useEffect(() => {\n    if (!refreshInterval) return;\n\n    const interval = setInterval(fetchEditRequests, refreshInterval);\n    return () => clearInterval(interval);\n  }, [fetchEditRequests, refreshInterval]);\n\n  // Helper functions\n  const pendingRequests = editRequests.filter(r => r.status === VenueEditRequestStatus.PENDING);\n  const expiredRequests = editRequests.filter(r => r.status === VenueEditRequestStatus.EXPIRED);\n  const approvedRequests = editRequests.filter(r => r.status === VenueEditRequestStatus.APPROVED);\n  const rejectedRequests = editRequests.filter(r => r.status === VenueEditRequestStatus.REJECTED);\n\n  return {\n    editRequests,\n    pendingRequests,\n    expiredRequests,\n    approvedRequests,\n    rejectedRequests,\n    loading,\n    error,\n    refetch: fetchEditRequests,\n    createEditRequest,\n    approveEditRequest,\n    rejectEditRequest,\n    cancelEditRequest,\n    transferOwnership,\n    claimOwnership\n  };\n}\n\n// Helper hook for checking if a user can request ownership\nexport function useCanRequestOwnership(venueId: string, userId: string) {\n  const [canRequest, setCanRequest] = useState(false);\n  const [expiredRequestCount, setExpiredRequestCount] = useState(0);\n  const [loading, setLoading] = useState(true);\n\n  useEffect(() => {\n    const checkEligibility = async () => {\n      try {\n        const response = await fetch(\n          `/api/venues/${venueId}/edit-requests?status=EXPIRED`\n        );\n        \n        if (response.ok) {\n          const requests = await response.json();\n          const userExpiredRequests = requests.filter(\n            (r: any) => r.requesterId === userId\n          );\n          \n          setExpiredRequestCount(userExpiredRequests.length);\n          setCanRequest(userExpiredRequests.length >= 3);\n        }\n      } catch (error) {\n        console.error('Error checking ownership eligibility:', error);\n      } finally {\n        setLoading(false);\n      }\n    };\n\n    checkEligibility();\n  }, [venueId, userId]);\n\n  return { canRequest, expiredRequestCount, loading };\n}"
+'use client';
+
+import { useState, useEffect, useCallback } from 'react';
+import { VenueEditRequestStatus } from '../../types/age-restriction.types';
+
+interface VenueEditRequest {
+  id: string;
+  venueId: string;
+  requesterId: string;
+  requester: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  proposedChanges: Record<string, any>;
+  status: VenueEditRequestStatus;
+  reviewedById?: string;
+  reviewedBy?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  rejectionReason?: string;
+  createdAt: Date;
+  reviewedAt?: Date;
+  expiresAt: Date;
+}
+
+interface UseVenueEditRequestsOptions {
+  venueId: string;
+  refreshInterval?: number;
+  includeExpired?: boolean;
+}
+
+export function useVenueEditRequests({ 
+  venueId, 
+  refreshInterval = 30000, // 30 seconds
+  includeExpired = false 
+}: UseVenueEditRequestsOptions) {
+  const [editRequests, setEditRequests] = useState<VenueEditRequest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchEditRequests = useCallback(async () => {
+    try {
+      const url = new URL(`/api/venues/${venueId}/edit-requests`, window.location.origin);
+      if (!includeExpired) {
+        url.searchParams.set('status', 'PENDING');
+      }
+      
+      const response = await fetch(url.toString());
+      if (!response.ok) {
+        throw new Error(`Failed to fetch edit requests: ${response.statusText}`);
+      }
+      
+      const data = await response.json();
+      setEditRequests(data.map((request: any) => ({
+        ...request,
+        createdAt: new Date(request.createdAt),
+        reviewedAt: request.reviewedAt ? new Date(request.reviewedAt) : undefined,
+        expiresAt: new Date(request.expiresAt)
+      })));
+      setError(null);
+    } catch (error: any) {
+      console.error('Error fetching venue edit requests:', error);
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [venueId, includeExpired]);
+
+  const createEditRequest = useCallback(async (
+    requesterId: string,
+    proposedChanges: Record<string, any>
+  ): Promise<VenueEditRequest> => {
+    const response = await fetch(`/api/venues/${venueId}/edit-requests`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        requesterId,
+        proposedChanges
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to create edit request');
+    }
+
+    const data = await response.json();
+    const newRequest = {
+      ...data,
+      createdAt: new Date(data.createdAt),
+      reviewedAt: data.reviewedAt ? new Date(data.reviewedAt) : undefined,
+      expiresAt: new Date(data.expiresAt)
+    };
+    
+    // Refresh the list
+    fetchEditRequests();
+    
+    return newRequest;
+  }, [venueId, fetchEditRequests]);
+
+  const approveEditRequest = useCallback(async (
+    requestId: string,
+    reviewedById: string,
+    approveChanges = true
+  ) => {
+    const response = await fetch(`/api/venues/${venueId}/edit-requests/${requestId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: VenueEditRequestStatus.APPROVED,
+        reviewedById,
+        approveChanges
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to approve edit request');
+    }
+
+    // Refresh the list
+    fetchEditRequests();
+  }, [venueId, fetchEditRequests]);
+
+  const rejectEditRequest = useCallback(async (
+    requestId: string,
+    reviewedById: string,
+    rejectionReason: string
+  ) => {
+    const response = await fetch(`/api/venues/${venueId}/edit-requests/${requestId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        status: VenueEditRequestStatus.REJECTED,
+        reviewedById,
+        rejectionReason
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to reject edit request');
+    }
+
+    // Refresh the list
+    fetchEditRequests();
+  }, [venueId, fetchEditRequests]);
+
+  const cancelEditRequest = useCallback(async (
+    requestId: string,
+    requesterId: string
+  ) => {
+    const response = await fetch(
+      `/api/venues/${venueId}/edit-requests/${requestId}?requesterId=${requesterId}`, 
+      { method: 'DELETE' }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to cancel edit request');
+    }
+
+    // Refresh the list
+    fetchEditRequests();
+  }, [venueId, fetchEditRequests]);
+
+  const transferOwnership = useCallback(async (
+    currentOwnerId: string,
+    newOwnerId: string,
+    reason?: string
+  ) => {
+    const response = await fetch(`/api/venues/${venueId}/ownership`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        currentOwnerId,
+        newOwnerId,
+        reason
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to transfer ownership');
+    }
+
+    const data = await response.json();
+    return data.venue;
+  }, [venueId]);
+
+  const claimOwnership = useCallback(async (
+    requesterId: string,
+    reason?: string
+  ) => {
+    const response = await fetch(`/api/venues/${venueId}/ownership`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        requesterId,
+        reason
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to claim ownership');
+    }
+
+    const data = await response.json();
+    return data.venue;
+  }, [venueId]);
+
+  // Fetch initial data
+  useEffect(() => {
+    fetchEditRequests();
+  }, [fetchEditRequests]);
+
+  // Auto-refresh
+  useEffect(() => {
+    if (!refreshInterval) return;
+
+    const interval = setInterval(fetchEditRequests, refreshInterval);
+    return () => clearInterval(interval);
+  }, [fetchEditRequests, refreshInterval]);
+
+  // Helper functions
+  const pendingRequests = editRequests.filter(r => r.status === VenueEditRequestStatus.PENDING);
+  const expiredRequests = editRequests.filter(r => r.status === VenueEditRequestStatus.EXPIRED);
+  const approvedRequests = editRequests.filter(r => r.status === VenueEditRequestStatus.APPROVED);
+  const rejectedRequests = editRequests.filter(r => r.status === VenueEditRequestStatus.REJECTED);
+
+  return {
+    editRequests,
+    pendingRequests,
+    expiredRequests,
+    approvedRequests,
+    rejectedRequests,
+    loading,
+    error,
+    refetch: fetchEditRequests,
+    createEditRequest,
+    approveEditRequest,
+    rejectEditRequest,
+    cancelEditRequest,
+    transferOwnership,
+    claimOwnership
+  };
+}
+
+// Helper hook for checking if a user can request ownership
+export function useCanRequestOwnership(venueId: string, userId: string) {
+  const [canRequest, setCanRequest] = useState(false);
+  const [expiredRequestCount, setExpiredRequestCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const checkEligibility = async () => {
+      try {
+        const response = await fetch(
+          `/api/venues/${venueId}/edit-requests?status=EXPIRED`
+        );
+        
+        if (response.ok) {
+          const requests = await response.json();
+          const userExpiredRequests = requests.filter(
+            (r: any) => r.requesterId === userId
+          );
+          
+          setExpiredRequestCount(userExpiredRequests.length);
+          setCanRequest(userExpiredRequests.length >= 3);
+        }
+      } catch (error) {
+        console.error('Error checking ownership eligibility:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkEligibility();
+  }, [venueId, userId]);
+
+  return { canRequest, expiredRequestCount, loading };
+}

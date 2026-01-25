@@ -8,7 +8,7 @@ import {
   TableAgeRestriction,
   TableAgeRestrictionLabels,
   TournamentAgeRestriction 
-} from '../../../shared/types/age-restriction.types';
+} from '../../../../../shared/types/age-restriction.types';
 
 interface Venue {
   id: string;
@@ -28,6 +28,8 @@ interface Venue {
   hourlyRate?: number;
   contactName?: string;
   isVerified: boolean;
+  ageRestriction?: string;
+  useVenueAgeForAllTables?: boolean;
 }
 
 interface ChipRange {
@@ -58,7 +60,12 @@ interface TournamentFormData {
   endDateTime: string;
   venue: Venue | null;
   
-  // Age Restrictions (for tournaments without venues)\n  isAgeRestricted: boolean;\n  useUniformAgeRestriction: boolean;\n  uniformAgeRestriction: TableAgeRestriction;\n  \n  // Tournament Configuration
+  // Age Restrictions (for tournaments without venues)
+  isAgeRestricted: boolean;
+  useUniformAgeRestriction: boolean;
+  uniformAgeRestriction: TableAgeRestriction;
+  
+  // Tournament Configuration
   playerType: 'singles' | 'doubles' | 'scotch_doubles';
   gameType: 'eight_ball' | 'nine_ball' | 'ten_ball';
   tournamentType: 'chip_tournament';

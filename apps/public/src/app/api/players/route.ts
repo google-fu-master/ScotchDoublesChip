@@ -1,1 +1,172 @@
-import { NextRequest, NextResponse } from 'next/server';\nimport { prisma } from '../../../lib/prisma';\nimport { PlayerAgeGroup } from '../../../../shared/types/age-restriction.types';\n\nexport async function GET(request: NextRequest) {\n  try {\n    const { searchParams } = new URL(request.url);\n    const query = searchParams.get('q') || '';\n    const ageGroup = searchParams.get('ageGroup');\n    \n    const where: any = {};\n    \n    if (query) {\n      where.OR = [\n        { firstName: { contains: query, mode: 'insensitive' } },\n        { lastName: { contains: query, mode: 'insensitive' } },\n        { email: { contains: query, mode: 'insensitive' } }\n      ];\n    }\n    \n    if (ageGroup && Object.values(PlayerAgeGroup).includes(ageGroup as PlayerAgeGroup)) {\n      where.ageGroup = ageGroup;\n    }\n    \n    const players = await prisma.player.findMany({\n      where,\n      select: {\n        id: true,\n        email: true,\n        firstName: true,\n        lastName: true,\n        phone: true,\n        ageGroup: true,\n        birthdayMonth: true,\n        birthdayDay: true,\n        lastBirthdayChip: true,\n        fargoRating: true,\n        apaEightBallRank: true,\n        apaNineBallRank: true,\n        inHouseRating: true,\n        createdAt: true,\n        tournamentProfiles: {\n          select: {\n            id: true,\n            tournamentId: true,\n            displayName: true,\n            skillLevel: true,\n            registrationStatus: true\n          }\n        }\n      },\n      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]\n    });\n\n    return NextResponse.json({\n      success: true,\n      players,\n      count: players.length\n    });\n  } catch (error) {\n    console.error('Player search error:', error);\n    return NextResponse.json(\n      { error: 'Failed to search players' },\n      { status: 500 }\n    );\n  }\n}\n\nexport async function POST(request: NextRequest) {\n  try {\n    const playerData = await request.json();\n\n    // Validate required fields\n    const required = ['email', 'firstName', 'lastName'];\n    const missing = required.filter((field: string) => !playerData[field]);\n    \n    if (missing.length > 0) {\n      return NextResponse.json(\n        { error: `Missing required fields: ${missing.join(', ')}` },\n        { status: 400 }\n      );\n    }\n\n    // Validate email format\n    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n    if (!emailRegex.test(playerData.email)) {\n      return NextResponse.json(\n        { error: 'Invalid email format' },\n        { status: 400 }\n      );\n    }\n\n    // Validate age group\n    if (playerData.ageGroup && !Object.values(PlayerAgeGroup).includes(playerData.ageGroup)) {\n      return NextResponse.json(\n        { error: 'Invalid age group value' },\n        { status: 400 }\n      );\n    }\n\n    // Validate birthday month/day if provided\n    if (playerData.birthdayMonth && (playerData.birthdayMonth < 1 || playerData.birthdayMonth > 12)) {\n      return NextResponse.json(\n        { error: 'Birthday month must be between 1 and 12' },\n        { status: 400 }\n      );\n    }\n    \n    if (playerData.birthdayDay && (playerData.birthdayDay < 1 || playerData.birthdayDay > 31)) {\n      return NextResponse.json(\n        { error: 'Birthday day must be between 1 and 31' },\n        { status: 400 }\n      );\n    }\n\n    // Check if email already exists\n    const existingPlayer = await prisma.player.findUnique({\n      where: { email: playerData.email }\n    });\n    \n    if (existingPlayer) {\n      return NextResponse.json(\n        { error: 'A player with this email already exists' },\n        { status: 409 }\n      );\n    }\n\n    // Create the player in database\n    const player = await prisma.player.create({\n      data: {\n        email: playerData.email,\n        firstName: playerData.firstName,\n        lastName: playerData.lastName,\n        phone: playerData.phone || null,\n        ageGroup: playerData.ageGroup || PlayerAgeGroup.AGES_21_PLUS,\n        birthdayMonth: playerData.birthdayMonth || null,\n        birthdayDay: playerData.birthdayDay || null,\n        fargoRating: playerData.fargoRating || null,\n        apaEightBallRank: playerData.apaEightBallRank || null,\n        apaNineBallRank: playerData.apaNineBallRank || null,\n        inHouseRating: playerData.inHouseRating || null,\n        settings: playerData.settings || null\n      },\n      select: {\n        id: true,\n        email: true,\n        firstName: true,\n        lastName: true,\n        phone: true,\n        ageGroup: true,\n        birthdayMonth: true,\n        birthdayDay: true,\n        fargoRating: true,\n        apaEightBallRank: true,\n        apaNineBallRank: true,\n        inHouseRating: true,\n        createdAt: true\n      }\n    });\n\n    return NextResponse.json({\n      success: true,\n      player\n    });\n  } catch (error) {\n    console.error('Player creation error:', error);\n    return NextResponse.json(\n      { error: 'Failed to create player' },\n      { status: 500 }\n    );\n  }\n}"
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '../../../lib/prisma';
+import { PlayerAgeGroup } from '../../../../shared/types/age-restriction.types';
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('q') || '';
+    const ageGroup = searchParams.get('ageGroup');
+    
+    const where: any = {};
+    
+    if (query) {
+      where.OR = [
+        { firstName: { contains: query, mode: 'insensitive' } },
+        { lastName: { contains: query, mode: 'insensitive' } },
+        { email: { contains: query, mode: 'insensitive' } }
+      ];
+    }
+    
+    if (ageGroup && Object.values(PlayerAgeGroup).includes(ageGroup as PlayerAgeGroup)) {
+      where.ageGroup = ageGroup;
+    }
+    
+    const players = await prisma.player.findMany({
+      where,
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        ageGroup: true,
+        birthdayMonth: true,
+        birthdayDay: true,
+        lastBirthdayChip: true,
+        fargoRating: true,
+        apaEightBallRank: true,
+        apaNineBallRank: true,
+        inHouseRating: true,
+        createdAt: true,
+        tournamentProfiles: {
+          select: {
+            id: true,
+            tournamentId: true,
+            displayName: true,
+            skillLevel: true,
+            registrationStatus: true
+          }
+        }
+      },
+      orderBy: [{ lastName: 'asc' }, { firstName: 'asc' }]
+    });
+
+    return NextResponse.json({
+      success: true,
+      players,
+      count: players.length
+    });
+  } catch (error) {
+    console.error('Player search error:', error);
+    return NextResponse.json(
+      { error: 'Failed to search players' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const playerData = await request.json();
+
+    // Validate required fields
+    const required = ['email', 'firstName', 'lastName'];
+    const missing = required.filter((field: string) => !playerData[field]);
+    
+    if (missing.length > 0) {
+      return NextResponse.json(
+        { error: `Missing required fields: ${missing.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(playerData.email)) {
+      return NextResponse.json(
+        { error: 'Invalid email format' },
+        { status: 400 }
+      );
+    }
+
+    // Validate age group
+    if (playerData.ageGroup && !Object.values(PlayerAgeGroup).includes(playerData.ageGroup)) {
+      return NextResponse.json(
+        { error: 'Invalid age group value' },
+        { status: 400 }
+      );
+    }
+
+    // Validate birthday month/day if provided
+    if (playerData.birthdayMonth && (playerData.birthdayMonth < 1 || playerData.birthdayMonth > 12)) {
+      return NextResponse.json(
+        { error: 'Birthday month must be between 1 and 12' },
+        { status: 400 }
+      );
+    }
+    
+    if (playerData.birthdayDay && (playerData.birthdayDay < 1 || playerData.birthdayDay > 31)) {
+      return NextResponse.json(
+        { error: 'Birthday day must be between 1 and 31' },
+        { status: 400 }
+      );
+    }
+
+    // Check if email already exists
+    const existingPlayer = await prisma.player.findUnique({
+      where: { email: playerData.email }
+    });
+    
+    if (existingPlayer) {
+      return NextResponse.json(
+        { error: 'A player with this email already exists' },
+        { status: 409 }
+      );
+    }
+
+    // Create the player in database
+    const player = await prisma.player.create({
+      data: {
+        email: playerData.email,
+        firstName: playerData.firstName,
+        lastName: playerData.lastName,
+        phone: playerData.phone || null,
+        ageGroup: playerData.ageGroup || PlayerAgeGroup.AGES_21_PLUS,
+        birthdayMonth: playerData.birthdayMonth || null,
+        birthdayDay: playerData.birthdayDay || null,
+        fargoRating: playerData.fargoRating || null,
+        apaEightBallRank: playerData.apaEightBallRank || null,
+        apaNineBallRank: playerData.apaNineBallRank || null,
+        inHouseRating: playerData.inHouseRating || null,
+        settings: playerData.settings || null
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        ageGroup: true,
+        birthdayMonth: true,
+        birthdayDay: true,
+        fargoRating: true,
+        apaEightBallRank: true,
+        apaNineBallRank: true,
+        inHouseRating: true,
+        createdAt: true
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      player
+    });
+  } catch (error) {
+    console.error('Player creation error:', error);
+    return NextResponse.json(
+      { error: 'Failed to create player' },
+      { status: 500 }
+    );
+  }
+}

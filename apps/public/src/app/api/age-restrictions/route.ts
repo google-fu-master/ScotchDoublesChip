@@ -1,1 +1,244 @@
-import { NextRequest, NextResponse } from 'next/server';\nimport { AgeRestrictionService } from '../../../../shared/services/age-restriction.service';\nimport {\n  PlayerAgeGroup,\n  VenueAgeRestriction,\n  TableAgeRestriction,\n  AgeRestrictionValidation\n} from '../../../../shared/types/age-restriction.types';\n\n// Interface for request validation\ninterface PlayerEligibilityRequest {\n  player: {\n    id: string;\n    ageGroup: PlayerAgeGroup;\n    firstName: string;\n    lastName: string;\n  };\n  tournament: {\n    id: string;\n    name: string;\n    venueId?: string;\n    startDate?: string;\n    isAgeRestricted: boolean;\n    useUniformAgeRestriction?: boolean;\n    uniformAgeRestriction?: TableAgeRestriction;\n  };\n  venue?: {\n    id: string;\n    name: string;\n    ageRestriction: VenueAgeRestriction;\n    useVenueAgeForAllTables: boolean;\n    minorStartTime?: string;\n    minorEndTime?: string;\n    ages18To20StartTime?: string;\n    ages18To20EndTime?: string;\n  };\n  ageOverrides?: Array<{\n    id: string;\n    playerId: string;\n    tournamentId: string;\n    originalAge: PlayerAgeGroup;\n    overrideAge: PlayerAgeGroup;\n    createdAt: string;\n    expiresAt?: string;\n  }>;\n}\n\ninterface TableAssignmentRequest {\n  player: {\n    id: string;\n    ageGroup: PlayerAgeGroup;\n    firstName: string;\n    lastName: string;\n  };\n  table: {\n    id: string;\n    number: string;\n    venueId: string;\n    ageRestriction?: TableAgeRestriction;\n    isActive: boolean;\n  };\n  venue: {\n    id: string;\n    name: string;\n    ageRestriction: VenueAgeRestriction;\n    useVenueAgeForAllTables: boolean;\n  };\n  tournament: {\n    id: string;\n    name: string;\n  };\n  ageOverrides?: Array<{\n    id: string;\n    playerId: string;\n    tournamentId: string;\n    overrideAge: PlayerAgeGroup;\n    expiresAt?: string;\n  }>;\n}\n\ninterface TournamentStartRequest {\n  tournament: {\n    id: string;\n    name: string;\n    venueId?: string;\n    isAgeRestricted: boolean;\n    useUniformAgeRestriction?: boolean;\n    uniformAgeRestriction?: TableAgeRestriction;\n  };\n  players: Array<{\n    id: string;\n    ageGroup: PlayerAgeGroup;\n    firstName: string;\n    lastName: string;\n  }>;\n  tables: Array<{\n    id: string;\n    number: string;\n    venueId: string;\n    ageRestriction?: TableAgeRestriction;\n    isActive: boolean;\n  }>;\n  venue?: {\n    id: string;\n    name: string;\n    ageRestriction: VenueAgeRestriction;\n    useVenueAgeForAllTables: boolean;\n  };\n  ageOverrides?: Array<{\n    id: string;\n    playerId: string;\n    tournamentId: string;\n    overrideAge: PlayerAgeGroup;\n    expiresAt?: string;\n  }>;\n}\n\n// POST /api/age-restrictions/validate-player-eligibility\nexport async function POST(request: NextRequest) {\n  try {\n    const url = new URL(request.url);\n    const endpoint = url.pathname.split('/').pop();\n    \n    switch (endpoint) {\n      case 'validate-player-eligibility': {\n        const data: PlayerEligibilityRequest = await request.json();\n        \n        const validation = AgeRestrictionService.validatePlayerTournamentEligibility(\n          data.player,\n          {\n            id: data.tournament.id,\n            name: data.tournament.name,\n            venueId: data.tournament.venueId,\n            startDate: data.tournament.startDate ? new Date(data.tournament.startDate) : undefined,\n            isAgeRestricted: data.tournament.isAgeRestricted,\n            useUniformAgeRestriction: data.tournament.useUniformAgeRestriction,\n            uniformAgeRestriction: data.tournament.uniformAgeRestriction\n          },\n          data.venue ? {\n            id: data.venue.id,\n            name: data.venue.name,\n            ageRestriction: data.venue.ageRestriction,\n            useVenueAgeForAllTables: data.venue.useVenueAgeForAllTables,\n            minorStartTime: data.venue.minorStartTime,\n            minorEndTime: data.venue.minorEndTime,\n            ages18To20StartTime: data.venue.ages18To20StartTime,\n            ages18To20EndTime: data.venue.ages18To20EndTime\n          } : undefined,\n          data.ageOverrides?.map(override => ({\n            id: override.id,\n            playerId: override.playerId,\n            tournamentId: override.tournamentId,\n            originalAge: data.player.ageGroup, // Use original from player\n            overrideAge: override.overrideAge,\n            createdAt: new Date(override.createdAt),\n            expiresAt: override.expiresAt ? new Date(override.expiresAt) : undefined\n          }))\n        );\n        \n        return NextResponse.json({ \n          success: true, \n          validation \n        });\n      }\n      \n      case 'validate-table-assignment': {\n        const data: TableAssignmentRequest = await request.json();\n        \n        const validation = AgeRestrictionService.validatePlayerTableAssignment(\n          data.player,\n          data.table,\n          data.venue,\n          data.tournament,\n          data.ageOverrides?.map(override => ({\n            id: override.id,\n            playerId: override.playerId,\n            tournamentId: override.tournamentId,\n            originalAge: data.player.ageGroup,\n            overrideAge: override.overrideAge,\n            createdAt: new Date(),\n            expiresAt: override.expiresAt ? new Date(override.expiresAt) : undefined\n          }))\n        );\n        \n        return NextResponse.json({ \n          success: true, \n          validation \n        });\n      }\n      \n      case 'validate-tournament-start': {\n        const data: TournamentStartRequest = await request.json();\n        \n        const validation = AgeRestrictionService.validateTournamentStart(\n          {\n            id: data.tournament.id,\n            name: data.tournament.name,\n            venueId: data.tournament.venueId,\n            isAgeRestricted: data.tournament.isAgeRestricted,\n            useUniformAgeRestriction: data.tournament.useUniformAgeRestriction,\n            uniformAgeRestriction: data.tournament.uniformAgeRestriction\n          },\n          data.players,\n          data.tables,\n          data.venue ? {\n            id: data.venue.id,\n            name: data.venue.name,\n            ageRestriction: data.venue.ageRestriction,\n            useVenueAgeForAllTables: data.venue.useVenueAgeForAllTables\n          } : undefined,\n          data.ageOverrides?.map(override => ({\n            id: override.id,\n            playerId: override.playerId,\n            tournamentId: override.tournamentId,\n            originalAge: PlayerAgeGroup.AGES_21_PLUS, // Would need to lookup from DB\n            overrideAge: override.overrideAge,\n            createdAt: new Date(),\n            expiresAt: override.expiresAt ? new Date(override.expiresAt) : undefined\n          }))\n        );\n        \n        return NextResponse.json({ \n          success: true, \n          validation \n        });\n      }\n      \n      default:\n        return NextResponse.json(\n          { success: false, error: 'Invalid endpoint' },\n          { status: 404 }\n        );\n    }\n  } catch (error) {\n    console.error('Age restriction validation error:', error);\n    return NextResponse.json(\n      { \n        success: false, \n        error: error instanceof Error ? error.message : 'Internal server error' \n      },\n      { status: 500 }\n    );\n  }\n}"
+import { NextRequest, NextResponse } from 'next/server';
+import { AgeRestrictionService } from '../../../../shared/services/age-restriction.service';
+import {
+  PlayerAgeGroup,
+  VenueAgeRestriction,
+  TableAgeRestriction,
+  AgeRestrictionValidation
+} from '../../../../shared/types/age-restriction.types';
+
+// Interface for request validation
+interface PlayerEligibilityRequest {
+  player: {
+    id: string;
+    ageGroup: PlayerAgeGroup;
+    firstName: string;
+    lastName: string;
+  };
+  tournament: {
+    id: string;
+    name: string;
+    venueId?: string;
+    startDate?: string;
+    isAgeRestricted: boolean;
+    useUniformAgeRestriction?: boolean;
+    uniformAgeRestriction?: TableAgeRestriction;
+  };
+  venue?: {
+    id: string;
+    name: string;
+    ageRestriction: VenueAgeRestriction;
+    useVenueAgeForAllTables: boolean;
+    minorStartTime?: string;
+    minorEndTime?: string;
+    ages18To20StartTime?: string;
+    ages18To20EndTime?: string;
+  };
+  ageOverrides?: Array<{
+    id: string;
+    playerId: string;
+    tournamentId: string;
+    originalAge: PlayerAgeGroup;
+    overrideAge: PlayerAgeGroup;
+    createdAt: string;
+    expiresAt?: string;
+  }>;
+}
+
+interface TableAssignmentRequest {
+  player: {
+    id: string;
+    ageGroup: PlayerAgeGroup;
+    firstName: string;
+    lastName: string;
+  };
+  table: {
+    id: string;
+    number: string;
+    venueId: string;
+    ageRestriction?: TableAgeRestriction;
+    isActive: boolean;
+  };
+  venue: {
+    id: string;
+    name: string;
+    ageRestriction: VenueAgeRestriction;
+    useVenueAgeForAllTables: boolean;
+  };
+  tournament: {
+    id: string;
+    name: string;
+  };
+  ageOverrides?: Array<{
+    id: string;
+    playerId: string;
+    tournamentId: string;
+    overrideAge: PlayerAgeGroup;
+    expiresAt?: string;
+  }>;
+}
+
+interface TournamentStartRequest {
+  tournament: {
+    id: string;
+    name: string;
+    venueId?: string;
+    isAgeRestricted: boolean;
+    useUniformAgeRestriction?: boolean;
+    uniformAgeRestriction?: TableAgeRestriction;
+  };
+  players: Array<{
+    id: string;
+    ageGroup: PlayerAgeGroup;
+    firstName: string;
+    lastName: string;
+  }>;
+  tables: Array<{
+    id: string;
+    number: string;
+    venueId: string;
+    ageRestriction?: TableAgeRestriction;
+    isActive: boolean;
+  }>;
+  venue?: {
+    id: string;
+    name: string;
+    ageRestriction: VenueAgeRestriction;
+    useVenueAgeForAllTables: boolean;
+  };
+  ageOverrides?: Array<{
+    id: string;
+    playerId: string;
+    tournamentId: string;
+    overrideAge: PlayerAgeGroup;
+    expiresAt?: string;
+  }>;
+}
+
+// POST /api/age-restrictions/validate-player-eligibility
+export async function POST(request: NextRequest) {
+  try {
+    const url = new URL(request.url);
+    const endpoint = url.pathname.split('/').pop();
+    
+    switch (endpoint) {
+      case 'validate-player-eligibility': {
+        const data: PlayerEligibilityRequest = await request.json();
+        
+        const validation = AgeRestrictionService.validatePlayerTournamentEligibility(
+          data.player,
+          {
+            id: data.tournament.id,
+            name: data.tournament.name,
+            venueId: data.tournament.venueId,
+            startDate: data.tournament.startDate ? new Date(data.tournament.startDate) : undefined,
+            isAgeRestricted: data.tournament.isAgeRestricted,
+            useUniformAgeRestriction: data.tournament.useUniformAgeRestriction,
+            uniformAgeRestriction: data.tournament.uniformAgeRestriction
+          },
+          data.venue ? {
+            id: data.venue.id,
+            name: data.venue.name,
+            ageRestriction: data.venue.ageRestriction,
+            useVenueAgeForAllTables: data.venue.useVenueAgeForAllTables,
+            minorStartTime: data.venue.minorStartTime,
+            minorEndTime: data.venue.minorEndTime,
+            ages18To20StartTime: data.venue.ages18To20StartTime,
+            ages18To20EndTime: data.venue.ages18To20EndTime
+          } : undefined,
+          data.ageOverrides?.map(override => ({
+            id: override.id,
+            playerId: override.playerId,
+            tournamentId: override.tournamentId,
+            originalAge: data.player.ageGroup, // Use original from player
+            overrideAge: override.overrideAge,
+            createdAt: new Date(override.createdAt),
+            expiresAt: override.expiresAt ? new Date(override.expiresAt) : undefined
+          }))
+        );
+        
+        return NextResponse.json({ 
+          success: true, 
+          validation 
+        });
+      }
+      
+      case 'validate-table-assignment': {
+        const data: TableAssignmentRequest = await request.json();
+        
+        const validation = AgeRestrictionService.validatePlayerTableAssignment(
+          data.player,
+          data.table,
+          data.venue,
+          data.tournament,
+          data.ageOverrides?.map(override => ({
+            id: override.id,
+            playerId: override.playerId,
+            tournamentId: override.tournamentId,
+            originalAge: data.player.ageGroup,
+            overrideAge: override.overrideAge,
+            createdAt: new Date(),
+            expiresAt: override.expiresAt ? new Date(override.expiresAt) : undefined
+          }))
+        );
+        
+        return NextResponse.json({ 
+          success: true, 
+          validation 
+        });
+      }
+      
+      case 'validate-tournament-start': {
+        const data: TournamentStartRequest = await request.json();
+        
+        const validation = AgeRestrictionService.validateTournamentStart(
+          {
+            id: data.tournament.id,
+            name: data.tournament.name,
+            venueId: data.tournament.venueId,
+            isAgeRestricted: data.tournament.isAgeRestricted,
+            useUniformAgeRestriction: data.tournament.useUniformAgeRestriction,
+            uniformAgeRestriction: data.tournament.uniformAgeRestriction
+          },
+          data.players,
+          data.tables,
+          data.venue ? {
+            id: data.venue.id,
+            name: data.venue.name,
+            ageRestriction: data.venue.ageRestriction,
+            useVenueAgeForAllTables: data.venue.useVenueAgeForAllTables
+          } : undefined,
+          data.ageOverrides?.map(override => ({
+            id: override.id,
+            playerId: override.playerId,
+            tournamentId: override.tournamentId,
+            originalAge: PlayerAgeGroup.AGES_21_PLUS, // Would need to lookup from DB
+            overrideAge: override.overrideAge,
+            createdAt: new Date(),
+            expiresAt: override.expiresAt ? new Date(override.expiresAt) : undefined
+          }))
+        );
+        
+        return NextResponse.json({ 
+          success: true, 
+          validation 
+        });
+      }
+      
+      default:
+        return NextResponse.json(
+          { success: false, error: 'Invalid endpoint' },
+          { status: 404 }
+        );
+    }
+  } catch (error) {
+    console.error('Age restriction validation error:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Internal server error' 
+      },
+      { status: 500 }
+    );
+  }
+}

@@ -1,1 +1,78 @@
-import { NextRequest, NextResponse } from 'next/server';\n\ninterface VenueEditRequest {\n  venueId: string;\n  proposedChanges: Record<string, any>;\n}\n\n// POST /api/venue-edit-requests - Submit venue edit request\nexport async function POST(request: NextRequest) {\n  try {\n    const data: VenueEditRequest = await request.json();\n    \n    // TODO: Implement database operations and ownership checks\n    // This is a mock implementation\n    const editRequest = {\n      id: 'edit_request_' + Date.now(),\n      venueId: data.venueId,\n      requesterId: 'current_user_id', // Would get from auth\n      proposedChanges: data.proposedChanges,\n      status: 'PENDING',\n      createdAt: new Date(),\n      expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours\n    };\n    \n    // TODO: Save to database and notify venue owner\n    console.log('Creating venue edit request:', editRequest);\n    \n    return NextResponse.json({ \n      success: true, \n      editRequest,\n      message: 'Edit request submitted to venue owner for approval' \n    });\n  } catch (error) {\n    console.error('Venue edit request creation error:', error);\n    return NextResponse.json(\n      { \n        success: false, \n        error: error instanceof Error ? error.message : 'Internal server error' \n      },\n      { status: 500 }\n    );\n  }\n}\n\n// GET /api/venue-edit-requests?venueId=X - Get pending edit requests for venue\nexport async function GET(request: NextRequest) {\n  try {\n    const url = new URL(request.url);\n    const venueId = url.searchParams.get('venueId');\n    \n    if (!venueId) {\n      return NextResponse.json(\n        { success: false, error: 'Venue ID is required' },\n        { status: 400 }\n      );\n    }\n    \n    // TODO: Implement database query\n    // This is a mock implementation\n    const editRequests = [\n      // Mock data would go here\n    ];\n    \n    return NextResponse.json({ \n      success: true, \n      editRequests \n    });\n  } catch (error) {\n    console.error('Venue edit request fetch error:', error);\n    return NextResponse.json(\n      { \n        success: false, \n        error: error instanceof Error ? error.message : 'Internal server error' \n      },\n      { status: 500 }\n    );\n  }\n}"
+import { NextRequest, NextResponse } from 'next/server';
+
+interface VenueEditRequest {
+  venueId: string;
+  proposedChanges: Record<string, any>;
+}
+
+// POST /api/venue-edit-requests - Submit venue edit request
+export async function POST(request: NextRequest) {
+  try {
+    const data: VenueEditRequest = await request.json();
+    
+    // TODO: Implement database operations and ownership checks
+    // This is a mock implementation
+    const editRequest = {
+      id: 'edit_request_' + Date.now(),
+      venueId: data.venueId,
+      requesterId: 'current_user_id', // Would get from auth
+      proposedChanges: data.proposedChanges,
+      status: 'PENDING',
+      createdAt: new Date(),
+      expiresAt: new Date(Date.now() + 48 * 60 * 60 * 1000) // 48 hours
+    };
+    
+    // TODO: Save to database and notify venue owner
+    console.log('Creating venue edit request:', editRequest);
+    
+    return NextResponse.json({ 
+      success: true, 
+      editRequest,
+      message: 'Edit request submitted to venue owner for approval' 
+    });
+  } catch (error) {
+    console.error('Venue edit request creation error:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Internal server error' 
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// GET /api/venue-edit-requests?venueId=X - Get pending edit requests for venue
+export async function GET(request: NextRequest) {
+  try {
+    const url = new URL(request.url);
+    const venueId = url.searchParams.get('venueId');
+    
+    if (!venueId) {
+      return NextResponse.json(
+        { success: false, error: 'Venue ID is required' },
+        { status: 400 }
+      );
+    }
+    
+    // TODO: Implement database query
+    // This is a mock implementation
+    const editRequests = [
+      // Mock data would go here
+    ];
+    
+    return NextResponse.json({ 
+      success: true, 
+      editRequests 
+    });
+  } catch (error) {
+    console.error('Venue edit request fetch error:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Internal server error' 
+      },
+      { status: 500 }
+    );
+  }
+}

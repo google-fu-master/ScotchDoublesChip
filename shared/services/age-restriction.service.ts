@@ -240,12 +240,11 @@ export class AgeRestrictionService {
       );
 
       if (canAccessClosingTable && availableTables.length === 0) {
-        conflicts.push({
+        warnings.push({
           type: 'LAST_TABLE',
-          playerId: player.id,
-          tableId: tableToClose.id,
           message: `Cannot close table ${tableToClose.number} - it's the last available table for player ${player.firstName} ${player.lastName} due to age restrictions`,
-          severity: 'ERROR'
+          affectedPlayers: [player.id],
+          affectedTables: [tableToClose.id]
         });
       }
     }

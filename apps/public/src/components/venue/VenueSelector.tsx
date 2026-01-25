@@ -5,8 +5,9 @@ import { Search, MapPin, Plus, Check, X, Building, Phone, Mail, Globe, Users, Ha
 import {
   VenueAgeRestriction,
   VenueAgeRestrictionLabels,
-  AgeRestrictionService
-} from '../../../shared/types/age-restriction.types';
+  AgeRestrictionUtils,
+  AgeRestrictionConflict
+} from '../../../../../shared/types/age-restriction.types';
 
 interface Venue {
   id: string;
@@ -118,7 +119,7 @@ export function VenueSelector({ onVenueSelect, selectedVenue, allowNoVenue = tru
     }
 
     // Validate age restrictions
-    const ageValidation = AgeRestrictionService.validateVenueTimeRestrictions(
+    const ageValidation = AgeRestrictionUtils.validateVenueTimeRestrictions(
       newVenue.ageRestriction,
       newVenue.minorStartTime || undefined,
       newVenue.minorEndTime || undefined,
@@ -127,7 +128,7 @@ export function VenueSelector({ onVenueSelect, selectedVenue, allowNoVenue = tru
     );
 
     if (!ageValidation.isValid) {
-      const errorMessage = ageValidation.conflicts.map(c => c.message).join('\n');
+      const errorMessage = ageValidation.conflicts.map((c: AgeRestrictionConflict) => c.message).join('\n');
       alert('Age restriction validation failed:\n' + errorMessage);
       return;
     }
@@ -455,7 +456,7 @@ export function VenueSelector({ onVenueSelect, selectedVenue, allowNoVenue = tru
                         >
                           {Object.entries(VenueAgeRestrictionLabels).map(([value, label]) => (
                             <option key={value} value={value}>
-                              {label}
+                              {label as string}
                             </option>
                           ))}
                         </select>
@@ -467,7 +468,7 @@ export function VenueSelector({ onVenueSelect, selectedVenue, allowNoVenue = tru
                         <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
                           <h6 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
                             <Clock className="w-4 h-4" />
-                            Minor Hours (<18) *
+                            Minor Hours (&lt;18) *
                           </h6>
                           <div className="grid grid-cols-2 gap-3">
                             <div>

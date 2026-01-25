@@ -1,1 +1,77 @@
-import { NextRequest, NextResponse } from 'next/server';\nimport { AgeRestrictionService } from '../../../../../shared/services/age-restriction.service';\n\ninterface TableAssignmentRequest {\n  player: {\n    id: string;\n    ageGroup: string;\n    firstName: string;\n    lastName: string;\n  };\n  table: {\n    id: string;\n    number: string;\n    venueId: string;\n    ageRestriction?: string;\n    isActive: boolean;\n  };\n  venue: {\n    id: string;\n    name: string;\n    ageRestriction: string;\n    useVenueAgeForAllTables: boolean;\n  };\n  tournament: {\n    id: string;\n    name: string;\n  };\n  ageOverrides?: any[];\n}\n\nexport async function POST(request: NextRequest) {\n  try {\n    const data: TableAssignmentRequest = await request.json();\n    \n    const validation = AgeRestrictionService.validatePlayerTableAssignment(\n      {\n        id: data.player.id,\n        ageGroup: data.player.ageGroup as any,\n        firstName: data.player.firstName,\n        lastName: data.player.lastName\n      },\n      {\n        id: data.table.id,\n        number: data.table.number,\n        venueId: data.table.venueId,\n        ageRestriction: data.table.ageRestriction as any,\n        isActive: data.table.isActive\n      },\n      {\n        id: data.venue.id,\n        name: data.venue.name,\n        ageRestriction: data.venue.ageRestriction as any,\n        useVenueAgeForAllTables: data.venue.useVenueAgeForAllTables\n      },\n      {\n        id: data.tournament.id,\n        name: data.tournament.name,\n        isAgeRestricted: false\n      },\n      data.ageOverrides\n    );\n    \n    return NextResponse.json({ \n      success: true, \n      validation \n    });\n  } catch (error) {\n    console.error('Table assignment validation error:', error);\n    return NextResponse.json(\n      { \n        success: false, \n        error: error instanceof Error ? error.message : 'Internal server error' \n      },\n      { status: 500 }\n    );\n  }\n}"
+import { NextRequest, NextResponse } from 'next/server';
+import { AgeRestrictionService } from '../../../../../shared/services/age-restriction.service';
+
+interface TableAssignmentRequest {
+  player: {
+    id: string;
+    ageGroup: string;
+    firstName: string;
+    lastName: string;
+  };
+  table: {
+    id: string;
+    number: string;
+    venueId: string;
+    ageRestriction?: string;
+    isActive: boolean;
+  };
+  venue: {
+    id: string;
+    name: string;
+    ageRestriction: string;
+    useVenueAgeForAllTables: boolean;
+  };
+  tournament: {
+    id: string;
+    name: string;
+  };
+  ageOverrides?: any[];
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const data: TableAssignmentRequest = await request.json();
+    
+    const validation = AgeRestrictionService.validatePlayerTableAssignment(
+      {
+        id: data.player.id,
+        ageGroup: data.player.ageGroup as any,
+        firstName: data.player.firstName,
+        lastName: data.player.lastName
+      },
+      {
+        id: data.table.id,
+        number: data.table.number,
+        venueId: data.table.venueId,
+        ageRestriction: data.table.ageRestriction as any,
+        isActive: data.table.isActive
+      },
+      {
+        id: data.venue.id,
+        name: data.venue.name,
+        ageRestriction: data.venue.ageRestriction as any,
+        useVenueAgeForAllTables: data.venue.useVenueAgeForAllTables
+      },
+      {
+        id: data.tournament.id,
+        name: data.tournament.name,
+        isAgeRestricted: false
+      },
+      data.ageOverrides
+    );
+    
+    return NextResponse.json({ 
+      success: true, 
+      validation 
+    });
+  } catch (error) {
+    console.error('Table assignment validation error:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Internal server error' 
+      },
+      { status: 500 }
+    );
+  }
+}

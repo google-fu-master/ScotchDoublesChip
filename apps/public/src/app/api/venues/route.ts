@@ -1,1 +1,139 @@
-import { NextRequest, NextResponse } from 'next/server';\nimport { prisma } from '../../../lib/prisma';\nimport { VenueAgeRestriction } from '../../../../shared/types/age-restriction.types';\n\nexport async function GET(request: NextRequest) {\n  try {\n    const { searchParams } = new URL(request.url);\n    const query = searchParams.get('q') || '';\n    \n    let venues;\n    \n    if (query) {\n      venues = await prisma.venue.findMany({\n        where: {\n          OR: [\n            { name: { contains: query, mode: 'insensitive' } },\n            { address: { contains: query, mode: 'insensitive' } },\n          ]\n        },\n        include: {\n          owner: {\n            select: {\n              id: true,\n              firstName: true,\n              lastName: true,\n              email: true\n            }\n          },\n          tables: {\n            select: {\n              id: true,\n              number: true,\n              ageRestriction: true\n            }\n          }\n        },\n        orderBy: { name: 'asc' }\n      });\n    } else {\n      venues = await prisma.venue.findMany({\n        include: {\n          owner: {\n            select: {\n              id: true,\n              firstName: true,\n              lastName: true,\n              email: true\n            }\n          },\n          tables: {\n            select: {\n              id: true,\n              number: true,\n              ageRestriction: true\n            }\n          }\n        },\n        orderBy: { name: 'asc' }\n      });\n    }\n\n    return NextResponse.json({\n      success: true,\n      venues,\n      count: venues.length\n    });\n  } catch (error) {\n    console.error('Venue search error:', error);\n    return NextResponse.json(\n      { error: 'Failed to search venues' },\n      { status: 500 }\n    );\n  }\n}\n\nexport async function POST(request: NextRequest) {\n  try {\n    const venueData = await request.json();\n\n    // Validate required fields\n    const required = ['name'];\n    const missing = required.filter((field: string) => !venueData[field]);\n    \n    if (missing.length > 0) {\n      return NextResponse.json(\n        { error: `Missing required fields: ${missing.join(', ')}` },\n        { status: 400 }\n      );\n    }\n\n    // Validate age restriction enum\n    if (venueData.ageRestriction && !Object.values(VenueAgeRestriction).includes(venueData.ageRestriction)) {\n      return NextResponse.json(\n        { error: 'Invalid age restriction value' },\n        { status: 400 }\n      );\n    }\n\n    const venue = await prisma.venue.create({\n      data: {\n        name: venueData.name,\n        address: venueData.address || null,\n        phone: venueData.phone || null,\n        email: venueData.email || null,\n        ageRestriction: venueData.ageRestriction || VenueAgeRestriction.MINORS_ALLOWED_ALL_DAY,\n        minorStartTime: venueData.minorStartTime || null,\n        minorEndTime: venueData.minorEndTime || null,\n        ages18To20StartTime: venueData.ages18To20StartTime || null,\n        ages18To20EndTime: venueData.ages18To20EndTime || null,\n        useVenueAgeForAllTables: venueData.useVenueAgeForAllTables ?? true,\n        totalTables: parseInt(venueData.totalTables || '1'),\n        ownerId: venueData.ownerId || null,\n        createdById: venueData.createdById || null,\n        settings: venueData.settings || null\n      },\n      include: {\n        owner: {\n          select: {\n            id: true,\n            firstName: true,\n            lastName: true,\n            email: true\n          }\n        }\n      }\n    });\n\n    return NextResponse.json({\n      success: true,\n      venue\n    });\n  } catch (error) {\n    console.error('Venue creation error:', error);\n    return NextResponse.json(\n      { error: 'Failed to create venue' },\n      { status: 500 }\n    );\n  }\n}"
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '../../../lib/prisma';
+import { VenueAgeRestriction } from '../../../../../shared/types/age-restriction.types';
+
+export async function GET(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const query = searchParams.get('q') || '';
+    
+    let venues;
+    
+    if (query) {
+      venues = await prisma.venue.findMany({
+        where: {
+          OR: [
+            { name: { contains: query, mode: 'insensitive' } },
+            { address: { contains: query, mode: 'insensitive' } },
+          ]
+        },
+        include: {
+          owner: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          },
+          tables: {
+            select: {
+              id: true,
+              number: true,
+              ageRestriction: true
+            }
+          }
+        },
+        orderBy: { name: 'asc' }
+      });
+    } else {
+      venues = await prisma.venue.findMany({
+        include: {
+          owner: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              email: true
+            }
+          },
+          tables: {
+            select: {
+              id: true,
+              number: true,
+              ageRestriction: true
+            }
+          }
+        },
+        orderBy: { name: 'asc' }
+      });
+    }
+
+    return NextResponse.json({
+      success: true,
+      venues,
+      count: venues.length
+    });
+  } catch (error) {
+    console.error('Venue search error:', error);
+    return NextResponse.json(
+      { error: 'Failed to search venues' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const venueData = await request.json();
+
+    // Validate required fields
+    const required = ['name'];
+    const missing = required.filter((field: string) => !venueData[field]);
+    
+    if (missing.length > 0) {
+      return NextResponse.json(
+        { error: `Missing required fields: ${missing.join(', ')}` },
+        { status: 400 }
+      );
+    }
+
+    // Validate age restriction enum
+    if (venueData.ageRestriction && !Object.values(VenueAgeRestriction).includes(venueData.ageRestriction)) {
+      return NextResponse.json(
+        { error: 'Invalid age restriction value' },
+        { status: 400 }
+      );
+    }
+
+    const venue = await prisma.venue.create({
+      data: {
+        name: venueData.name,
+        address: venueData.address || null,
+        phone: venueData.phone || null,
+        email: venueData.email || null,
+        ageRestriction: venueData.ageRestriction || VenueAgeRestriction.MINORS_ALLOWED_ALL_DAY,
+        minorStartTime: venueData.minorStartTime || null,
+        minorEndTime: venueData.minorEndTime || null,
+        ages18To20StartTime: venueData.ages18To20StartTime || null,
+        ages18To20EndTime: venueData.ages18To20EndTime || null,
+        useVenueAgeForAllTables: venueData.useVenueAgeForAllTables ?? true,
+        totalTables: parseInt(venueData.totalTables || '1'),
+        ownerId: venueData.ownerId || null,
+        createdById: venueData.createdById || null,
+        settings: venueData.settings || null
+      },
+      include: {
+        owner: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        }
+      }
+    });
+
+    return NextResponse.json({
+      success: true,
+      venue
+    });
+  } catch (error) {
+    console.error('Venue creation error:', error);
+    return NextResponse.json(
+      { error: 'Failed to create venue' },
+      { status: 500 }
+    );
+  }
+}

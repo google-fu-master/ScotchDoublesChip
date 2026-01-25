@@ -1,1 +1,76 @@
-import { NextRequest, NextResponse } from 'next/server';\nimport { AgeRestrictionService } from '../../../../../shared/services/age-restriction.service';\nimport { PlayerAgeGroup } from '../../../../../shared/types/age-restriction.types';\n\ninterface PlayerEligibilityRequest {\n  player: {\n    id: string;\n    ageGroup: PlayerAgeGroup;\n    firstName: string;\n    lastName: string;\n  };\n  tournament: {\n    id: string;\n    name: string;\n    venueId?: string;\n    startDate?: string;\n    isAgeRestricted: boolean;\n    useUniformAgeRestriction?: boolean;\n    uniformAgeRestriction?: string;\n  };\n  venue?: {\n    id: string;\n    name: string;\n    ageRestriction: string;\n    useVenueAgeForAllTables: boolean;\n    minorStartTime?: string;\n    minorEndTime?: string;\n    ages18To20StartTime?: string;\n    ages18To20EndTime?: string;\n  };\n  ageOverrides?: any[];\n}\n\nexport async function POST(request: NextRequest) {\n  try {\n    const data: PlayerEligibilityRequest = await request.json();\n    \n    const validation = AgeRestrictionService.validatePlayerTournamentEligibility(\n      data.player,\n      {\n        id: data.tournament.id,\n        name: data.tournament.name,\n        venueId: data.tournament.venueId,\n        startDate: data.tournament.startDate ? new Date(data.tournament.startDate) : undefined,\n        isAgeRestricted: data.tournament.isAgeRestricted,\n        useUniformAgeRestriction: data.tournament.useUniformAgeRestriction,\n        uniformAgeRestriction: data.tournament.uniformAgeRestriction as any\n      },\n      data.venue ? {\n        id: data.venue.id,\n        name: data.venue.name,\n        ageRestriction: data.venue.ageRestriction as any,\n        useVenueAgeForAllTables: data.venue.useVenueAgeForAllTables,\n        minorStartTime: data.venue.minorStartTime,\n        minorEndTime: data.venue.minorEndTime,\n        ages18To20StartTime: data.venue.ages18To20StartTime,\n        ages18To20EndTime: data.venue.ages18To20EndTime\n      } : undefined,\n      data.ageOverrides\n    );\n    \n    return NextResponse.json({ \n      success: true, \n      validation \n    });\n  } catch (error) {\n    console.error('Player eligibility validation error:', error);\n    return NextResponse.json(\n      { \n        success: false, \n        error: error instanceof Error ? error.message : 'Internal server error' \n      },\n      { status: 500 }\n    );\n  }\n}"
+import { NextRequest, NextResponse } from 'next/server';
+import { AgeRestrictionService } from '../../../../../shared/services/age-restriction.service';
+import { PlayerAgeGroup } from '../../../../../shared/types/age-restriction.types';
+
+interface PlayerEligibilityRequest {
+  player: {
+    id: string;
+    ageGroup: PlayerAgeGroup;
+    firstName: string;
+    lastName: string;
+  };
+  tournament: {
+    id: string;
+    name: string;
+    venueId?: string;
+    startDate?: string;
+    isAgeRestricted: boolean;
+    useUniformAgeRestriction?: boolean;
+    uniformAgeRestriction?: string;
+  };
+  venue?: {
+    id: string;
+    name: string;
+    ageRestriction: string;
+    useVenueAgeForAllTables: boolean;
+    minorStartTime?: string;
+    minorEndTime?: string;
+    ages18To20StartTime?: string;
+    ages18To20EndTime?: string;
+  };
+  ageOverrides?: any[];
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const data: PlayerEligibilityRequest = await request.json();
+    
+    const validation = AgeRestrictionService.validatePlayerTournamentEligibility(
+      data.player,
+      {
+        id: data.tournament.id,
+        name: data.tournament.name,
+        venueId: data.tournament.venueId,
+        startDate: data.tournament.startDate ? new Date(data.tournament.startDate) : undefined,
+        isAgeRestricted: data.tournament.isAgeRestricted,
+        useUniformAgeRestriction: data.tournament.useUniformAgeRestriction,
+        uniformAgeRestriction: data.tournament.uniformAgeRestriction as any
+      },
+      data.venue ? {
+        id: data.venue.id,
+        name: data.venue.name,
+        ageRestriction: data.venue.ageRestriction as any,
+        useVenueAgeForAllTables: data.venue.useVenueAgeForAllTables,
+        minorStartTime: data.venue.minorStartTime,
+        minorEndTime: data.venue.minorEndTime,
+        ages18To20StartTime: data.venue.ages18To20StartTime,
+        ages18To20EndTime: data.venue.ages18To20EndTime
+      } : undefined,
+      data.ageOverrides
+    );
+    
+    return NextResponse.json({ 
+      success: true, 
+      validation 
+    });
+  } catch (error) {
+    console.error('Player eligibility validation error:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Internal server error' 
+      },
+      { status: 500 }
+    );
+  }
+}
