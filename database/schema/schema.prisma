@@ -11,6 +11,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Age restriction enums
+enum PlayerAgeGroup {
+  UNDER_18  // <18 (Minors)
+  AGES_18_20 // 18-20
+  AGES_21_PLUS // 21+
+}
+
+enum VenueAgeRestriction {
+  MINORS_ALLOWED_ALL_DAY           // Minors (<18) Allowed All Day
+  MINORS_ALLOWED_LIMITED_HOURS     // Minors (<18) Allowed Limited Hours
+  MINORS_AND_18_20_LIMITED_HOURS   // Minors (<18) Allowed & 18-20 Limited Hours
+  NO_MINORS_18_PLUS_ALL_DAY        // No Minors (18+ All Day)
+  AGES_18_20_LIMITED_HOURS         // 18-20 Allowed Limited Hours
+  AGES_21_PLUS_ALL_DAY             // 21+ All Day
+}
+
+enum TableAgeRestriction {
+  UNDER_18     // <18
+  AGES_18_20   // 18-20
+  AGES_21_PLUS // 21+
+}
+
 // Core models for tournament management
 model Player {
   id        String   @id @default(cuid())
@@ -18,6 +40,9 @@ model Player {
   firstName String
   lastName  String
   phone     String?
+  
+  // Age system (replaces birth date)
+  ageGroup  PlayerAgeGroup @default(AGES_21_PLUS)
   
   // Birthday chip tracking (month/day only, no year)
   birthdayMonth     Int? // 1-12
@@ -40,6 +65,14 @@ model Player {
   directorRoles     TournamentDirector[]
   sidePotEntries    SidePotEntry[] // Individual side pot entries
   errorLogs         ErrorLog[] @relation("PlayerErrors")
+  ownedVenues       Venue[] @relation("VenueOwner")
+  createdVenues     Venue[] @relation("VenueCreator")
+  ageOverrides      PlayerAgeOverride[]
+  venueEditRequests VenueEditRequest[]
+  createdAgeOverrides PlayerAgeOverride[] @relation("AgeOverrideCreator")
+  reviewedVenueEditRequests VenueEditRequest[] @relation("VenueEditReviewer")
+  previousVenueOwnerships VenueOwnershipLog[] @relation("VenuePreviousOwner")
+  newVenueOwnerships VenueOwnershipLog[] @relation("VenueNewOwner")
 
   @@map("players")
 }
@@ -52,6 +85,20 @@ model Venue {
   phone       String?
   email       String?
   
+  // Age restriction system
+  ageRestriction     VenueAgeRestriction @default(MINORS_ALLOWED_ALL_DAY)
+  minorStartTime     String? // HH:MM format
+  minorEndTime       String? // HH:MM format  
+  ages18To20StartTime String? // HH:MM format
+  ages18To20EndTime   String? // HH:MM format
+  
+  // Table age restriction management
+  useVenueAgeForAllTables Boolean @default(true) // Apply Venue Age Restriction to All Tables vs Set Table Age Restrictions Manually
+  
+  // Venue ownership and editing
+  ownerId     String? // Tournament Director who owns this venue
+  createdById String? // Who originally created this venue
+  
   // Table management
   totalTables Int
   settings    Json? // Operating hours, rules, etc.
@@ -62,6 +109,10 @@ model Venue {
   // Relationships
   tournaments Tournament[]
   tables      Table[]
+  owner       Player? @relation("VenueOwner", fields: [ownerId], references: [id])
+  createdBy   Player? @relation("VenueCreator", fields: [createdById], references: [id])
+  editRequests VenueEditRequest[]
+  ownershipLogs VenueOwnershipLog[]
 
   @@map("venues")
 }
@@ -71,6 +122,9 @@ model Table {
   venueId   String
   number    String // Table identifier (1, 2, "Bar Table", etc.)
   isActive  Boolean @default(true)
+  
+  // Table age restriction (only used when venue.useVenueAgeForAllTables = false)
+  ageRestriction TableAgeRestriction?
   
   // Table status
   status    TableStatus @default(OPEN)
@@ -113,6 +167,11 @@ model Tournament {
   playerType     PlayerType      @default(SCOTCH_DOUBLES)
   gameType       GameType        @default(NINE_BALL)
   status         TournamentStatus @default(SETUP)
+  
+  // Age restriction system (for tournaments without venues)
+  isAgeRestricted     Boolean @default(false) // Age Restricted checkbox
+  useUniformAgeRestriction Boolean? // Apply Age Restriction to All Tables vs Set Table Age Restrictions Manually 
+  uniformAgeRestriction    TableAgeRestriction? // 21+ or 18+ when useUniformAgeRestriction = true
   
   // Tournament timing
   startDate      DateTime?
@@ -189,6 +248,7 @@ model Tournament {
   queue          TournamentQueue?
   teamAssignments TeamAssignment[]
   errorLogs      ErrorLog[] @relation("TournamentErrors")
+  ageOverrides   PlayerAgeOverride[]
 
   @@map("tournaments")
 }
@@ -608,6 +668,69 @@ model AuditLog {
   @@map("audit_logs")
 }
 
+// Player age override system for tournament-specific age settings
+model PlayerAgeOverride {
+  id           String @id @default(cuid())
+  playerId     String
+  tournamentId String
+  originalAge  PlayerAgeGroup
+  overrideAge  PlayerAgeGroup
+  createdById  String // TD who created the override
+  reason       String? // Optional reason for override
+  
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime? // Automatically removed when tournament ends
+  
+  // Relationships
+  player       Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)  
+  createdBy    Player @relation("AgeOverrideCreator", fields: [createdById], references: [id])
+  
+  @@unique([playerId, tournamentId])
+  @@map("player_age_overrides")
+}
+
+// Venue edit request system for ownership and approval workflow
+model VenueEditRequest {
+  id          String @id @default(cuid())
+  venueId     String
+  requesterId String // TD requesting the edit
+  
+  // Edit data
+  proposedChanges Json // What they want to change
+  status          VenueEditRequestStatus @default(PENDING)
+  reviewedById    String? // Owning TD who reviewed
+  rejectionReason String? // Reason for rejection if status = REJECTED
+  
+  // Timing
+  createdAt   DateTime @default(now())
+  reviewedAt  DateTime?
+  expiresAt   DateTime // 48 hours from creation
+  
+  // Relationships  
+  venue       Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  requester   Player @relation(fields: [requesterId], references: [id])
+  reviewedBy  Player? @relation("VenueEditReviewer", fields: [reviewedById], references: [id])
+  
+  @@map("venue_edit_requests")
+}
+
+model VenueOwnershipLog {
+  id               String @id @default(cuid())
+  venueId          String
+  previousOwnerId  String? // null if venue had no previous owner
+  newOwnerId       String
+  reason           String? // Reason for transfer
+  transferredAt    DateTime @default(now())
+  
+  // Relationships
+  venue            Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  previousOwner    Player? @relation("VenuePreviousOwner", fields: [previousOwnerId], references: [id])
+  newOwner         Player @relation("VenueNewOwner", fields: [newOwnerId], references: [id])
+  
+  @@map("venue_ownership_logs")
+}
+
 model Notification {
   id           String @id @default(cuid())
   
@@ -794,6 +917,13 @@ enum AssignmentType {
   INITIAL
   WINNER_STAYS
   FROM_QUEUE
+}
+
+enum VenueEditRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
 }
 
 enum AuditAction {

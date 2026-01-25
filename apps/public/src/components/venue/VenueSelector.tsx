@@ -1,7 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, MapPin, Plus, Check, X, Building, Phone, Mail, Globe, Users, Hash } from 'lucide-react';
+import { Search, MapPin, Plus, Check, X, Building, Phone, Mail, Globe, Users, Hash, Clock, AlertTriangle } from 'lucide-react';
+import {
+  VenueAgeRestriction,
+  VenueAgeRestrictionLabels,
+  AgeRestrictionService
+} from '../../../shared/types/age-restriction.types';
 
 interface Venue {
   id: string;
@@ -21,6 +26,14 @@ interface Venue {
   hourlyRate?: number;
   contactName?: string;
   isVerified: boolean;
+  // Age restriction fields
+  ageRestriction: VenueAgeRestriction;
+  useVenueAgeForAllTables: boolean;
+  minorStartTime?: string;
+  minorEndTime?: string;
+  ages18To20StartTime?: string;
+  ages18To20EndTime?: string;
+  ownerId?: string;
 }
 
 interface VenueSelectorProps {
@@ -48,7 +61,14 @@ export function VenueSelector({ onVenueSelect, selectedVenue, allowNoVenue = tru
     description: '',
     tableCount: '',
     maxCapacity: '',
-    contactName: ''
+    contactName: '',
+    // Age restriction fields
+    ageRestriction: VenueAgeRestriction.MINORS_ALLOWED_ALL_DAY,
+    useVenueAgeForAllTables: true,
+    minorStartTime: '',
+    minorEndTime: '',
+    ages18To20StartTime: '',
+    ages18To20EndTime: ''
   });
 
   useEffect(() => {
@@ -97,6 +117,21 @@ export function VenueSelector({ onVenueSelect, selectedVenue, allowNoVenue = tru
       return;
     }
 
+    // Validate age restrictions
+    const ageValidation = AgeRestrictionService.validateVenueTimeRestrictions(
+      newVenue.ageRestriction,
+      newVenue.minorStartTime || undefined,
+      newVenue.minorEndTime || undefined,
+      newVenue.ages18To20StartTime || undefined,
+      newVenue.ages18To20EndTime || undefined
+    );
+
+    if (!ageValidation.isValid) {
+      const errorMessage = ageValidation.conflicts.map(c => c.message).join('\n');
+      alert('Age restriction validation failed:\n' + errorMessage);
+      return;
+    }
+
     try {
       const response = await fetch('/api/venues', {
         method: 'POST',
@@ -128,7 +163,14 @@ export function VenueSelector({ onVenueSelect, selectedVenue, allowNoVenue = tru
           description: '',
           tableCount: '',
           maxCapacity: '',
-          contactName: ''
+          contactName: '',
+          // Reset age restriction fields
+          ageRestriction: VenueAgeRestriction.MINORS_ALLOWED_ALL_DAY,
+          useVenueAgeForAllTables: true,
+          minorStartTime: '',
+          minorEndTime: '',
+          ages18To20StartTime: '',
+          ages18To20EndTime: ''
         });
       } else {
         alert('Failed to create venue: ' + data.error);
@@ -392,6 +434,129 @@ export function VenueSelector({ onVenueSelect, selectedVenue, allowNoVenue = tru
                         onChange={(e) => setNewVenue({...newVenue, tableCount: e.target.value})}
                         className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
                       />
+                    </div>
+                  </div>
+
+                  {/* Age Restrictions Section */}
+                  <div className="border-t pt-4 mt-6">
+                    <h5 className="text-md font-medium text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+                      <AlertTriangle className="w-5 h-5" />
+                      Age Restrictions
+                    </h5>
+                    
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Age Restriction Policy *</label>
+                        <select
+                          value={newVenue.ageRestriction}
+                          onChange={(e) => setNewVenue({...newVenue, ageRestriction: e.target.value as VenueAgeRestriction})}
+                          className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-slate-700"
+                          required
+                        >
+                          {Object.entries(VenueAgeRestrictionLabels).map(([value, label]) => (
+                            <option key={value} value={value}>
+                              {label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Minor Hours (if needed) */}
+                      {(newVenue.ageRestriction === VenueAgeRestriction.MINORS_ALLOWED_LIMITED_HOURS || 
+                        newVenue.ageRestriction === VenueAgeRestriction.MINORS_AND_18_20_LIMITED_HOURS) && (
+                        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                          <h6 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            Minor Hours (<18) *
+                          </h6>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Start Time</label>
+                              <input
+                                type="time"
+                                value={newVenue.minorStartTime}
+                                onChange={(e) => setNewVenue({...newVenue, minorStartTime: e.target.value})}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium mb-1">End Time</label>
+                              <input
+                                type="time"
+                                value={newVenue.minorEndTime}
+                                onChange={(e) => setNewVenue({...newVenue, minorEndTime: e.target.value})}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                                required
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 18-20 Hours (if needed) */}
+                      {(newVenue.ageRestriction === VenueAgeRestriction.AGES_18_20_LIMITED_HOURS || 
+                        newVenue.ageRestriction === VenueAgeRestriction.MINORS_AND_18_20_LIMITED_HOURS) && (
+                        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <h6 className="font-medium text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+                            <Clock className="w-4 h-4" />
+                            18-20 Age Group Hours *
+                          </h6>
+                          <div className="grid grid-cols-2 gap-3">
+                            <div>
+                              <label className="block text-sm font-medium mb-1">Start Time</label>
+                              <input
+                                type="time"
+                                value={newVenue.ages18To20StartTime}
+                                onChange={(e) => setNewVenue({...newVenue, ages18To20StartTime: e.target.value})}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                                required
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-sm font-medium mb-1">End Time</label>
+                              <input
+                                type="time"
+                                value={newVenue.ages18To20EndTime}
+                                onChange={(e) => setNewVenue({...newVenue, ages18To20EndTime: e.target.value})}
+                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500"
+                                required
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Table Age Restriction Management */}
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Table Age Restrictions</label>
+                        <div className="space-y-2">
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="tableAgeMode"
+                              checked={newVenue.useVenueAgeForAllTables}
+                              onChange={() => setNewVenue({...newVenue, useVenueAgeForAllTables: true})}
+                              className="text-purple-600 focus:ring-purple-500"
+                            />
+                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                              Apply Venue Age Restriction to All Tables
+                            </span>
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="tableAgeMode"
+                              checked={!newVenue.useVenueAgeForAllTables}
+                              onChange={() => setNewVenue({...newVenue, useVenueAgeForAllTables: false})}
+                              className="text-purple-600 focus:ring-purple-500"
+                            />
+                            <span className="text-sm text-gray-700 dark:text-gray-300">
+                              Set Table Age Restrictions Manually
+                            </span>
+                          </label>
+                        </div>
+                      </div>
                     </div>
                   </div>
 

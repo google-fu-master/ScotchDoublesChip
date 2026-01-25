@@ -1,9 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { X, Calendar, MapPin, Trophy, Users, DollarSign, Clock, Plus, Settings, Save, FileText, Trash2 } from 'lucide-react';
+import { X, Calendar, MapPin, Trophy, Users, DollarSign, Clock, Plus, Settings, Save, FileText, Trash2, AlertTriangle } from 'lucide-react';
 import { VenueSelector } from '../venue/VenueSelector';
 import { useAuth } from '@/contexts/AuthContext';
+import { 
+  TableAgeRestriction,
+  TableAgeRestrictionLabels,
+  TournamentAgeRestriction 
+} from '../../../shared/types/age-restriction.types';
 
 interface Venue {
   id: string;
@@ -53,7 +58,7 @@ interface TournamentFormData {
   endDateTime: string;
   venue: Venue | null;
   
-  // Tournament Configuration
+  // Age Restrictions (for tournaments without venues)\n  isAgeRestricted: boolean;\n  useUniformAgeRestriction: boolean;\n  uniformAgeRestriction: TableAgeRestriction;\n  \n  // Tournament Configuration
   playerType: 'singles' | 'doubles' | 'scotch_doubles';
   gameType: 'eight_ball' | 'nine_ball' | 'ten_ball';
   tournamentType: 'chip_tournament';
@@ -132,6 +137,11 @@ export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps)
     startDateTime: '',
     endDateTime: '',
     venue: null,
+    
+    // Age Restrictions (for tournaments without venues)
+    isAgeRestricted: false,
+    useUniformAgeRestriction: true,
+    uniformAgeRestriction: TableAgeRestriction.AGES_21_PLUS,
     
     // Tournament Configuration
     playerType: 'scotch_doubles',
@@ -507,6 +517,118 @@ export function TournamentCreator({ onClose, onSubmit }: TournamentCreatorProps)
                   onVenueSelect={(venue) => updateFormData({ venue })}
                 />
               </div>
+
+              {/* Age Restrictions (only show when no venue selected) */}
+              {!formData.venue && (
+                <div className="border-t border-slate-200 dark:border-slate-600 pt-6">
+                  <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+                    <div className="flex items-center gap-2 text-yellow-800 dark:text-yellow-200">
+                      <AlertTriangle className="h-5 w-5" />
+                      <div>
+                        <div className="font-semibold">Age Restrictions for Tournament Tables</div>
+                        <div className="text-sm mt-1">
+                          Since no venue is selected, you can set age restrictions for tournament tables. 
+                          If unchecked, all players can participate regardless of age.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.isAgeRestricted}
+                        onChange={(e) => updateFormData({ isAgeRestricted: e.target.checked })}
+                        className="rounded border-gray-300 text-purple-600 focus:ring-purple-500"
+                      />
+                      <label className="ml-2 text-sm font-medium text-slate-700 dark:text-slate-300">
+                        Age Restricted Tournament
+                      </label>
+                    </div>
+
+                    {formData.isAgeRestricted && (
+                      <div className="ml-6 space-y-4 pl-4 border-l-2 border-purple-200 dark:border-purple-800">
+                        <div>
+                          <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                            Table Age Restriction Mode
+                          </label>
+                          <div className="space-y-2">
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                checked={formData.useUniformAgeRestriction}
+                                onChange={() => updateFormData({ useUniformAgeRestriction: true })}
+                                className="text-purple-600 focus:ring-purple-500"
+                              />
+                              <span className="text-sm text-slate-700 dark:text-slate-300">
+                                Apply Age Restriction to All Tables
+                              </span>
+                            </label>
+                            <label className="flex items-center gap-2">
+                              <input
+                                type="radio"
+                                checked={!formData.useUniformAgeRestriction}
+                                onChange={() => updateFormData({ useUniformAgeRestriction: false })}
+                                className="text-purple-600 focus:ring-purple-500"
+                              />
+                              <span className="text-sm text-slate-700 dark:text-slate-300">
+                                Set Table Age Restrictions Manually
+                              </span>
+                            </label>
+                          </div>
+                        </div>
+
+                        {formData.useUniformAgeRestriction && (
+                          <div>
+                            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                              Age Restriction Level
+                            </label>
+                            <div className="grid grid-cols-2 gap-3">
+                              <label className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                                formData.uniformAgeRestriction === TableAgeRestriction.AGES_18_20
+                                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                  : 'border-slate-300 dark:border-slate-600 hover:border-slate-400'
+                              }`}>
+                                <input
+                                  type="radio"
+                                  value={TableAgeRestriction.AGES_18_20}
+                                  checked={formData.uniformAgeRestriction === TableAgeRestriction.AGES_18_20}
+                                  onChange={(e) => updateFormData({ uniformAgeRestriction: e.target.value as TableAgeRestriction })}
+                                  className="sr-only"
+                                />
+                                <span className="font-medium">18+</span>
+                              </label>
+                              <label className={`flex items-center justify-center p-3 border rounded-lg cursor-pointer transition-colors ${
+                                formData.uniformAgeRestriction === TableAgeRestriction.AGES_21_PLUS
+                                  ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/20'
+                                  : 'border-slate-300 dark:border-slate-600 hover:border-slate-400'
+                              }`}>
+                                <input
+                                  type="radio"
+                                  value={TableAgeRestriction.AGES_21_PLUS}
+                                  checked={formData.uniformAgeRestriction === TableAgeRestriction.AGES_21_PLUS}
+                                  onChange={(e) => updateFormData({ uniformAgeRestriction: e.target.value as TableAgeRestriction })}
+                                  className="sr-only"
+                                />
+                                <span className="font-medium">21+</span>
+                              </label>
+                            </div>
+                          </div>
+                        )}
+
+                        {!formData.useUniformAgeRestriction && (
+                          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+                            <div className="text-sm text-blue-800 dark:text-blue-200">
+                              <strong>Manual Table Restrictions:</strong> Each table added to this tournament will need its age restriction set individually during tournament setup.
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

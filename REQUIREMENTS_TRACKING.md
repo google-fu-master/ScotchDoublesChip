@@ -34,13 +34,47 @@ This document tracks all requirements, features, and specifications gathered thr
 
 ## 🔄 IN PROGRESS REQUIREMENTS
 
-### Age Restrictions & Player Safety  
-- [ ] **Under 21 checkbox for player profiles**
-  - Add "Under 21" checkbox to player registration/profile
-  - Remove need to ask for birth year
-  - Table assignment restrictions based on age
-  - Tournament tables should have age restriction option/checkbox
-  - Under 21 players only assigned to age-appropriate tables
+### Age Restrictions & Player Safety System
+- [ ] **Player Age Profile System**
+  - Required Age dropdown in player signup wizard: "<18", "18-20", "21+" 
+  - Players can set their own Age setting
+  - Tournament Directors/Managers can temporarily override player Age setting for specific tournaments only
+  - Temporary overrides removed automatically when tournament ends
+  - Age verification disclaimer when TDs override settings
+
+- [ ] **Venue Age Restriction System**
+  - Required Age Restrictions dropdown in venue setup wizard with options:
+    - "Minors (<18) Allowed All Day"
+    - "Minors (<18) Allowed Limited Hours" 
+    - "Minors (<18) Allowed & 18-20 Limited Hours"
+    - "No Minors (18+ All Day)"
+    - "18-20 Allowed Limited Hours"
+    - "21+ All Day"
+  - Progressive restriction model (each option includes all above it)
+  - Time selectors for limited hours (venue local time, 1-24 hour ranges, end must be after start)
+  - Venue ownership system with edit approval workflow
+  - 48-hour approval timeout with ownership transfer after 3 expired rounds
+
+- [ ] **Table Age Restriction System** 
+  - Venue-level toggle: "Apply Venue Age Restriction to All Tables" vs "Set Table Age Restrictions Manually"
+  - Individual table Age restrictions: "<18", "18-20", "21+" (when manual mode)
+  - Table assignment based on progressive access model
+  - Table creation wizard integration
+
+- [ ] **Tournament Age Restriction System**
+  - "Age Restricted" checkbox for tournaments without venues
+  - Two modes: "Apply Age Restriction to All Tables" (radio buttons: "21+"/"18+") or "Set Table Age Restrictions Manually"
+  - Tournament eligibility validation against venue/tournament restrictions
+  - Limited hours validation against tournament start times
+  - TD warnings for age restriction conflicts
+
+- [ ] **Age Restriction Enforcement & Notifications**
+  - Player registration validation against venue/tournament restrictions  
+  - TD warnings when adding ineligible players with override options
+  - Table closure validation (cannot close last eligible table for active age-restricted players)
+  - Tournament start validation with bulk resolution options
+  - Start time change validation with conflict resolution prompts
+  - No automatic player removal once tournament begins
 
 ---
 
@@ -131,11 +165,13 @@ This document tracks all requirements, features, and specifications gathered thr
 
 ## 🎯 FEATURE REQUESTS TO CLARIFY
 
-### **Age Restrictions & Safety** ⚠️ NEEDS SPECIFICATION
-- How do age restrictions affect tournament eligibility?
-- Should venues have age-based table sections?
-- What verification is needed for under-21 status?
-- How do mixed-age tournaments handle table assignments?
+### **Age Restrictions & Safety** ✅ SPECIFIED ABOVE
+- Comprehensive age restriction system specified in "IN PROGRESS" section
+- Player age profiles with temporary tournament overrides
+- Venue age restrictions with limited hours support
+- Table-level age restrictions with manual/automatic modes  
+- Tournament eligibility validation and conflict resolution
+- Progressive access model with TD override capabilities
 
 ### **Tournament Structure & Rules** ✅ SPECIFIED IN CSV
 - **Game formats**: Eight Ball, Nine Ball, Ten Ball initially

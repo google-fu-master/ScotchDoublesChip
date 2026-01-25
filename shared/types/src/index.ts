@@ -1,3 +1,6 @@
+// Export all age restriction types
+export * from '../age-restriction.types';
+
 // Tournament related types
 export interface Tournament {
   id: string;
