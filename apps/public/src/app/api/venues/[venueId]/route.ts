@@ -3,11 +3,11 @@ import { venueManager } from '../../../../lib/venue';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ venueId: string }> }
 ) {
   try {
-    const { id } = await params;
-    const venue = venueManager.getVenueById(id);
+    const { venueId } = await params;
+    const venue = venueManager.getVenueById(venueId);
     
     if (!venue) {
       return NextResponse.json(

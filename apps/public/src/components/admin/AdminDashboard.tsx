@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X, Plus, Settings, Users, Trophy, Shield, BarChart, Calendar, Edit, Trash2, Play, Pause, RotateCcw, Database, DollarSign, FileText, Download, Upload, Key, Lock, Unlock, UserX, UserCheck, Crown, AlertTriangle, Activity, TrendingUp, HardDrive, Wifi, Server } from 'lucide-react';
 import { TournamentCreator } from './TournamentCreatorNew';
 
@@ -71,8 +71,10 @@ const mockUsers: User[] = [
 
 export function AdminDashboard({ onClose }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'tournaments' | 'financials' | 'database' | 'fargo' | 'system' | 'reports'>('overview');
-  const [tournaments, setTournaments] = useState<Tournament[]>(mockTournaments);
-  const [users, setUsers] = useState<User[]>(mockUsers);
+  const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [showTournamentCreator, setShowTournamentCreator] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 

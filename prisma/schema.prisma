@@ -1,5 +1,5 @@
 // Prisma Schema for Scotch Doubles Chip Tournament System
-// Focused on pool hall tournament management
+// Pool hall tournament management - corrected based on real requirements
 
 generator client {
   provider = "prisma-client-js"
@@ -10,6 +10,28 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// Age restriction enums
+enum PlayerAgeGroup {
+  UNDER_18  // <18 (Minors)
+  AGES_18_20 // 18-20
+  AGES_21_PLUS // 21+
+}
+
+enum VenueAgeRestriction {
+  MINORS_ALLOWED_ALL_DAY           // Minors (<18) Allowed All Day
+  MINORS_ALLOWED_LIMITED_HOURS     // Minors (<18) Allowed Limited Hours
+  MINORS_AND_18_20_LIMITED_HOURS   // Minors (<18) Allowed & 18-20 Limited Hours
+  NO_MINORS_18_PLUS_ALL_DAY        // No Minors (18+ All Day)
+  AGES_18_20_LIMITED_HOURS         // 18-20 Allowed Limited Hours
+  AGES_21_PLUS_ALL_DAY             // 21+ All Day
+}
+
+enum TableAgeRestriction {
+  UNDER_18     // <18
+  AGES_18_20   // 18-20
+  AGES_21_PLUS // 21+
+}
+
 // Core models for tournament management
 model Player {
   id        String   @id @default(cuid())
@@ -18,11 +40,20 @@ model Player {
   lastName  String
   phone     String?
   
+  // Age system (replaces birth date)
+  ageGroup  PlayerAgeGroup @default(AGES_21_PLUS)
+  
   // Birthday chip tracking (month/day only, no year)
   birthdayMonth     Int? // 1-12
   birthdayDay       Int? // 1-31
   lastBirthdayChip  DateTime? // When they last received a birthday chip
   
+  // Player skill ratings
+  fargoRating       Int? // Overall Fargo rating (-100 to 900)
+  apaEightBallRank  String? // APA 8-ball rank
+  apaNineBallRank   String? // APA 9-ball rank
+  inHouseRating     String? // Venue-specific rating
+
   // Player preferences and settings
   settings  Json?
   createdAt DateTime @default(now())
@@ -31,8 +62,16 @@ model Player {
   // Relationships
   tournamentProfiles PlayerProfile[]
   directorRoles     TournamentDirector[]
-  payoutSplits      PayoutSplit[]
-  sidePotEntries    SidePotEntry[]
+  sidePotEntries    SidePotEntry[] // Individual side pot entries
+  errorLogs         ErrorLog[] @relation("PlayerErrors")
+  ownedVenues       Venue[] @relation("VenueOwner")
+  createdVenues     Venue[] @relation("VenueCreator")
+  ageOverrides      PlayerAgeOverride[]
+  venueEditRequests VenueEditRequest[]
+  createdAgeOverrides PlayerAgeOverride[] @relation("AgeOverrideCreator")
+  reviewedVenueEditRequests VenueEditRequest[] @relation("VenueEditReviewer")
+  previousVenueOwnerships VenueOwnershipLog[] @relation("VenuePreviousOwner")
+  newVenueOwnerships VenueOwnershipLog[] @relation("VenueNewOwner")
 
   @@map("players")
 }
@@ -45,6 +84,20 @@ model Venue {
   phone       String?
   email       String?
   
+  // Age restriction system
+  ageRestriction     VenueAgeRestriction @default(MINORS_ALLOWED_ALL_DAY)
+  minorStartTime     String? // HH:MM format
+  minorEndTime       String? // HH:MM format  
+  ages18To20StartTime String? // HH:MM format
+  ages18To20EndTime   String? // HH:MM format
+  
+  // Table age restriction management
+  useVenueAgeForAllTables Boolean @default(true) // Apply Venue Age Restriction to All Tables vs Set Table Age Restrictions Manually
+  
+  // Venue ownership and editing
+  ownerId     String? // Tournament Director who owns this venue
+  createdById String? // Who originally created this venue
+  
   // Table management
   totalTables Int
   settings    Json? // Operating hours, rules, etc.
@@ -55,6 +108,10 @@ model Venue {
   // Relationships
   tournaments Tournament[]
   tables      Table[]
+  owner       Player? @relation("VenueOwner", fields: [ownerId], references: [id])
+  createdBy   Player? @relation("VenueCreator", fields: [createdById], references: [id])
+  editRequests VenueEditRequest[]
+  ownershipLogs VenueOwnershipLog[]
 
   @@map("venues")
 }
@@ -65,95 +122,114 @@ model Table {
   number    String // Table identifier (1, 2, "Bar Table", etc.)
   isActive  Boolean @default(true)
   
+  // Table age restriction (only used when venue.useVenueAgeForAllTables = false)
+  ageRestriction TableAgeRestriction?
+  
   // Table status
-  status    TableStatus @default(AVAILABLE)
+  status    TableStatus @default(OPEN)
   settings  Json? // Table-specific settings
-  lastAssignedAt DateTime?
-  currentWinningTeamId String?
-  closedBy String?
-  closedAt DateTime?
+  
+  // Current assignment
+  currentWinningTeamId String? // Team that stays at table
+  lastAssignedAt       DateTime? // When teams were last assigned
+  
+  // Director controls
+  closedBy    String? // Director who closed the table
+  closedAt    DateTime? // When table was closed
   
   // Relationships
   venue     Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
   games     Game[]
-  assignedTeams Team[]
-  teamAssignments TeamAssignment[]
+  assignedTeams Team[] // Teams currently assigned to this table
+  assignments TeamAssignment[] // Assignment history
 
   @@unique([venueId, number])
   @@map("tables")
 }
 
 enum TableStatus {
-  AVAILABLE
-  IN_USE
-  OUT_OF_ORDER
-  RESERVED
+  OPEN      // Available for assignment
+  IN_USE    // Currently has teams playing
+  CLOSED    // Manually closed by director/manager
 }
 
 // Tournament management with proper roles
+// Tournament management with complete configuration
 model Tournament {
   id          String          @id @default(cuid())
   name        String
-  description String?
+  description String?         @db.VarChar(5000) // 5000 character limit
   venueId     String
   
-  // Tournament configuration
+  // Tournament type configuration
   tournamentType TournamentType  @default(CHIP)
-  format         TournamentFormat @default(SCOTCH_DOUBLES)
-  playerType     PlayerType @default(SCOTCH_DOUBLES)
-  gameType       GameType @default(NINE_BALL)
+  playerType     PlayerType      @default(SCOTCH_DOUBLES)
+  gameType       GameType        @default(NINE_BALL)
   status         TournamentStatus @default(SETUP)
   
-  // Chip tournament settings
-  settings       Json            // Tournament-specific configuration
-  rules          RulesSystem?    // Tournament rules system
-  ratingSystem   RatingSystem?   // Rating system used
-  defaultChipsPerPlayer Int @default(3)
-  birthdayChip   Boolean @default(true) // Enable birthday chip bonus
+  // Age restriction system (for tournaments without venues)
+  isAgeRestricted     Boolean @default(false) // Age Restricted checkbox
+  useUniformAgeRestriction Boolean? // Apply Age Restriction to All Tables vs Set Table Age Restrictions Manually 
+  uniformAgeRestriction    TableAgeRestriction? // 21+ or 18+ when useUniformAgeRestriction = true
   
-  // Tournament flow
-  bracketOrdering BracketOrdering @default(RANDOM)
-  autopilotMode   Boolean @default(false)
-  autoAcceptScores Boolean @default(true)
-  randomOrderingEachRound Boolean @default(false)
-  raceToWins     Int @default(1)
-  playersPerTable Int @default(4)
-  currentRound   Int @default(1)
-  maxRounds      Int?
-  
-  // Display settings
-  showSkillLevels Boolean @default(true)
-  access         AccessType @default(PUBLIC)
-  
-  // Financial settings
-  adminFee       Decimal @default(0)
-  addedMoney     Decimal @default(0)
-  payoutType     PayoutType @default(PERCENTAGE)
-  payoutPlacesSetting PayoutPlacesSetting @default(TOP_3)
-  payoutPercentage Float @default(25.0)
-  customPayoutStructure Json?
-  
-  // Tournament state
-  isCompleted    Boolean @default(false)
-  isStarted      Boolean @default(false)
-  isPublic       Boolean @default(true) // Legacy field, use access instead
-  
-  // Scheduling
+  // Tournament timing
   startDate      DateTime?
   endDate        DateTime?
-  registrationOpenDate  DateTime?
-  registrationCloseDate DateTime?
   
-  // Registration limits
-  maxTeams       Int?
-  minTeams       Int?
-  estimatedEntrants Int?
-  entryFee       Decimal?
+  // Entry and chip configuration
+  estimatedEntrants  Int?
+  playersPerTable    Int @default(4) // Total players at table
   
-  // Chip configuration
-  startingChips  Int @default(3) // Chips per team at registration
+  // Default chips configuration with Fargo-based ranges
+  defaultChipsPerPlayer Int @default(3)
+  chipRanges           Json? // Array of {minFargo, maxFargo, chips} objects
   
-  // Metadata
+  // Race configuration
+  raceToWins     Int @default(1) // Games needed to win a match
+  
+  // Tournament flow settings
+  bracketOrdering   BracketOrdering @default(RANDOM_DRAW)
+  autopilotMode     Boolean @default(false) // Auto-assign avoiding repeats
+  randomOrderingEachRound Boolean @default(false) // Shuffle queue each round
+  
+  // Rules and rating system
+  rules         Rules @default(BCA)
+  ratingSystem  RatingSystem @default(FARGO_RATE)
+  showSkillLevels Boolean @default(true) // Show ratings in bracket
+  
+  // Money configuration (all optional)
+  entryFee      Decimal? @db.Decimal(10,2) // Per entrant
+  adminFee      Decimal? @db.Decimal(10,2) // Per entrant (goes to director)
+  addedMoney    Decimal? @db.Decimal(10,2) // Flat amount added to pot
+  
+  // Payout structure configuration
+  payoutType         PayoutType? // PLACES or PERCENTAGE
+  payoutPlacesSetting PayoutPlacesSetting? // Winner take all, top 2, etc.
+  payoutPercentage   Int? // 10%, 15%, 20%, etc. (when using percentage type)
+  customPayoutStructure Json? // Manual payout structure
+  
+  // Money visibility settings
+  moneyVisible       Boolean @default(true) // Can be toggled by director
+  moneyVisibleBefore Boolean @default(true) // Show money before tournament
+  moneyVisibleDuring Boolean @default(true) // Show money during tournament  
+  moneyVisibleAfter  Boolean @default(true) // Show money after tournament
+  
+  // Access control
+  access        AccessType @default(PUBLIC)
+  
+  // Tournament progression
+  isStarted      Boolean @default(false)
+  isCompleted    Boolean @default(false)
+  currentRound   Int @default(0)
+  
+  // Template functionality
+  isTemplate     Boolean @default(false) // Can be saved as template
+  templateName   String? // Name when saved as template
+  
+  // Auto settings
+  autoAcceptScores Boolean @default(false) // Auto-accept vs manual approval
+  allowNotifications Boolean @default(true) // SMS/push when teams assigned
+  
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -165,11 +241,13 @@ model Tournament {
   games          Game[]
   chipTransactions ChipTransaction[]
   payouts        Payout[]
+  payoutSplits   PayoutSplit[] // Manual payout splits at end
   sidePots       SidePot[]
-  chipRanges     ChipRange[]
-  queue          TournamentQueue?
   teamPairings   TeamPairing[]
+  queue          TournamentQueue?
   teamAssignments TeamAssignment[]
+  errorLogs      ErrorLog[] @relation("TournamentErrors")
+  ageOverrides   PlayerAgeOverride[]
 
   @@map("tournaments")
 }
@@ -232,41 +310,37 @@ model Team {
   currentChips Int @default(0) // Current chip count
   totalChipsWon Int @default(0) // Total chips won throughout tournament
   totalChipsLost Int @default(0) // Total chips lost
-  manualChipOverride Boolean @default(false) // Tracks manual chip adjustments
-  initialChips Int @default(0) // Initial chip allocation
   
-  // Queue and table assignment
-  isQueued      Boolean @default(false)
-  queuePosition Int?
-  currentTableId String?
-  assignedAt    DateTime?
+  // Initial chip calculation from combined Fargos
+  combinedFargo Int? // Sum of both players' Fargo ratings
+  initialChips  Int? // Chips calculated from Fargo ratings
+  manualChipOverride Boolean @default(false) // Director manually set chips
   
-  // Performance tracking
-  gamesPlayed      Int @default(0)
-  gamesWon         Int @default(0)
-  currentWinStreak Int @default(0)
-  longestWinStreak Int @default(0)
+  // Queue and bracket management
+  queuePosition Int? // Position in waiting queue (null if not queued)
+  seed         Int? // Initial bracket seeding
+  isQueued     Boolean @default(false) // Currently in queue for assignment
   
-  // FARGO and seeding
-  combinedFargo    Int?
-  
-  // Team metadata
-  seed         Int?
+  // Current table assignment
+  currentTableId String? // Table they're currently assigned to (if any)
+  assignedAt     DateTime? // When they were assigned to current table
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   // Relationships
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  currentTable Table? @relation(fields: [currentTableId], references: [id])
   members      TeamMember[]
   gamesAsWinner Game[] @relation("WinningTeam")
   gamesAsLoser  Game[] @relation("LosingTeam")
-  payouts      Payout[]
-  payoutSplits PayoutSplit[]
-  sidePotEntries SidePotEntry[]
-  team1Pairings TeamPairing[] @relation("Team1Pairings")
-  team2Pairings TeamPairing[] @relation("Team2Pairings")
-  assignments   TeamAssignment[]
+  chipTransactions ChipTransaction[] // Team chip tracking
+  currentTable Table? @relation(fields: [currentTableId], references: [id]) // Current table assignment
+  assignments  TeamAssignment[] // Assignment history
+  payouts      Payout[] // Payouts earned
+  sidePotEntries SidePotEntry[] // Side pot entries
+  
+  // Pairing history
+  pairingsAsTeam1 TeamPairing[] @relation("Team1Pairings")
+  pairingsAsTeam2 TeamPairing[] @relation("Team2Pairings")
 
   @@map("teams")
 }
@@ -287,7 +361,6 @@ model TeamMember {
   @@map("team_members")
 }
 
-// Games - winners stay, losers move to open tables
 model Game {
   id           String @id @default(cuid())
   tournamentId String
@@ -304,19 +377,25 @@ model Game {
   
   // Game status and timing
   status       GameStatus @default(NOT_STARTED)
-  raceToWins   Int @default(1)
-  winningTeamScore Int?
-  losingTeamScore Int?
-  scoresSubmitted Boolean @default(false)
-  scoresApproved Boolean @default(false)
-  approvedBy String?
-  submittedBy String?
   startedAt    DateTime?
   completedAt  DateTime?
+  
+  // Match configuration (race-to-X)
+  raceToWins   Int @default(1) // Games needed to win the match
   
   // Game results
   winnerStays  Boolean @default(true) // Winner stays at table
   chipsAwarded Int @default(1) // Chips awarded to winner
+  
+  // Score tracking
+  winningTeamScore Int @default(0) // Games won by winning team
+  losingTeamScore  Int @default(0) // Games won by losing team
+  
+  // Scoring approval
+  scoresSubmitted Boolean @default(false) // Scores have been submitted
+  scoresApproved  Boolean @default(false) // Scores approved by director
+  submittedBy     String? // Player who submitted scores
+  approvedBy      String? // Director who approved scores
   
   // Game-specific data
   gameData     Json? // Rack info, break player, etc.
@@ -331,7 +410,7 @@ model Game {
   winningTeam  Team? @relation("WinningTeam", fields: [winningTeamId], references: [id])
   losingTeam   Team? @relation("LosingTeam", fields: [losingTeamId], references: [id])
   results      GameResult[]
-  chipTransactions ChipTransaction[]
+  chipTransactions ChipTransaction[] // Chip transactions from this game
 
   @@map("games")
 }
@@ -361,7 +440,7 @@ model ChipTransaction {
   id              String @id @default(cuid())
   tournamentId    String
   playerProfileId String?
-  teamId          String? // Added team relationship
+  teamId          String? // Team chips belong to
   gameId          String?
   
   // Transaction details
@@ -377,42 +456,68 @@ model ChipTransaction {
   // Relationships
   tournament      Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
   playerProfile   PlayerProfile? @relation(fields: [playerProfileId], references: [id])
-  game            Game? @relation(fields: [gameId], references: [id])
+  team            Team? @relation(fields: [teamId], references: [id]) // Team relationship
+  game            Game? @relation(fields: [gameId], references: [id]) // Game context
 
   @@map("chip_transactions")
 }
 
-// Payout structure for tournaments
+// Payout structure for tournaments with split functionality
 model Payout {
   id           String @id @default(cuid())
   tournamentId String
-  teamId       String? // Team that received this payout
   
   // Payout details
   position     Int // 1st, 2nd, 3rd, etc.
-  amount       Decimal
-  originalAmount Decimal?
-  percentage   Decimal? // Percentage of total pot
+  amount       Decimal @db.Decimal(10,2)
+  percentage   Decimal? @db.Decimal(5,2) // Percentage of total pot
   description  String? // "1st Place", "Runner-up", etc.
+  
+  // Payout recipient
+  teamId       String? // Team that earned this position
   
   // Payout status
   isPaid       Boolean @default(false)
-  isSplit      Boolean @default(false)
   paidAt       DateTime?
-  paidTo       String? // Team or player ID
+  
+  // Original vs split amounts
+  originalAmount Decimal? @db.Decimal(10,2) // Amount before any splits
+  isSplit        Boolean @default(false) // Part of a manual split
   
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
   // Relationships
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  team         Team? @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  splits       PayoutSplit[]
+  team         Team? @relation(fields: [teamId], references: [id])
 
   @@map("payouts")
 }
 
-// Side pots for additional betting/prizes
+// Manual payout splits for end-of-tournament scenarios
+model PayoutSplit {
+  id           String @id @default(cuid())
+  tournamentId String
+  
+  // Split details
+  splitName    String // "Final 3 Teams Split", "1st/2nd Place Split", etc.
+  description  String? // Reason for split
+  totalAmount  Decimal @db.Decimal(10,2) // Total amount being split
+  
+  // Split recipients (JSON array of {teamId, amount, percentage})
+  splitData    Json // [{"teamId": "...", "amount": 100.00, "percentage": 50.0}]
+  
+  // Split metadata
+  createdBy    String? // Director who created the split
+  createdAt    DateTime @default(now())
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@map("payout_splits")
+}
+
+// Side pots for additional betting/prizes (up to 10 per tournament)
 model SidePot {
   id           String @id @default(cuid())
   tournamentId String
@@ -420,20 +525,21 @@ model SidePot {
   // Side pot details
   name         String // "Break and Run", "High Run", etc.
   description  String?
-  amount       Decimal
-  entryFee     Decimal?
-  entryType    SidePotEntryType @default(MANUAL)
-  totalPot     Decimal @default(0)
+  entryFee     Decimal @db.Decimal(10,2) // Entry fee for this side pot
+  totalPot     Decimal @default(0) @db.Decimal(10,2) // Total collected
+  
+  // Entry type
+  entryType    SidePotEntryType @default(TEAM) // TEAM or INDIVIDUAL
   
   // Qualification criteria
   criteria     Json // Flexible criteria definition
   
-  // Status
+  // Status and winner
   isActive     Boolean @default(true)
   isComplete   Boolean @default(false)
-  paidOut      Boolean @default(false)
   winnerId     String? // Winner team or player ID
-  winnerType   String? // Type of winner (TEAM, PLAYER, etc.)
+  winnerType   SidePotWinnerType? // TEAM or PLAYER
+  paidOut      Boolean @default(false)
   paidAt       DateTime?
   
   createdAt    DateTime @default(now())
@@ -441,96 +547,99 @@ model SidePot {
 
   // Relationships
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  entries      SidePotEntry[]
+  entries      SidePotEntry[] // Track entries
 
   @@map("side_pots")
 }
 
+// Track side pot entries
 model SidePotEntry {
-  id         String @id @default(cuid())
-  sidePotId  String
-  teamId     String?
-  playerId   String?
+  id           String @id @default(cuid())
+  sidePotId    String
   
   // Entry details
-  entrantType SidePotEntryType
-  entryFee    Decimal
-  enteredAt   DateTime @default(now())
+  entrantType  SidePotEntryType // TEAM or INDIVIDUAL
+  teamId       String?
+  playerId     String? // For individual entries
   
+  // Entry status
+  entryFee     Decimal @db.Decimal(10,2)
+  isPaid       Boolean @default(false)
+  enteredAt    DateTime @default(now())
+
   // Relationships
-  sidePot     SidePot @relation(fields: [sidePotId], references: [id], onDelete: Cascade)
-  team        Team? @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  player      Player? @relation(fields: [playerId], references: [id], onDelete: SetNull)
-  
+  sidePot      SidePot @relation(fields: [sidePotId], references: [id], onDelete: Cascade)
+  team         Team? @relation(fields: [teamId], references: [id])
+  player       Player? @relation(fields: [playerId], references: [id])
+
   @@unique([sidePotId, teamId])
   @@unique([sidePotId, playerId])
   @@map("side_pot_entries")
 }
 
-// Chip distribution ranges based on Fargo ratings
-model ChipRange {
+// Team pairing history to avoid repeat matchups
+model TeamPairing {
   id           String @id @default(cuid())
   tournamentId String
+  team1Id      String
+  team2Id      String
   
-  // Range definition
-  minRating    Int
-  maxRating    Int
-  chips        Int
-  
-  // Metadata
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  // Pairing statistics
+  timesPlayed  Int @default(1) // How many times these teams have played
+  lastPlayed   DateTime @default(now()) // When they last played
   
   // Relationships
   tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  
-  @@map("chip_ranges")
+  team1        Team @relation("Team1Pairings", fields: [team1Id], references: [id], onDelete: Cascade)
+  team2        Team @relation("Team2Pairings", fields: [team2Id], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId, team1Id, team2Id])
+  @@map("team_pairings")
 }
 
-// Tournament templates for reusable configurations
-model TournamentTemplate {
-  id          String @id @default(cuid())
-  name        String
-  description String?
-  
-  // Template settings (stored as JSON matching TournamentFormData structure)
-  settings    Json
-  
-  // Metadata
-  isPublic    Boolean @default(false) // Can other users use this template
-  createdBy   String? // User ID who created the template
-  usageCount  Int @default(0) // How many times this template has been used
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  
-  @@map("tournament_templates")
-}
-
-model PayoutSplit {
-  id          String @id @default(cuid())
-  payoutId    String
-  teamId      String
+// Tournament queue management
+model TournamentQueue {
+  id           String @id @default(cuid())
   tournamentId String
-  playerId    String?
   
-  // Split details
-  splitName   String?
-  splitData   Json?
-  amount      Decimal
-  totalAmount Decimal?
-  percentage  Decimal?
-  description String?
-  createdBy   String?
+  // Queue state
+  queueData    Json // Serialized queue of team IDs in order
+  lastShuffled DateTime? // When queue was last shuffled
+  shuffledBy   String? // Director who last shuffled
   
-  createdAt   DateTime @default(now())
-  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
   // Relationships
-  payout      Payout @relation(fields: [payoutId], references: [id], onDelete: Cascade)
-  team        Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  player      Player? @relation(fields: [playerId], references: [id], onDelete: SetNull)
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+
+  @@unique([tournamentId])
+  @@map("tournament_queues")
+}
+
+// Team assignment notifications
+model TeamAssignment {
+  id           String @id @default(cuid())
+  tournamentId String
+  teamId       String
+  tableId      String
   
-  @@map("payout_splits")
+  // Assignment details
+  assignmentType AssignmentType // INITIAL, WINNER_STAYS, FROM_QUEUE
+  assignedBy   String? // Director who made assignment
+  
+  // Notification status
+  notificationSent Boolean @default(false)
+  sentAt           DateTime?
+  
+  createdAt    DateTime @default(now())
+
+  // Relationships
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
+  team         Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  table        Table @relation(fields: [tableId], references: [id], onDelete: Cascade)
+
+  @@map("team_assignments")
 }
 
 // System models for audit, notifications, and administration
@@ -558,45 +667,67 @@ model AuditLog {
   @@map("audit_logs")
 }
 
-model ErrorLog {
+// Player age override system for tournament-specific age settings
+model PlayerAgeOverride {
   id           String @id @default(cuid())
+  playerId     String
+  tournamentId String
+  originalAge  PlayerAgeGroup
+  overrideAge  PlayerAgeGroup
+  createdById  String // TD who created the override
+  reason       String? // Optional reason for override
   
-  // Error details
-  errorType    String
-  errorMessage String
-  message      String?
-  errorStack   String?
-  stack        String?
-  code         String?
-  context      Json?
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime? // Automatically removed when tournament ends
   
-  // Error categorization
-  severity     String // ERROR, WARNING, INFO
-  category     String // SERVICE_ERROR, VALIDATION_ERROR, SYSTEM_ERROR
+  // Relationships
+  player       Player @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)  
+  createdBy    Player @relation("AgeOverrideCreator", fields: [createdById], references: [id])
   
-  // Request context
-  userId       String?
-  tournamentId String?
-  sessionId    String?
-  requestId    String?
-  correlationId String?
+  @@unique([playerId, tournamentId])
+  @@map("player_age_overrides")
+}
+
+// Venue edit request system for ownership and approval workflow
+model VenueEditRequest {
+  id          String @id @default(cuid())
+  venueId     String
+  requesterId String // TD requesting the edit
   
-  // System context  
-  service      String?
-  method       String?
-  endpoint     String?
+  // Edit data
+  proposedChanges Json // What they want to change
+  status          VenueEditRequestStatus @default(PENDING)
+  reviewedById    String? // Owning TD who reviewed
+  rejectionReason String? // Reason for rejection if status = REJECTED
   
-  // Metadata
-  timestamp    DateTime @default(now())
-  resolved     Boolean @default(false)
-  resolvedAt   DateTime?
-  resolvedBy   String?
+  // Timing
+  createdAt   DateTime @default(now())
+  reviewedAt  DateTime?
+  expiresAt   DateTime // 48 hours from creation
   
-  @@map("error_logs")
-  @@index([errorType])
-  @@index([category])
-  @@index([severity])
-  @@index([timestamp])
+  // Relationships  
+  venue       Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  requester   Player @relation(fields: [requesterId], references: [id])
+  reviewedBy  Player? @relation("VenueEditReviewer", fields: [reviewedById], references: [id])
+  
+  @@map("venue_edit_requests")
+}
+
+model VenueOwnershipLog {
+  id               String @id @default(cuid())
+  venueId          String
+  previousOwnerId  String? // null if venue had no previous owner
+  newOwnerId       String
+  reason           String? // Reason for transfer
+  transferredAt    DateTime @default(now())
+  
+  // Relationships
+  venue            Venue @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  previousOwner    Player? @relation("VenuePreviousOwner", fields: [previousOwnerId], references: [id])
+  newOwner         Player @relation("VenueNewOwner", fields: [newOwnerId], references: [id])
+  
+  @@map("venue_ownership_logs")
 }
 
 model Notification {
@@ -636,6 +767,34 @@ model SystemConfig {
   @@map("system_config")
 }
 
+// Error logging
+model ErrorLog {
+  id            String    @id @default(cuid())
+  code          String
+  message       String
+  category      String
+  severity      String
+  context       String?   // JSON string of context data
+  stack         String?   // Error stack trace
+  
+  // Tracking
+  userId        String?
+  tournamentId  String?
+  correlationId String?   // For tracking related operations
+  
+  // Timestamps
+  createdAt     DateTime  @default(now())
+  
+  // Relations
+  user         Player?      @relation("PlayerErrors", fields: [userId], references: [id])
+  tournament   Tournament?  @relation("TournamentErrors", fields: [tournamentId], references: [id])
+  
+  @@index([category, createdAt])
+  @@index([severity, createdAt])
+  @@index([correlationId])
+  @@map("error_logs")
+}
+
 // Updated enum definitions for pool hall tournaments
 enum DirectorRole {
   TOURNAMENT_DIRECTOR
@@ -645,114 +804,72 @@ enum DirectorRole {
 }
 
 enum TournamentType {
-  CHIP        // Chip accumulation tournament
-  ELIMINATION // Single/Double elimination  
-  ROUND_ROBIN // Round robin format
-  SWISS       // Swiss system
-  CUSTOM      // Custom format
-}
-
-enum TournamentFormat {
-  SINGLES
-  DOUBLES
-  SCOTCH_DOUBLES
-  TEAMS
+  CHIP
+  // Future: BRACKET, ROUND_ROBIN when needed
 }
 
 enum PlayerType {
-  SINGLES
-  DOUBLES
-  SCOTCH_DOUBLES
-  TEAMS
+  SINGLES           // 1v1
+  DOUBLES          // 2v2
+  SCOTCH_DOUBLES   // 2v2 alternating shot
 }
 
 enum GameType {
   EIGHT_BALL
   NINE_BALL
   TEN_BALL
-  STRAIGHT_POOL
-  ONE_POCKET
-  BANK_POOL
-  SNOOKER
-}
-
-enum AssignmentType {
-  AUTO
-  MANUAL  
-  PRIORITY
-  INITIAL
-  FROM_QUEUE
-  WINNER_STAYS
 }
 
 enum BracketOrdering {
-  RANDOM
-  RANDOM_DRAW  // Alias for RANDOM
-  FARGO_HIGH_TO_LOW
-  FARGO_LOW_TO_HIGH
-  SEEDED_DRAW  // Ordered by seed/skill
-  REGISTRATION_ORDER
-  SET_ORDER   // Manually set order
+  RANDOM_DRAW      // Fisher-Yates shuffle
+  SEEDED_DRAW      // Highest vs lowest seed
+  SET_ORDER        // Manual seed assignment
 }
 
-enum RulesSystem {
+enum Rules {
   BCA
   APA
   WPA
   USAPL
   VNEA
   LOCAL
-  CUSTOM
 }
 
 enum RatingSystem {
   NONE
-  FARGO
+  FARGO_RATE
   APA
-  INHOUSE
-  CUSTOM
+  IN_HOUSE
 }
 
 enum PayoutType {
-  PERCENTAGE
-  FIXED_AMOUNT
-  WINNER_TAKE_ALL
-  CUSTOM
   PLACES
+  PERCENTAGE
 }
 
 enum PayoutPlacesSetting {
-  TOP_2
-  TOP_3
-  TOP_4  
-  TOP_5
-  TOP_6
-  TOP_8
-  PERCENTAGE_BASED
-  WINNER_TAKE_ALL
+  WINNER_TAKE_ALL    // 1-4 entries
+  TOP_2             // 5-8 entries  
+  TOP_3             // 9-16 entries
+  TOP_4             // 17-24 entries
+  TOP_6             // 25-31 entries
+  TOP_8             // 32-64 entries
   CUSTOM
 }
 
 enum AccessType {
   PUBLIC
   PRIVATE
-  INVITE_ONLY
-  MEMBERS_ONLY
 }
 
 enum SidePotEntryType {
-  AUTOMATIC
-  MANUAL  
-  OPT_IN
   TEAM
   INDIVIDUAL
 }
 
 enum SidePotWinnerType {
-  HIGH_RUN
-  BREAKS
-  SAFETIES
-  CUSTOM
+  TEAM
+  PLAYER
 }
 
 enum TournamentStatus {
@@ -765,18 +882,18 @@ enum TournamentStatus {
   CANCELLED
 }
 
+enum TeamStatus {
+  ACTIVE
+  INACTIVE
+  ELIMINATED
+}
+
 enum PlayerRegistrationStatus {
   PENDING
   CONFIRMED
+  CHECKED_IN
   WAITLISTED
   DECLINED
-  CANCELLED
-}
-
-enum TeamStatus {
-  ACTIVE
-  ELIMINATED
-  WITHDRAWN
 }
 
 enum GameStatus {
@@ -787,13 +904,25 @@ enum GameStatus {
 }
 
 enum ChipTransactionType {
-  INITIAL_CHIPS    // Chips given at team registration
-  GAME_WIN        // Chips won from game victory
-  GAME_LOSS       // Chips lost from game defeat  
-  BIRTHDAY_CHIP   // Special birthday chip award
-  ADJUSTMENT      // Manual adjustment
-  MANUAL_ADJUSTMENT // Manual chip adjustment (alias for ADJUSTMENT)
-  PRIZE          // Prize distribution
+  INITIAL_CHIPS
+  BIRTHDAY_CHIP
+  GAME_WIN
+  GAME_LOSS
+  MANUAL_ADJUSTMENT
+  BUY_IN
+}
+
+enum AssignmentType {
+  INITIAL
+  WINNER_STAYS
+  FROM_QUEUE
+}
+
+enum VenueEditRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  EXPIRED
 }
 
 enum AuditAction {
@@ -802,17 +931,14 @@ enum AuditAction {
   DELETE
   LOGIN
   LOGOUT
-  EXPORT
-  IMPORT
 }
 
 enum NotificationType {
-  TOURNAMENT_REMINDER
-  MATCH_STARTING
-  RESULT_UPDATE
-  REGISTRATION_CONFIRMATION
-  SYSTEM_ALERT
-  ERROR_ALERT
+  GAME_ASSIGNMENT
+  TOURNAMENT_START
+  TOURNAMENT_END
+  PAYOUT_NOTIFICATION
+  GENERAL
 }
 
 enum NotificationChannel {
@@ -826,8 +952,8 @@ enum NotificationStatus {
   PENDING
   SENT
   DELIVERED
-  READ
   FAILED
+  READ
 }
 
 enum ConfigType {
@@ -837,71 +963,3 @@ enum ConfigType {
   JSON
 }
 
-// Tournament Queue Management
-model TournamentQueue {
-  id           String @id @default(cuid())
-  tournamentId String @unique
-  
-  // Queue configuration
-  isActive     Boolean @default(true)
-  currentRound Int @default(1)
-  queueOrder   Json    // Serialized array of team IDs in queue order
-  lastShuffled DateTime?
-  shuffledBy   String?
-  
-  // Metadata
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  // Relationships
-  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  
-  @@map("tournament_queues")
-}
-
-// Team Pairing History
-model TeamPairing {
-  id           String @id @default(cuid())
-  tournamentId String
-  team1Id      String
-  team2Id      String
-  
-  // Pairing details
-  round        Int
-  gamesPlayed  Int @default(0)
-  lastPlayedAt DateTime?
-  
-  // Win tracking
-  team1Wins    Int @default(0)
-  team2Wins    Int @default(0)
-  
-  // Metadata
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  
-  // Relationships
-  tournament   Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  team1        Team @relation("Team1Pairings", fields: [team1Id], references: [id], onDelete: Cascade)
-  team2        Team @relation("Team2Pairings", fields: [team2Id], references: [id], onDelete: Cascade)
-  
-  @@unique([tournamentId, team1Id, team2Id])
-  @@map("team_pairings")
-}
-
-// Team Assignment Tracking
-model TeamAssignment {
-  id             String @id @default(cuid())
-  teamId         String
-  tableId        String?
-  tournamentId   String
-  assignmentType AssignmentType
-  assignedAt     DateTime @default(now())
-  assignedBy     String?
-  
-  // Relationships
-  team           Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  table          Table? @relation(fields: [tableId], references: [id])
-  tournament     Tournament @relation(fields: [tournamentId], references: [id], onDelete: Cascade)
-  
-  @@map("team_assignments")
-}
