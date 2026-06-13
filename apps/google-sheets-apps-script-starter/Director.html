@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tournament Director</title>
+    <style>
+      :root {
+        --bg: #f6f2ea;
+        --panel: #ffffff;
+        --ink: #2f2417;
+        --muted: #7a6a53;
+        --accent: #9a3412;
+        --accent2: #b45309;
+        --line: #eadfcc;
+        --good: #15803d;
+        --bad: #b91c1c;
+      }
+      body {
+        margin: 0;
+        font-family: Tahoma, "Segoe UI", sans-serif;
+        background: linear-gradient(145deg, #fff8ed 0%, var(--bg) 60%);
+        color: var(--ink);
+      }
+      .wrap {
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 14px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+        padding: 12px;
+        margin-bottom: 12px;
+      }
+      h1, h2, h3 { margin: 0 0 8px; }
+      .grid {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: 1fr;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+      input, select, button {
+        font: inherit;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #cfbfa3;
+        background: #fff;
+      }
+      button {
+        border: none;
+        color: #fff;
+        background: var(--accent);
+        cursor: pointer;
+      }
+      button.secondary {
+        background: var(--accent2);
+      }
+      button.ghost {
+        background: #f3ece1;
+        color: var(--ink);
+        border: 1px solid #ddccb0;
+      }
+      .msg { color: var(--muted); font-size: 13px; }
+      .error { color: var(--bad); }
+      .ok { color: var(--good); }
+
+      .tables {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      }
+      .table-card {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        background: #fffcf7;
+      }
+      .team {
+        border: 1px solid #eadfcc;
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 8px;
+        background: #fff;
+      }
+      .wins { color: var(--good); font-weight: bold; }
+      .losses { color: var(--bad); font-weight: bold; }
+      .queue {
+        display: grid;
+        gap: 8px;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      }
+      .queue-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px;
+      }
+      .hidden { display: none; }
+      .login {
+        max-width: 360px;
+        margin: 60px auto;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      th, td {
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        padding: 8px;
+        font-size: 13px;
+      }
+      @media (max-width: 700px) {
+        .row { flex-direction: column; align-items: stretch; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div id="loginPanel" class="panel login">
+        <h1>Director Login</h1>
+        <p class="msg">Default starter credentials are admin / changeme. Change them in Script Properties.</p>
+        <div class="grid">
+          <input id="username" placeholder="Username" value="admin" />
+          <input id="password" type="password" placeholder="Password" value="changeme" />
+          <button id="loginBtn">Log In</button>
+          <div id="loginMsg" class="msg"></div>
+        </div>
+      </div>
+
+      <div id="appPanel" class="hidden">
+        <div class="panel">
+          <h1>Tournament Director</h1>
+          <div class="row">
+            <select id="tournamentSelect"></select>
+            <button id="refreshBtn" class="ghost">Refresh</button>
+            <button id="undoBtn" class="secondary">Undo</button>
+            <button id="shuffleBtn" class="secondary">Shuffle Queue</button>
+            <button id="assignBtn" class="ghost">Assign Now</button>
+          </div>
+          <div class="row">
+            <input id="sheetNameInput" placeholder="Source tab name (example: 5/22)" />
+            <input id="tableCountInput" type="number" min="1" max="11" value="6" style="width:120px" />
+            <button id="buildBtn">Build From Tab</button>
+            <button id="setTablesBtn" class="ghost">Set Table Count</button>
+          </div>
+          <div id="statusMsg" class="msg"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Tables</h2>
+          <div id="tables" class="tables"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Queue</h2>
+          <div id="queue" class="queue"></div>
+        </div>
+
+        <div class="panel">
+          <h2>Team Editor</h2>
+          <p class="msg">Edit names, chips, wins, and losses for any team.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Chips</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Save</th>
+              </tr>
+            </thead>
+            <tbody id="teamEditorBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var token = null;
+      var state = null;
+      var currentSheetId = null;
+
+      function login() {
+        var username = document.getElementById('username').value.trim();
+        var password = document.getElementById('password').value;
+
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (!res.ok) {
+              setLoginMsg(res.message, true);
+              return;
+            }
+
+            token = res.token;
+            document.getElementById('loginPanel').classList.add('hidden');
+            document.getElementById('appPanel').classList.remove('hidden');
+            loadTournamentList();
+          })
+          .withFailureHandler(function(err) {
+            setLoginMsg(err.message, true);
+          })
+          .directorLogin(username, password);
+      }
+
+      function setLoginMsg(message, isError) {
+        var el = document.getElementById('loginMsg');
+        el.textContent = message;
+        el.className = 'msg ' + (isError ? 'error' : 'ok');
+      }
+
+      function setStatus(message, isError) {
+        var el = document.getElementById('statusMsg');
+        el.textContent = message || '';
+        el.className = 'msg ' + (isError ? 'error' : 'ok');
+      }
+
+      function loadTournamentList() {
+        google.script.run
+          .withSuccessHandler(function(list) {
+            var select = document.getElementById('tournamentSelect');
+            if (!list || !list.length) {
+              select.innerHTML = '<option value="">No tournaments yet</option>';
+              state = null;
+              renderState();
+              return;
+            }
+
+            select.innerHTML = list.map(function(item) {
+              return '<option value="' + item.sheetId + '">' + escapeHtml(item.sheetName) + ' | Remaining: ' + item.teamsRemaining + '</option>';
+            }).join('');
+
+            if (!currentSheetId) currentSheetId = list[0].sheetId;
+            select.value = currentSheetId;
+            loadState();
+          })
+          .withFailureHandler(function(err) {
+            setStatus(err.message, true);
+          })
+          .directorListTournaments(token);
+      }
+
+      function loadState() {
+        if (!currentSheetId) return;
+
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res.error) {
+              setStatus(res.error, true);
+              return;
+            }
+            state = res;
+            renderState();
+            setStatus('Loaded ' + state.source.sheetName + ' | Undo depth: ' + state.undoDepth, false);
+          })
+          .withFailureHandler(function(err) {
+            setStatus(err.message, true);
+          })
+          .directorGetState(token, currentSheetId);
+      }
+
+      function renderTeam(team) {
+        if (!team) return '<div class="team">Waiting</div>';
+        return (
+          '<div class="team">' +
+            '<div><strong>' + escapeHtml(team.name) + '</strong></div>' +
+            '<div>(' + team.chips + ') <span class="wins">' + team.wins + '</span>/<span class="losses">' + team.losses + '</span></div>' +
+          '</div>'
+        );
+      }
+
+      function renderState() {
+        var tablesEl = document.getElementById('tables');
+        var queueEl = document.getElementById('queue');
+        var editorEl = document.getElementById('teamEditorBody');
+
+        if (!state) {
+          tablesEl.innerHTML = '<div class="msg">No state loaded.</div>';
+          queueEl.innerHTML = '';
+          editorEl.innerHTML = '';
+          return;
+        }
+
+        document.getElementById('tableCountInput').value = state.settings.tableCount;
+        document.getElementById('sheetNameInput').value = state.source.sheetName;
+
+        tablesEl.innerHTML = state.tables.map(function(table) {
+          var live = !!(table.teamA && table.teamB);
+          var losingOptions = [];
+          if (table.teamA) {
+            losingOptions.push('<option value="' + table.teamA.id + '">' + escapeHtml(table.teamA.name) + '</option>');
+          }
+          if (table.teamB) {
+            losingOptions.push('<option value="' + table.teamB.id + '">' + escapeHtml(table.teamB.name) + '</option>');
+          }
+
+          return (
+            '<div class="table-card">' +
+              '<h3>' + escapeHtml(table.label) + ' (' + table.status + ')</h3>' +
+              renderTeam(table.teamA) +
+              renderTeam(table.teamB) +
+              '<div class="row">' +
+                (live
+                  ? '<select id="loser_' + table.id + '">' + losingOptions.join('') + '</select><button onclick="reportLoser(\'' + table.id + '\')">Report Loser</button>'
+                  : '<span class="msg">No active result to report.</span>') +
+              '</div>' +
+              '<div class="row">' +
+                (table.status === 'open'
+                  ? '<button class="ghost" onclick="setClosing(\'' + table.id + '\', true)">Close After Current Match</button>'
+                  : '<button class="ghost" onclick="setClosing(\'' + table.id + '\', false)">Reopen Table</button>') +
+              '</div>' +
+            '</div>'
+          );
+        }).join('');
+
+        if (!state.queue.length) {
+          queueEl.innerHTML = '<div class="msg">No teams waiting.</div>';
+        } else {
+          queueEl.innerHTML = state.queue.map(function(team, idx) {
+            return '<div class="queue-item">#' + (idx + 1) + ' ' + escapeHtml(team.name) + ' (' + team.chips + ') <span class="wins">' + team.wins + '</span>/<span class="losses">' + team.losses + '</span></div>';
+          }).join('');
+        }
+
+        editorEl.innerHTML = state.teams.map(function(team) {
+          return (
+            '<tr>' +
+              '<td>' +
+                '<input id="p1_' + team.id + '" value="' + escapeAttr(team.player1) + '" style="width:140px" /> +' +
+                ' <input id="p2_' + team.id + '" value="' + escapeAttr(team.player2) + '" style="width:140px" />' +
+              '</td>' +
+              '<td><input id="chips_' + team.id + '" type="number" min="0" value="' + team.chips + '" style="width:72px" /></td>' +
+              '<td><input id="wins_' + team.id + '" type="number" min="0" value="' + team.wins + '" style="width:72px" /></td>' +
+              '<td><input id="losses_' + team.id + '" type="number" min="0" value="' + team.losses + '" style="width:72px" /></td>' +
+              '<td><button class="ghost" onclick="saveTeam(\'' + team.id + '\')">Save</button></td>' +
+            '</tr>'
+          );
+        }).join('');
+      }
+
+      function reportLoser(tableId) {
+        var select = document.getElementById('loser_' + tableId);
+        if (!select) return;
+        var loserId = select.value;
+
+        google.script.run
+          .withSuccessHandler(function(res) {
+            state = res;
+            renderState();
+            setStatus('Result recorded.', false);
+          })
+          .withFailureHandler(function(err) {
+            setStatus(err.message, true);
+          })
+          .directorReportLoser(token, currentSheetId, tableId, loserId);
+      }
+
+      function setClosing(tableId, isClosing) {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            state = res;
+            renderState();
+            setStatus(isClosing ? 'Table marked for closure.' : 'Table reopened.', false);
+          })
+          .withFailureHandler(function(err) {
+            setStatus(err.message, true);
+          })
+          .directorSetTableClosing(token, currentSheetId, tableId, isClosing);
+      }
+
+      function saveTeam(teamId) {
+        var updates = {
+          player1: document.getElementById('p1_' + teamId).value,
+          player2: document.getElementById('p2_' + teamId).value,
+          chips: document.getElementById('chips_' + teamId).value,
+          wins: document.getElementById('wins_' + teamId).value,
+          losses: document.getElementById('losses_' + teamId).value
+        };
+
+        google.script.run
+          .withSuccessHandler(function(res) {
+            state = res;
+            renderState();
+            setStatus('Team saved.', false);
+          })
+          .withFailureHandler(function(err) {
+            setStatus(err.message, true);
+          })
+          .directorUpdateTeam(token, currentSheetId, teamId, updates);
+      }
+
+      function buildFromSheet() {
+        var sheetName = document.getElementById('sheetNameInput').value.trim();
+        var tableCount = document.getElementById('tableCountInput').value;
+
+        if (!sheetName) {
+          setStatus('Enter a source tab name first.', true);
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(function(res) {
+            state = res;
+            currentSheetId = res.source.sheetId;
+            renderState();
+            loadTournamentList();
+            setStatus('Tournament built from tab ' + res.source.sheetName + '.', false);
+          })
+          .withFailureHandler(function(err) {
+            setStatus(err.message, true);
+          })
+          .directorBuildFromSheet(token, sheetName, tableCount);
+      }
+
+      function setTableCount() {
+        var tableCount = document.getElementById('tableCountInput').value;
+        google.script.run
+          .withSuccessHandler(function(res) {
+            state = res;
+            renderState();
+            setStatus('Table count updated.', false);
+          })
+          .withFailureHandler(function(err) {
+            setStatus(err.message, true);
+          })
+          .directorSetTableCount(token, currentSheetId, tableCount);
+      }
+
+      function undo() {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (res.error) {
+              setStatus(res.error, true);
+              return;
+            }
+            state = res.state;
+            renderState();
+            setStatus(res.message || 'Undo complete.', false);
+          })
+          .withFailureHandler(function(err) {
+            setStatus(err.message, true);
+          })
+          .directorUndo(token, currentSheetId);
+      }
+
+      function shuffleQueue() {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            state = res;
+            renderState();
+            setStatus('Queue shuffled.', false);
+          })
+          .withFailureHandler(function(err) {
+            setStatus(err.message, true);
+          })
+          .directorShuffleQueue(token, currentSheetId);
+      }
+
+      function assignNow() {
+        google.script.run
+          .withSuccessHandler(function(res) {
+            state = res;
+            renderState();
+            setStatus('Assignment pass complete.', false);
+          })
+          .withFailureHandler(function(err) {
+            setStatus(err.message, true);
+          })
+          .directorAssignNow(token, currentSheetId);
+      }
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      function escapeAttr(str) {
+        return escapeHtml(str).replace(/\n/g, ' ');
+      }
+
+      document.getElementById('loginBtn').addEventListener('click', login);
+      document.getElementById('refreshBtn').addEventListener('click', loadState);
+      document.getElementById('undoBtn').addEventListener('click', undo);
+      document.getElementById('shuffleBtn').addEventListener('click', shuffleQueue);
+      document.getElementById('assignBtn').addEventListener('click', assignNow);
+      document.getElementById('buildBtn').addEventListener('click', buildFromSheet);
+      document.getElementById('setTablesBtn').addEventListener('click', setTableCount);
+      document.getElementById('tournamentSelect').addEventListener('change', function(e) {
+        currentSheetId = e.target.value;
+        loadState();
+      });
+    </script>
+  </body>
+</html>

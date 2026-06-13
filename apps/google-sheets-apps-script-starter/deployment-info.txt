@@ -1,0 +1,8 @@
+Google Apps Script Deployment Info
+Date saved: 2026-06-13
+
+Deployment ID:
+AKfycbwRIhIigPyaDa6kbYCDROdk-RvWyrMJI6spa4ejaOh6TGKtVH_o5cQBrD8_Q-ltqQBydA
+
+Web App URL:
+https://script.google.com/macros/s/AKfycbwRIhIigPyaDa6kbYCDROdk-RvWyrMJI6spa4ejaOh6TGKtVH_o5cQBrD8_Q-ltqQBydA/exec

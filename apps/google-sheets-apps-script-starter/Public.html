@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Tournament Display</title>
+    <style>
+      :root {
+        --bg: #f4f7f5;
+        --panel: #ffffff;
+        --ink: #17312b;
+        --muted: #5d6f69;
+        --accent: #0f766e;
+        --warn: #b45309;
+        --danger: #b91c1c;
+        --good: #15803d;
+        --line: #dbe6df;
+      }
+      body {
+        margin: 0;
+        font-family: "Trebuchet MS", Verdana, sans-serif;
+        color: var(--ink);
+        background: radial-gradient(circle at top right, #dff7ed 0%, var(--bg) 45%);
+      }
+      .wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 16px;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 12px;
+        padding: 14px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+      }
+      .head {
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 1fr auto;
+        align-items: end;
+        margin-bottom: 14px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 24px;
+      }
+      .meta {
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .tables {
+        display: grid;
+        gap: 10px;
+        grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      }
+      .table-card {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 10px;
+        background: #fbfefc;
+      }
+      .table-title {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-weight: bold;
+      }
+      .status-open { color: var(--good); }
+      .status-closing { color: var(--warn); }
+      .status-closed { color: var(--danger); }
+      .team {
+        border: 1px solid #d7e7df;
+        border-radius: 8px;
+        padding: 8px;
+        margin-bottom: 8px;
+        background: #ffffff;
+      }
+      .empty {
+        color: var(--muted);
+        font-style: italic;
+      }
+      .wins { color: var(--good); font-weight: bold; }
+      .losses { color: var(--danger); font-weight: bold; }
+      .queue {
+        margin-top: 14px;
+        display: grid;
+        gap: 8px;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      }
+      .queue-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 8px;
+        background: #fff;
+      }
+      select, button {
+        font: inherit;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #b2cec1;
+        background: #fff;
+      }
+      button {
+        background: var(--accent);
+        color: #fff;
+        border: none;
+        cursor: pointer;
+      }
+      .muted { color: var(--muted); }
+      @media (max-width: 700px) {
+        .head { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="panel">
+        <div class="head">
+          <div>
+            <h1>Scotch Doubles Chip Tournament</h1>
+            <div class="meta" id="updatedAt">Loading...</div>
+          </div>
+          <div>
+            <select id="tournamentSelect"></select>
+            <button id="refreshBtn" type="button">Refresh</button>
+          </div>
+        </div>
+
+        <h2>Tables</h2>
+        <div id="tables" class="tables"></div>
+
+        <h2>Queue</h2>
+        <div id="queue" class="queue"></div>
+      </div>
+    </div>
+
+    <script>
+      var activeSheetId = null;
+
+      function renderTeam(team) {
+        if (!team) return '<div class="team empty">Waiting for assignment</div>';
+
+        return (
+          '<div class="team">' +
+            '<div><strong>' + escapeHtml(team.name) + '</strong></div>' +
+            '<div>(' + team.chips + ') <span class="wins">' + team.wins + '</span>/<span class="losses">' + team.losses + '</span></div>' +
+          '</div>'
+        );
+      }
+
+      function renderState(state) {
+        var tablesEl = document.getElementById('tables');
+        var queueEl = document.getElementById('queue');
+
+        document.getElementById('updatedAt').textContent =
+          'Source tab: ' + state.source.sheetName + ' | Updated: ' + new Date(state.updatedAt).toLocaleString();
+
+        tablesEl.innerHTML = state.tables.map(function(table) {
+          return (
+            '<div class="table-card">' +
+              '<div class="table-title">' +
+                '<span>' + escapeHtml(table.label) + '</span>' +
+                '<span class="status-' + table.status + '">' + table.status.toUpperCase() + '</span>' +
+              '</div>' +
+              renderTeam(table.teamA) +
+              renderTeam(table.teamB) +
+            '</div>'
+          );
+        }).join('');
+
+        if (!state.queue.length) {
+          queueEl.innerHTML = '<div class="muted">No teams waiting.</div>';
+        } else {
+          queueEl.innerHTML = state.queue.map(function(team, index) {
+            return (
+              '<div class="queue-item">' +
+                '<strong>#' + (index + 1) + '</strong> ' + escapeHtml(team.name) +
+                ' (' + team.chips + ') <span class="wins">' + team.wins + '</span>/<span class="losses">' + team.losses + '</span>' +
+              '</div>'
+            );
+          }).join('');
+        }
+      }
+
+      function loadState() {
+        if (!activeSheetId) return;
+        google.script.run
+          .withSuccessHandler(function(result) {
+            if (result.error) {
+              alert(result.error);
+              return;
+            }
+            renderState(result);
+          })
+          .withFailureHandler(function(err) {
+            alert('Failed to load state: ' + err.message);
+          })
+          .publicGetState(activeSheetId);
+      }
+
+      function loadTournamentList() {
+        google.script.run
+          .withSuccessHandler(function(list) {
+            var select = document.getElementById('tournamentSelect');
+
+            if (!list || !list.length) {
+              select.innerHTML = '<option value="">No tournaments</option>';
+              return;
+            }
+
+            select.innerHTML = list.map(function(item) {
+              return '<option value="' + item.sheetId + '">' +
+                escapeHtml(item.sheetName) +
+                ' | Remaining: ' + item.teamsRemaining +
+                '</option>';
+            }).join('');
+
+            if (!activeSheetId) {
+              activeSheetId = list[0].sheetId;
+            }
+            select.value = activeSheetId;
+            loadState();
+          })
+          .withFailureHandler(function(err) {
+            alert('Failed to load tournaments: ' + err.message);
+          })
+          .publicListTournaments();
+      }
+
+      function escapeHtml(str) {
+        return String(str || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      }
+
+      document.getElementById('refreshBtn').addEventListener('click', loadState);
+      document.getElementById('tournamentSelect').addEventListener('change', function(e) {
+        activeSheetId = e.target.value;
+        loadState();
+      });
+
+      loadTournamentList();
+      setInterval(loadState, 12000);
+    </script>
+  </body>
+</html>
